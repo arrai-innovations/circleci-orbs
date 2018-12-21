@@ -11,6 +11,9 @@ jobs:
       setup:
         description: "Steps to start services."
         type: steps
+      pip_install_args:
+        description: "The args to give pip install to get modules in your venv."
+        type: string
       config:
         description: "Steps to setup additional config.json replacements."
         type: steps
@@ -33,7 +36,7 @@ jobs:
       - steps: << parameters.setup >>
       - setup_python_env:
           venv: <<parameters.venv>>
-          pip_install_args: -r ./ebdms/requirements.txt -r ./ebdms/test_requirements.txt
+          pip_install_args: <<parameters.pip_install_args>>
       - setup_badass_config:
           venv: <<parameters.venv>>
           wd: <<parameters.wd>>
@@ -84,6 +87,7 @@ commands:
   make_shield:
     parameters:
       file:
+        description: "Where the svg should get saved"
         type: string
       status:
         type: string
@@ -99,18 +103,6 @@ commands:
           command: |
             curl -o <<parameters.file>> "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}-<<parameters.status>>-<<parameters.color>>.svg?logo=circleci&logoColor=white&style=for-the-badge&link=${CIRCLE_BUILD_URL}"
           when: <<parameters.when>>
-  upload_shield:
-    parameters:
-      when:
-        type: enum
-        enum: ["always", "on_success", "on_fail"]
-        default: on_success
-    steps:
-      - run:
-          name: RSync shield
-          command: |
-            rsync -t -e "${RSYNC_SSH_COMMAND}" ~/status.svg "docs@docs.arrai-dev.com:/$CIRCLE_BRANCH.$CIRCLE_JOB.svg"
-          when: <<parameters.when>>
   rsync_file:
     parameters:
       when:
@@ -118,8 +110,10 @@ commands:
         enum: ["always", "on_success", "on_fail"]
         default: on_success
       file:
+        description: "The local file(path) to rsync"
         type: string
       remote_file:
+        description: "The name of the remote file"
         type: string
     steps:
       - run:
@@ -134,8 +128,10 @@ commands:
         enum: ["always", "on_success", "on_fail"]
         default: on_success
       folder:
+        description: "The local folder(path) to rsync"
         type: string
       remote_folder:
+        description: "The name of the remote folder"
         type: string
     steps:
       - run:
@@ -146,6 +142,7 @@ commands:
   setup_python_env:
     parameters:
       venv:
+        description: "Where the virtual environment lives (no trailing slash or bin/activate)"
         type: string
       pip_install_args:
         type: string
@@ -161,8 +158,10 @@ commands:
   setup_badass_config:
     parameters:
       venv:
+        description: "Where the virtual environment lives (no trailing slash or bin/activate)"
         type: string
       wd:
+        description: "Where tests should be run in the repo (no trailing slash)"
         type: string
     steps:
       - run:
@@ -176,8 +175,10 @@ commands:
   run_tests:
     parameters:
       venv:
+        description: "Where the virtual environment lives (no trailing slash or bin/activate)"
         type: string
       wd:
+        description: "Where tests should be run in the repo (no trailing slash)"
         type: string
       parallel:
         type: integer
@@ -192,8 +193,10 @@ commands:
   coverage_combine_and_html:
     parameters:
       venv:
+        description: "Where the virtual environment lives (no trailing slash or bin/activate)"
         type: string
       wd:
+        description: "Where tests should be run in the repo (no trailing slash)"
         type: string
     steps:
       - run:
@@ -207,8 +210,10 @@ commands:
   pip_freeze:
     parameters:
       venv:
+        description: "Where the virtual environment lives (no trailing slash or bin/activate)"
         type: string
       file:
+        description: "Where the file should get saved"
         type: string
     steps:
       - run:
