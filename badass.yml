@@ -24,6 +24,8 @@ jobs:
         auth:
           username: $DOCKER_USERNAME
           password: $DOCKER_PASSWORD
+        environment:
+          LANG: en_US.UTF-8
     steps:
       - checkout
       - make_shield:

@@ -107,3 +107,5 @@ executors:
     working_directory: ~/repo
     docker:
       - image: circleci/python:3.6.7
+    environment:
+      LANG: en_US.UTF-8
