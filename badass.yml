@@ -1,0 +1,218 @@
+version: 2.1
+jobs:
+  badass:
+    parameters:
+      venv:
+        description: "Where the virtual environment lives (no trailing slash or bin/activate)"
+        type: string
+      wd:
+        description: "Where tests should be run in the repo (no trailing slash)"
+        type: string
+      setup:
+        description: "Steps to start services."
+        type: steps
+      config:
+        description: "Steps to setup additional config.json replacements."
+        type: steps
+        default: []
+    working_directory: ~/repo
+    docker:
+      - image: registry.arrai-dev.com:443/arrai/c7-django:latest
+        auth:
+          username: $DOCKER_USERNAME
+          password: $DOCKER_PASSWORD
+    steps:
+      - checkout
+      - make_shield:
+          status: running
+          color: lightblue
+          file: ~/status.svg
+      - rsync_file:
+          file: ~/status.svg
+          remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
+      - steps: << parameters.setup >>
+      - setup_python_env:
+          venv: <<parameters.venv>>
+          pip_install_args: -r ./ebdms/requirements.txt -r ./ebdms/test_requirements.txt
+      - setup_badass_config:
+          venv: <<parameters.venv>>
+          wd: <<parameters.wd>>
+      - steps: << parameters.config >>
+      - run_tests:
+          venv: <<parameters.venv>>
+          wd: <<parameters.wd>>
+      - coverage_combine_and_html:
+          venv: <<parameters.venv>>
+          wd: <<parameters.wd>>
+      - rsync_folder:
+          when: always
+          folder: <<parameters.wd>>/htmlcov/
+          remote_folder: htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}
+      - run:
+          name: Coverage shield
+          when: always
+          command: |
+            . <<parameters.venv>>/bin/activate
+            cd <<parameters.wd>>
+            curl -o ~/coverage.svg "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}%20coverage-$(python ~/get-coverage.py).svg?logo=codecov&logoColor=white&style=for-the-badge&link=https://docs.arrai-dev.com/ebdms/htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}/"
+      - rsync_file:
+          when: always
+          file: ~/coverage.svg
+          remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.coverage.svg
+      - pip_freeze:
+          venv: <<parameters.venv>>
+          file: ~/pip.freeze
+      - rsync_file:
+          when: always
+          file: ~/pip.freeze
+          remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.freeze
+      - make_shield:
+          when: on_success
+          status: passed
+          color: brightgreen
+          file: ~/status.svg
+      - make_shield:
+          when: on_fail
+          status: failed
+          color: red
+          file: ~/status.svg
+      - rsync_file:
+          when: always
+          file: ~/status.svg
+          remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
+commands:
+  make_shield:
+    parameters:
+      file:
+        type: string
+      status:
+        type: string
+      color:
+        type: string
+      when:
+        type: enum
+        enum: ["always", "on_success", "on_fail"]
+        default: on_success
+    steps:
+      - run:
+          name: Make shield (<<parameters.status>>)
+          command: |
+            curl -o <<parameters.file>> "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}-<<parameters.status>>-<<parameters.color>>.svg?logo=circleci&logoColor=white&style=for-the-badge&link=${CIRCLE_BUILD_URL}"
+          when: <<parameters.when>>
+  upload_shield:
+    parameters:
+      when:
+        type: enum
+        enum: ["always", "on_success", "on_fail"]
+        default: on_success
+    steps:
+      - run:
+          name: RSync shield
+          command: |
+            rsync -t -e "${RSYNC_SSH_COMMAND}" ~/status.svg "docs@docs.arrai-dev.com:/$CIRCLE_BRANCH.$CIRCLE_JOB.svg"
+          when: <<parameters.when>>
+  rsync_file:
+    parameters:
+      when:
+        type: enum
+        enum: ["always", "on_success", "on_fail"]
+        default: on_success
+      file:
+        type: string
+      remote_file:
+        type: string
+    steps:
+      - run:
+          name: RSync file (<<parameters.file>> -> <<parameters.remote_file>>)
+          command: |
+            rsync -t -e "${RSYNC_SSH_COMMAND}" <<parameters.file>> "docs@docs.arrai-dev.com:/<<parameters.remote_file>>"
+          when: <<parameters.when>>
+  rsync_folder:
+    parameters:
+      when:
+        type: enum
+        enum: ["always", "on_success", "on_fail"]
+        default: on_success
+      folder:
+        type: string
+      remote_folder:
+        type: string
+    steps:
+      - run:
+          name: RSync folder (<<parameters.folder>> -> <<parameters.remote_folder>>)
+          command: |
+            rsync --delete -r -l -t -e "${RSYNC_SSH_COMMAND}" <<parameters.folder>> "docs@docs.arrai-dev.com:/<<parameters.remote_folder>>"
+          when: <<parameters.when>>
+  setup_python_env:
+    parameters:
+      venv:
+        type: string
+      pip_install_args:
+        type: string
+    steps:
+      - run:
+          name: Setup python env
+          command: |
+            . <<parameters.venv>>/bin/activate
+            mkdir ./logs
+            sed -i -e "s/password/$PYPI_PASSWORD/" /root/.pip/pip.conf
+            pip install <<parameters.pip_install_args>> coverage | cat; test ${PIPESTATUS[0]} -eq 0
+            echo "import coverage; coverage.process_startup()" > `python -c "import sys; print([x for x in sys.path if x.find('/.venv36/') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
+  setup_badass_config:
+    parameters:
+      venv:
+        type: string
+      wd:
+        type: string
+    steps:
+      - run:
+          name: Setup badass config
+          command: |
+            . <<parameters.venv>>/bin/activate
+            cd <<parameters.wd>>
+            cp test_config.json config.json
+            export DJANGO_SECRET_KEY=$(openssl rand -base64 33)
+            jq '.DJANGO_SECRET_KEY = env.DJANGO_SECRET_KEY' config.json | sponge config.json
+  run_tests:
+    parameters:
+      venv:
+        type: string
+      wd:
+        type: string
+      parallel:
+        type: integer
+        default: 4
+    steps:
+      - run:
+          name: Run tests
+          command: |
+              . <<parameters.venv>>/bin/activate
+              cd <<parameters.wd>>
+              coverage run -p manage.py test --parallel=<<parameters.parallel>>
+  coverage_combine_and_html:
+    parameters:
+      venv:
+        type: string
+      wd:
+        type: string
+    steps:
+      - run:
+          name: Coverage combine and html
+          command: |
+            . <<parameters.venv>>/bin/activate
+            cd <<parameters.wd>>
+            coverage combine
+            coverage html
+          when: always
+  pip_freeze:
+    parameters:
+      venv:
+        type: string
+      file:
+        type: string
+    steps:
+      - run:
+          command: |
+            . <<parameters.venv>>/bin/activate
+            pip freeze > <<parameters.file>>
+          when: always

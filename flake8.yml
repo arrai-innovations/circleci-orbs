@@ -1,0 +1,109 @@
+version: 2.1
+jobs:
+  flake8:
+    parameters:
+      wd:
+        type: string
+    executor: flake8_executor
+    steps:
+      - checkout
+      - setup_flake8
+      - flake8_errors:
+          wd: <<parameters.wd>>
+      - flake8_badge:
+          when: on_fail
+          status: errors
+          color: red
+      - flake8_warnings:
+          wd: <<parameters.wd>>
+      - flake8_badge_if_none:
+          when: always
+          status: warnings
+          color: orange
+      - flake8_badge:
+          when: on_success
+          status: passed
+          color: brightgreen
+      - install_rsync
+      - upload_badge
+commands:
+  setup_flake8:
+    steps:
+      - run:
+          name: Setup flake8
+          command: |
+            python3 -m venv ~/.venv/
+            . ~/.venv/bin/activate
+            pip install flake8 | cat; test ${PIPESTATUS[0]} -eq 0
+  flake8_errors:
+    parameters:
+      wd:
+        type: string
+    steps:
+      - run:
+          name: Flake8 errors
+          command: |
+            cd <<parameters.wd>>
+            . ~/.venv/bin/activate
+            flake8 --ignore="$FLAKE8_WARNINGS"
+  flake8_warnings:
+    parameters:
+      wd:
+        type: string
+    steps:
+      - run:
+          name: Flake8 warnings
+          command: |
+            cd <<parameters.wd>>
+            . ~/.venv/bin/activate
+            flake8 --ignore="$FLAKE8_ERRORS"
+          when: always
+  flake8_badge:
+    parameters:
+      status:
+        type: string
+      color:
+        type: string
+      when:
+        type: enum
+        enum: ["always", "on_success", "on_fail"]
+    steps:
+      - run:
+          name: Flake8 badge (<<parameters.status>>)
+          command: |
+            curl -o ~/status.svg "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}-<<parameters.status>>-<<parameters.color>>.svg?logo=python&logoColor=white&style=for-the-badge&link=${CIRCLE_BUILD_URL}"
+          when: <<parameters.when>>
+  flake8_badge_if_none:
+    parameters:
+      status:
+        type: string
+      color:
+        type: string
+      when:
+        type: enum
+        enum: ["always", "on_success", "on_fail"]
+    steps:
+      - run:
+          name: Flake8 badge (if no badge already) (<<parameters.status>>)
+          command: |
+            if [ ! -f ~/status.svg ]; then curl -o ~/status.svg "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}-<<parameters.status>>-<<parameters.color>>.svg?logo=python&logoColor=white&style=for-the-badge&link=${CIRCLE_BUILD_URL}"; fi
+          when: <<parameters.when>>
+  install_rsync:
+    steps:
+      - run:
+          name: Install rsync
+          command: |
+            sudo apt-get install rsync
+          when: always
+  upload_badge:
+    steps:
+      - run:
+          name: Upload badge
+          command: |
+            rsync -t -e "${RSYNC_SSH_COMMAND}" ~/status.svg "docs@docs.arrai-dev.com:/$CIRCLE_BRANCH.$CIRCLE_JOB.svg"
+          when: always
+executors:
+  flake8_executor:
+    working_directory: ~/repo
+    docker:
+      - image: circleci/python:3.6.7
