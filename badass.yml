@@ -1,4 +1,26 @@
 version: 2.1
+executors:
+  python36:
+    environment:
+        LANG: en_US.UTF-8
+    docker:
+     - image: arrai/python:36-centos
+     - image: circleci/postgres:10-alpine-ram
+     - image: circleci/redis:4
+  python35:
+    environment:
+        LANG: en_US.UTF-8
+    docker:
+     - image: arrai/python:35-centos
+     - image: circleci/postgres:10-alpine-ram
+     - image: circleci/redis:4
+  python27:
+    environment:
+        LANG: en_US.UTF-8
+    docker:
+     - image: arrai/python:35-centos
+     - image: circleci/postgres:10-alpine-ram
+     - image: circleci/redis:4
 jobs:
   badass:
     parameters:
@@ -18,14 +40,12 @@ jobs:
         description: "Steps to setup additional config.json replacements."
         type: steps
         default: []
+      executor:
+        description: "Execution enviroment for the test job."
+        type: executor
+        default: python36
+    executor: <<parameters.executor>>
     working_directory: ~/repo
-    docker:
-      - image: registry.arrai-dev.com:443/arrai/c7-django:latest
-        auth:
-          username: $DOCKER_USERNAME
-          password: $DOCKER_PASSWORD
-        environment:
-          LANG: en_US.UTF-8
     steps:
       - checkout
       - make_shield:
