@@ -48,6 +48,8 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
+      - run: ssh-keyscan -p ${DOCS_PORT} ${DOCS_HOST} >> /root/.ssh/known_hosts
+      - run: echo -e "Host docs\n\tHostName ${DOCS_HOST}\n\tPort ${DOCS_PORT}\n\tUser ${DOCS_USER}" >> /root/.ssh/config
       - make_shield:
           status: running
           color: lightblue
@@ -78,7 +80,7 @@ jobs:
           when: always
           command: |
             cd <<parameters.wd>>
-            curl -o ~/coverage.svg "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}%20coverage-$(python ~/get-coverage.py).svg?logo=codecov&logoColor=white&style=for-the-badge&link=https://docs.arrai-dev.com/ebdms/htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}/"
+            curl -o ~/coverage.svg "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}%20coverage-$(python ~/get-coverage.py).svg?logo=codecov&logoColor=white&style=for-the-badge&link=https://${DOCS_HOST}/ebdms/htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}/"
       - rsync_file:
           when: always
           file: ~/coverage.svg
@@ -140,7 +142,7 @@ commands:
       - run:
           name: RSync file (<<parameters.file>> -> <<parameters.remote_file>>)
           command: |
-            rsync -t -e "${RSYNC_SSH_COMMAND}" <<parameters.file>> "docs@docs.arrai-dev.com:/<<parameters.remote_file>>"
+            rsync -t -e "ssh" <<parameters.file>> "docs:/<<parameters.remote_file>>"
           when: <<parameters.when>>
   rsync_folder:
     parameters:
@@ -158,7 +160,7 @@ commands:
       - run:
           name: RSync folder (<<parameters.folder>> -> <<parameters.remote_folder>>)
           command: |
-            rsync --delete -r -l -t -e "${RSYNC_SSH_COMMAND}" <<parameters.folder>> "docs@docs.arrai-dev.com:/<<parameters.remote_folder>>"
+            rsync --delete -r -l -t -e "ssh" <<parameters.folder>> "docs:/<<parameters.remote_folder>>"
           when: <<parameters.when>>
   setup_python_env:
     parameters:
