@@ -77,7 +77,6 @@ jobs:
           name: Coverage shield
           when: always
           command: |
-            . <<parameters.venv>>/bin/activate
             cd <<parameters.wd>>
             curl -o ~/coverage.svg "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}%20coverage-$(python ~/get-coverage.py).svg?logo=codecov&logoColor=white&style=for-the-badge&link=https://docs.arrai-dev.com/ebdms/htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}/"
       - rsync_file:
@@ -172,7 +171,6 @@ commands:
       - run:
           name: Setup python env
           command: |
-            . <<parameters.venv>>/bin/activate
             mkdir ./logs
             pip install <<parameters.pip_install_args>> coverage | cat; test ${PIPESTATUS[0]} -eq 0
             echo "import coverage; coverage.process_startup()" > `python -c "import sys; print([x for x in sys.path if x.find('<<parameters.venv>>') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
@@ -188,7 +186,6 @@ commands:
       - run:
           name: Setup badass config
           command: |
-            . <<parameters.venv>>/bin/activate
             cd <<parameters.wd>>
             cp test_config.json config.json
             export DJANGO_SECRET_KEY=$(openssl rand -base64 33)
@@ -208,7 +205,6 @@ commands:
       - run:
           name: Run tests
           command: |
-              . <<parameters.venv>>/bin/activate
               cd <<parameters.wd>>
               coverage run -p manage.py test --parallel=<<parameters.parallel>>
   coverage_combine_and_html:
@@ -223,7 +219,6 @@ commands:
       - run:
           name: Coverage combine and html
           command: |
-            . <<parameters.venv>>/bin/activate
             cd <<parameters.wd>>
             coverage combine
             coverage html
@@ -239,6 +234,5 @@ commands:
     steps:
       - run:
           command: |
-            . <<parameters.venv>>/bin/activate
             pip freeze > <<parameters.file>>
           when: always
