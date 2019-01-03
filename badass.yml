@@ -18,7 +18,7 @@ executors:
     environment:
         LANG: en_US.UTF-8
     docker:
-     - image: arrai/python:35-centos
+     - image: arrai/python:27-centos
      - image: circleci/postgres:10-alpine-ram
      - image: circleci/redis:4
 jobs:
