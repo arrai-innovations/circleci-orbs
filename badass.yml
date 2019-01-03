@@ -172,7 +172,7 @@ commands:
           name: Setup python env
           command: |
             mkdir ./logs
-            pip install <<parameters.pip_install_args>> coverage | cat; test ${PIPESTATUS[0]} -eq 0
+            pip install <<parameters.pip_install_args>> | cat; test ${PIPESTATUS[0]} -eq 0
             echo "import coverage; coverage.process_startup()" > `python -c "import sys; print([x for x in sys.path if x.find('<<parameters.venv>>') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
   setup_badass_config:
     parameters:
