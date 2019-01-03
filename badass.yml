@@ -33,6 +33,7 @@ jobs:
       setup:
         description: "Steps to start services."
         type: steps
+        default: []
       pip_install_args:
         description: "The args to give pip install to get modules in your venv."
         type: string
