@@ -41,7 +41,7 @@ jobs:
         type: steps
         default: []
       executor:
-        description: "Execution enviroment for the test job."
+        description: "Execution environment for the test job."
         type: executor
         default: python36
     executor: <<parameters.executor>>
