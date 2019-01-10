@@ -1,4 +1,6 @@
 version: 2.1
+orbs:
+  utils: arrai/utils@1.2.0
 executors:
   python36:
     environment:
@@ -27,6 +29,7 @@ jobs:
       venv:
         description: "Where the virtual environment lives (no trailing slash or bin/activate)"
         type: string
+        default: ~/.venv
       wd:
         description: "Where tests should be run in the repo (no trailing slash)"
         type: string
@@ -49,120 +52,66 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
-      - run: ssh-keyscan -p ${DOCS_PORT} ${DOCS_HOST} >> /root/.ssh/known_hosts
-      - run: echo -e "Host docs\n\tHostName ${DOCS_HOST}\n\tPort ${DOCS_PORT}\n\tUser ${DOCS_USER}" >> /root/.ssh/config
-      - make_shield:
+      - utils/add_ssh_config
+      - utils/make_status_shield:
           status: running
           color: lightblue
           file: ~/status.svg
-      - rsync_file:
+      - utils/rsync_file:
           file: ~/status.svg
           remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
-      - steps: << parameters.setup >>
+          host: docs
+      - steps: <<parameters.setup>>
       - setup_python_env:
           venv: <<parameters.venv>>
           pip_install_args: <<parameters.pip_install_args>>
       - setup_badass_config:
           venv: <<parameters.venv>>
           wd: <<parameters.wd>>
-      - steps: << parameters.config >>
+      - steps: <<parameters.config>>
       - run_tests:
           venv: <<parameters.venv>>
           wd: <<parameters.wd>>
       - coverage_combine_and_html:
           venv: <<parameters.venv>>
           wd: <<parameters.wd>>
-      - rsync_folder:
+      - utils/rsync_folder:
           when: always
           folder: <<parameters.wd>>/htmlcov/
           remote_folder: htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}
-      - run:
-          name: Coverage shield
+          host: docs
+      - utils/make_coverage_shield:
           when: always
-          command: |
-            cd <<parameters.wd>>
-            curl -o ~/coverage.svg "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}%20coverage-$(python ~/get-coverage.py).svg?logo=codecov&logoColor=white&style=for-the-badge&link=https://${DOCS_HOST}/ebdms/htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}/"
-      - rsync_file:
+          link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}/
+      - utils/rsync_file:
           when: always
           file: ~/coverage.svg
           remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.coverage.svg
+          host: docs
       - pip_freeze:
           venv: <<parameters.venv>>
           file: ~/pip.freeze
-      - rsync_file:
+      - utils/rsync_file:
           when: always
           file: ~/pip.freeze
           remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.freeze
-      - make_shield:
+          host: docs
+      - utils/make_status_shield:
           when: on_success
           status: passed
           color: brightgreen
           file: ~/status.svg
-      - make_shield:
+      - utils/make_status_shield:
           when: on_fail
           status: failed
           color: red
           file: ~/status.svg
-      - rsync_file:
+      - utils/rsync_file:
           when: always
           file: ~/status.svg
           remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
+          host: docs
 commands:
-  make_shield:
-    parameters:
-      file:
-        description: "Where the svg should get saved"
-        type: string
-      status:
-        type: string
-      color:
-        type: string
-      when:
-        type: enum
-        enum: ["always", "on_success", "on_fail"]
-        default: on_success
-    steps:
-      - run:
-          name: Make shield (<<parameters.status>>)
-          command: |
-            curl -o <<parameters.file>> "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}-<<parameters.status>>-<<parameters.color>>.svg?logo=circleci&logoColor=white&style=for-the-badge&link=${CIRCLE_BUILD_URL}"
-          when: <<parameters.when>>
-  rsync_file:
-    parameters:
-      when:
-        type: enum
-        enum: ["always", "on_success", "on_fail"]
-        default: on_success
-      file:
-        description: "The local file(path) to rsync"
-        type: string
-      remote_file:
-        description: "The name of the remote file"
-        type: string
-    steps:
-      - run:
-          name: RSync file (<<parameters.file>> -> <<parameters.remote_file>>)
-          command: |
-            rsync -t -e "ssh" <<parameters.file>> "docs:/<<parameters.remote_file>>"
-          when: <<parameters.when>>
-  rsync_folder:
-    parameters:
-      when:
-        type: enum
-        enum: ["always", "on_success", "on_fail"]
-        default: on_success
-      folder:
-        description: "The local folder(path) to rsync"
-        type: string
-      remote_folder:
-        description: "The name of the remote folder"
-        type: string
-    steps:
-      - run:
-          name: RSync folder (<<parameters.folder>> -> <<parameters.remote_folder>>)
-          command: |
-            rsync --delete -r -l -t -e "ssh" <<parameters.folder>> "docs:/<<parameters.remote_folder>>"
-          when: <<parameters.when>>
   setup_python_env:
     parameters:
       venv:
@@ -172,9 +121,9 @@ commands:
         type: string
     steps:
       - run:
-          name: Setup python env
+          name: Setup python environment
           command: |
-            mkdir ./logs
+            mkdir -p ./logs/${CIRCLE_PROJECT_REPONAME}
             pip install <<parameters.pip_install_args>> | cat; test ${PIPESTATUS[0]} -eq 0
             echo "import coverage; coverage.process_startup()" > `python -c "import sys; print([x for x in sys.path if x.find('<<parameters.venv>>') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
   setup_badass_config:
@@ -225,6 +174,7 @@ commands:
             cd <<parameters.wd>>
             coverage combine
             coverage html
+            coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> ~/.coveragep
           when: always
   pip_freeze:
     parameters:
@@ -236,6 +186,5 @@ commands:
         type: string
     steps:
       - run:
-          command: |
-            pip freeze > <<parameters.file>>
+          command: pip freeze > <<parameters.file>>
           when: always
