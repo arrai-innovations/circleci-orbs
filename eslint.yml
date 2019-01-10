@@ -29,7 +29,7 @@ jobs:
       - run:
           name: Check for warnings
           when: always
-          command: test -s ~/lint
+          command: test ! -s ~/lint
       - utils/make_status_shield:
           when: always
           status: warnings
