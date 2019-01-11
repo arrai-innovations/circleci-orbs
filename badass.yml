@@ -29,7 +29,7 @@ jobs:
       venv:
         description: "Where the virtual environment lives (no trailing slash or bin/activate)"
         type: string
-        default: ~/.venv
+        default: ${HOME}/.venv
       wd:
         description: "Where tests should be run in the repo (no trailing slash)"
         type: string
@@ -48,6 +48,9 @@ jobs:
         description: "Execution environment for the test job."
         type: executor
         default: python36
+      parallel:
+        type: integer
+        default: 4
     executor: <<parameters.executor>>
     working_directory: ~/repo
     steps:
@@ -72,6 +75,7 @@ jobs:
       - run_tests:
           venv: <<parameters.venv>>
           wd: <<parameters.wd>>
+          parallel: <<parameters.parallel>>
       - coverage_combine_and_html:
           venv: <<parameters.venv>>
           wd: <<parameters.wd>>
@@ -152,7 +156,6 @@ commands:
         type: string
       parallel:
         type: integer
-        default: 4
     steps:
       - run:
           name: Run tests
