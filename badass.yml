@@ -51,6 +51,9 @@ jobs:
       parallel:
         type: integer
         default: 4
+      test_script:
+        type: string
+        default: manage.py test
     executor: <<parameters.executor>>
     working_directory: ~/repo
     steps:
@@ -76,6 +79,7 @@ jobs:
           venv: <<parameters.venv>>
           wd: <<parameters.wd>>
           parallel: <<parameters.parallel>>
+          test_script: <<parameters.test_script>>
       - coverage_combine_and_html:
           venv: <<parameters.venv>>
           wd: <<parameters.wd>>
@@ -156,12 +160,18 @@ commands:
         type: string
       parallel:
         type: integer
+      test_script:
+        type: string
     steps:
       - run:
           name: Run tests
           command: |
               cd <<parameters.wd>>
-              coverage run -p manage.py test --parallel=<<parameters.parallel>>
+              if [ "<<parameters.parallel>>" -eq "0" ]; then
+                  coverage run -p <<parameters.test_script>>
+              else
+                  coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>>
+              fi
   coverage_combine_and_html:
     parameters:
       venv:
