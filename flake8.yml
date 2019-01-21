@@ -17,7 +17,7 @@ jobs:
     parameters:
       wd:
         type: string
-        default: ~/repo
+        default: ./${CIRCLE_PROJECT_REPONAME}
       executor:
         type: executor
         default: python36
