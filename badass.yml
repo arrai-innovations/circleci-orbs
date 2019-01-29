@@ -23,6 +23,30 @@ executors:
      - image: arrai/python:27-centos
      - image: circleci/postgres:10-alpine-ram
      - image: circleci/redis:4
+  python36-selenium:
+    environment:
+        LANG: en_US.UTF-8
+    docker:
+     - image: arrai/python:36-centos
+     - image: circleci/postgres:10-alpine-ram
+     - image: circleci/redis:4
+     - image: selenium/standalone-chrome:latest
+  python35-selenium:
+    environment:
+        LANG: en_US.UTF-8
+    docker:
+     - image: arrai/python:35-centos
+     - image: circleci/postgres:10-alpine-ram
+     - image: circleci/redis:4
+     - image: selenium/standalone-chrome:latest
+  python27-selenium:
+    environment:
+        LANG: en_US.UTF-8
+    docker:
+     - image: arrai/python:27-centos
+     - image: circleci/postgres:10-alpine-ram
+     - image: circleci/redis:4
+     - image: selenium/standalone-chrome:latest
 jobs:
   badass:
     parameters:
