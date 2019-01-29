@@ -64,9 +64,10 @@ jobs:
           host: docs
 commands:
   setup_flake8:
+    description: "Set up a python virtual environment to run flake8"
     steps:
       - run:
-          name: Setup flake8
+          name: "Set up python virtual enviroment."
           command: |
             if [ "${PYTHON_VERSION}" == "2.7.15" ]; then
                 virtualenv ${HOME}/.venv/
@@ -77,22 +78,24 @@ commands:
             echo "source ${HOME}/.venv/bin/activate" >> $BASH_ENV
             pip install flake8 | cat; test ${PIPESTATUS[0]} -eq 0
   flake8_errors:
+    description: "Run flake8, checking for errors only."
     parameters:
       wd:
         type: string
     steps:
       - run:
-          name: Flake8 errors
+          name: "Check for errors."
           command: |
             cd <<parameters.wd>>
             flake8 --extend-ignore="$FLAKE8_WARNINGS"
   flake8_warnings:
+    description: "Run flake8, checking for warnings only."
     parameters:
       wd:
         type: string
     steps:
       - run:
-          name: Flake8 warnings
+          name: "Check for warnings."
           command: |
             cd <<parameters.wd>>
             flake8 --extend-ignore="$FLAKE8_ERRORS"
