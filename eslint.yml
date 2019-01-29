@@ -17,10 +17,14 @@ jobs:
     steps:
       - checkout
       - utils/add_ssh_config
-      - run: sudo apt-get install rsync
-      - run: sudo npm install -g eslint
       - run:
-          name: Lint the code
+          name: Install additional OS packages
+          command: sudo apt-get install rsync
+      - run:
+          name: Install the latest eslint
+          command: sudo npm install -g eslint
+      - run:
+          name: Run eslint
           command: |
             cd <<parameters.wd>>
             eslint --color <<parameters.files>> | tee ~/lint
@@ -30,7 +34,7 @@ jobs:
           color: red
           logo: eslint
       - run:
-          name: Check for warnings
+          name: Check if we had any warnings
           when: always
           command: test ! -s ~/lint
       - utils/make_status_shield:
