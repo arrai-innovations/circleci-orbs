@@ -1,27 +1,31 @@
 version: 2.1
 commands:
   add_ssh_config:
-    description: "Fetch host keys from SSH server and generate SSH config."
+    description: "Fetch host keys from a SSH server and generate ~/.ssh/config and ~/.ssh/known_hosts."
     parameters:
       host:
-        description: "The name of the SSH config entry."
+        description: "The name of the entry in ~/.ssh/config to use as a short-hand in SSH commands."
         type: string
         default: docs
       hostname:
-        description: "The host name or IP address of the SSH server."
+        description: "The host name or IP address of the remote SSH server."
         type: string
         default: ${DOCS_HOST}
       port:
-        description: "The TCP port the SSH server is listening on."
+        description: "The TCP port the remote SSH server is listening on."
         type: string
         default: ${DOCS_PORT}
       user:
-        description: "The remote user name."
+        description: "The user name to present to the remote SSH server."
         type: string
         default: ${DOCS_USER}
     steps:
-      - run: ssh-keyscan -p <<parameters.port>> <<parameters.hostname>> >> ~/.ssh/known_hosts
-      - run: echo -e "Host <<parameters.host>>\n\tHostName <<parameters.hostname>>\n\tPort <<parameters.port>>\n\tUser <<parameters.user>>" >> ~/.ssh/config
+      - run:
+          name: "Scan for SSH host keys."
+          command: ssh-keyscan -p <<parameters.port>> <<parameters.hostname>> >> ~/.ssh/known_hosts
+      - run:
+          name: "Generate ~/.ssh/config."
+          command: echo -e "Host <<parameters.host>>\n\tHostName <<parameters.hostname>>\n\tPort <<parameters.port>>\n\tUser <<parameters.user>>" >> ~/.ssh/config
   make_status_shield:
     description: "Fetch status shield from shields.io."
     parameters:
@@ -40,7 +44,7 @@ commands:
         type: string
         default: circleci
       preserve:
-        description: "Preserve any existing shield of the same name."
+        description: "Prevent any existing shield of the same name from being overwritten."
         type: boolean
         default: false
       when:
