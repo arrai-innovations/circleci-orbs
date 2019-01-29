@@ -51,22 +51,22 @@ jobs:
   badass:
     parameters:
       venv:
-        description: "Where the virtual environment lives (no trailing slash or bin/activate)"
+        description: "Location of the Python virtual environment (no trailing slash)."
         type: string
         default: ${HOME}/.venv
       wd:
-        description: "Where tests should be run in the repo (no trailing slash)"
+        description: "Where tests should be run in the repo (no trailing slash)."
         type: string
         default: ./${CIRCLE_PROJECT_REPONAME}
       setup:
-        description: "Steps to start services."
+        description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
         type: steps
         default: []
       pip_install_args:
-        description: "The args to give pip install to get modules in your venv."
+        description: "Any additional arguments to pip install (e.g., -r ./requirements.txt)."
         type: string
       config:
-        description: "Steps to setup additional config.json replacements."
+        description: "Any additional BMS configuration steps."
         type: steps
         default: []
       executor:
@@ -74,9 +74,11 @@ jobs:
         type: executor
         default: python36
       parallel:
+        description: "The level of test parallelism."
         type: integer
         default: 4
       test_script:
+        description: "The test script to run (e.g., manage.py test)."
         type: string
         default: manage.py test
     executor: <<parameters.executor>>
@@ -146,15 +148,17 @@ jobs:
           host: docs
 commands:
   setup_python_env:
+    description: "Set up the Python virtual environment for the test suite."
     parameters:
       venv:
-        description: "Where the virtual environment lives (no trailing slash or bin/activate)"
+        description: "Location of the Python virtual environment (no trailing slash)."
         type: string
       pip_install_args:
+        description: "Any additional arguments to pip install (e.g., -r ./requirements.txt)."
         type: string
     steps:
       - run:
-          name: Setup python environment
+          name: Setup Python environment
           command: |
             mkdir -p ./logs/${CIRCLE_PROJECT_REPONAME}
             pip install <<parameters.pip_install_args>> | cat; test ${PIPESTATUS[0]} -eq 0
@@ -162,10 +166,10 @@ commands:
   setup_badass_config:
     parameters:
       venv:
-        description: "Where the virtual environment lives (no trailing slash or bin/activate)"
+        description: "Location of the Python virtual environment (no trailing slash)."
         type: string
       wd:
-        description: "Where tests should be run in the repo (no trailing slash)"
+        description: "Where tests should be run in the repo (no trailing slash)."
         type: string
     steps:
       - run:
@@ -176,20 +180,23 @@ commands:
             jq '.DJANGO_SECRET_KEY = env.DJANGO_SECRET_KEY' test_config.json | sponge test_config.json
             cp test_config.json config.json
   run_tests:
+    description: "Run the test suite."
     parameters:
       venv:
-        description: "Where the virtual environment lives (no trailing slash or bin/activate)"
+        description: "Location of the Python virtual environment (no trailing slash)."
         type: string
       wd:
-        description: "Where tests should be run in the repo (no trailing slash)"
+        description: "Where tests should be run in the repo (no trailing slash)."
         type: string
       parallel:
+        description: "The level of test parallelism."
         type: integer
       test_script:
+        description: "The test script to run (e.g., manage.py test)."
         type: string
     steps:
       - run:
-          name: Run tests
+          name: Run test suite
           command: |
               cd <<parameters.wd>>
               if [ "<<parameters.parallel>>" -eq "0" ]; then
@@ -198,16 +205,17 @@ commands:
                   coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>>
               fi
   coverage_combine_and_html:
+    description: "Combine coverage and generate reports."
     parameters:
       venv:
-        description: "Where the virtual environment lives (no trailing slash or bin/activate)"
+        description: "Location of the Python virtual environment (no trailing slash)."
         type: string
       wd:
-        description: "Where tests should be run in the repo (no trailing slash)"
+        description: "Where tests should be run in the repo (no trailing slash)."
         type: string
     steps:
       - run:
-          name: Coverage combine and html
+          name: Combine coverage and build reports
           command: |
             cd <<parameters.wd>>
             coverage combine
@@ -215,12 +223,13 @@ commands:
             coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> ~/.coveragep
           when: always
   pip_freeze:
+    description: "Create pip freeze file."
     parameters:
       venv:
-        description: "Where the virtual environment lives (no trailing slash or bin/activate)"
+        description: "Location of the Python virtual environment (no trailing slash)."
         type: string
       file:
-        description: "Where the file should get saved"
+        description: "Output location of the freeze file."
         type: string
     steps:
       - run:
