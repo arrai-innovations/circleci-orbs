@@ -148,9 +148,9 @@ commands:
           name: Setup badass config
           command: |
             cd <<parameters.wd>>
-            cp test_config.json config.json
             export DJANGO_SECRET_KEY=$(openssl rand -base64 33)
-            jq '.DJANGO_SECRET_KEY = env.DJANGO_SECRET_KEY' config.json | sponge config.json
+            jq '.DJANGO_SECRET_KEY = env.DJANGO_SECRET_KEY' test_config.json | sponge test_config.json
+            cp test_config.json config.json
   run_tests:
     parameters:
       venv:
