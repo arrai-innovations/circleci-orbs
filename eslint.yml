@@ -10,7 +10,10 @@ jobs:
       files:
         type: string
         default: lib/**
-    executor: v8
+      executor:
+        type: executor
+        default: v8
+    executor: <<parameters.executor>>
     steps:
       - checkout
       - utils/add_ssh_config
@@ -52,3 +55,8 @@ executors:
         LANG: en_US.UTF-8
     docker:
      - image: circleci/node:8.15.0
+  v10:
+    environment:
+        LANG: en_US.UTF-8
+    docker:
+     - image: circleci/node:10.15.1
