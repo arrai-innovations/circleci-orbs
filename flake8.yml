@@ -21,7 +21,7 @@ executors:
     environment:
         LANG: en_US.UTF-8
     docker:
-     - image: circleci/python:2.7.15
+     - image: circleci/python:2.7.16
 jobs:
   flake8:
     parameters:
@@ -69,7 +69,7 @@ commands:
       - run:
           name: "Set up python virtual enviroment."
           command: |
-            if [ "${PYTHON_VERSION}" == "2.7.15" ]; then
+            if [ "${PYTHON_VERSION}" == "2.7.16" ]; then
                 virtualenv ${HOME}/.venv/
             else
                 python3 -m venv ${HOME}/.venv/
