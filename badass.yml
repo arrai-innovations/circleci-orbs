@@ -77,6 +77,10 @@ jobs:
         description: "The level of test parallelism."
         type: integer
         default: 4
+      badge_label:
+        description: "The label to use for the badge."
+        type: string
+        default: ${CIRCLE_JOB}
       test_script:
         description: "The test script to run (e.g., manage.py test)."
         type: string
@@ -90,6 +94,7 @@ jobs:
           status: running
           color: lightblue
           file: ~/status.svg
+          label: <<parameters.badge_label>>
       - utils/rsync_file:
           file: ~/status.svg
           remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
@@ -136,11 +141,13 @@ jobs:
           status: passed
           color: brightgreen
           file: ~/status.svg
+          label: <<parameters.badge_label>>
       - utils/make_status_shield:
           when: on_fail
           status: failed
           color: red
           file: ~/status.svg
+          label: <<parameters.badge_label>>
       - utils/rsync_file:
           when: always
           file: ~/status.svg
