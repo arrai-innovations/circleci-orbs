@@ -13,7 +13,7 @@ This repository currently contains the following Orbs:
 - [utils](https://circleci.com/orbs/registry/orb/arrai/utils)
 
 ### badass
-This Orb provides an environment for running our BMS/Django tests. Not likely to be useful for testing Django instances not built or based on BMS as the defined make some assumptions. For a description of the Orb, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/badass).
+This Orb provides an environment for running our BMS/Django tests. Not likely to be useful for testing Django instances not built or based on BMS. For a description of the Orb, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/badass).
 
 ### flake8
 Provides functionality for running flake8 on the project code. Errors and warnings are reported in separate steps. Note that warnings are treated as job failures. For a decription of the Orb, available steps, parameters, etc, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/flake8).
@@ -26,7 +26,7 @@ This orb provides utility functions such as status badging, file uploads, and ss
 
 ## Publishing Orbs
 
-There are a few things to keep in mind when publishing new Orbs to the registry. Orbs are to be published using [semver](https://devhints.io/semver). Versioning is taken care of automatically by specifying one of *patch*, *minor*, or *major* when publishing. Publishing a new release requires that a dev version be promoted to release stat. Since references to Orbs are versioned, a new release has no impact on existing project configurations or Orbs.
+There are a few things to keep in mind when publishing new Orbs to the registry. Orbs are to be published using [semver](https://devhints.io/semver). Versioning is taken care of automatically by specifying one of *patch*, *minor*, or *major* when publishing. Publishing a new release works by promoting a previously published dev version. Since references to Orbs are versioned, a new release has no impact on existing project configurations or Orbs.
 
 In order to publish Orbs to the registry, install the [circleci](https://circleci.com/docs/2.0/creating-orbs/#installing-the-cli-for-the-first-time) CLI application. Run `circleci setup` to configure the tool once installed.
 
