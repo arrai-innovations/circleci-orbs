@@ -39,6 +39,11 @@ commands:
       color:
         description: "Color of the shield."
         type: string
+      style:
+        description: "Shield style."
+        type: enum
+        enum: ["plastic", "flat", "flat-square", "for-the-badge", "popout", "popout-square", "social"]
+        default: for-the-badge
       logo:
         description: "The logo to use on the shield."
         type: string
@@ -55,7 +60,7 @@ commands:
       - run:
           name: Make status shield (<<parameters.status>>)
           command: |
-            <<# parameters.preserve>>[ ! -f <<parameters.file>> ] && <</ parameters.preserve>> curl -sS -o <<parameters.file>> "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}-<<parameters.status>>-<<parameters.color>>.svg?logo=<<parameters.logo>>&logoColor=white&style=for-the-badge&link=${CIRCLE_BUILD_URL}" || :
+            <<# parameters.preserve>>[ ! -f <<parameters.file>> ] && <</ parameters.preserve>> curl -sS -o <<parameters.file>> "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}-<<parameters.status>>-<<parameters.color>>.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>&link=${CIRCLE_BUILD_URL}" || :
           when: <<parameters.when>>
   make_coverage_shield:
     description: "Fetch coverage shield from shields.io."
@@ -64,6 +69,11 @@ commands:
         description: "Output file name."
         type: string
         default: "~/coverage.svg"
+      style:
+        description: "Shield style."
+        type: enum
+        enum: ["plastic", "flat", "flat-square", "for-the-badge", "popout", "popout-square", "social"]
+        default: for-the-badge
       logo:
         description: "The logo to use on the shield."
         type: string
@@ -84,7 +94,7 @@ commands:
             COLORS=(["95"]="brightgreen" ["90"]="green" ["75"]="yellowgreen" ["60"]="yellow" ["40"]="orange" ["0"]="red")
             VALUES=("95" "90" "75" "60" "40" "0");
             for KEY in "${VALUES[@]}"; do if [ "${COVERAGE_PERCENTAGE}" -ge "$KEY" ]; then COVERAGE_COLOR=${COLORS[$KEY]}; break; fi; done;
-            curl -sS -o <<parameters.file>> "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}%20coverage-${COVERAGE_PERCENTAGE}%25-${COVERAGE_COLOR}.svg?logo=<<parameters.logo>>&logoColor=white&style=for-the-badge&link=<<parameters.link>>"
+            curl -sS -o <<parameters.file>> "https://img.shields.io/badge/${CIRCLE_JOB}%20${CIRCLE_BRANCH}%20coverage-${COVERAGE_PERCENTAGE}%25-${COVERAGE_COLOR}.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>&link=<<parameters.link>>"
           when: <<parameters.when>>
   rsync_file:
     description: "Copy a single file to a remote destination via rsync."
