@@ -93,7 +93,7 @@ commands:
       - run:
           name: Make coverage shield
           command: |
-            COVERAGE_PERCENTAGE=$(cat ~/.coveragep)
+            COVERAGE_PERCENTAGE=$(cat ~/.coveragep 2> /dev/null || echo 0)
             declare -A COLORS; declare -a VALUES;
             COLORS=(["95"]="brightgreen" ["90"]="green" ["75"]="yellowgreen" ["60"]="yellow" ["40"]="orange" ["0"]="red")
             VALUES=("95" "90" "75" "60" "40" "0");
