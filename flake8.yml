@@ -36,7 +36,8 @@ jobs:
       - checkout
       - utils/add_ssh_config
       - run: sudo apt-get install rsync
-      - setup_flake8
+      - setup_flake8:
+          wd: <<parameters.wd>>
       - flake8_errors:
           wd: <<parameters.wd>>
       - utils/make_status_shield:
@@ -65,10 +66,14 @@ jobs:
 commands:
   setup_flake8:
     description: "Set up a python virtual environment to run flake8"
+    parameters:
+      wd:
+        type: string
     steps:
       - run:
           name: "Set up python virtual environment."
           command: |
+            cd <<parameters.wd>>
             if [ "${PYTHON_VERSION}" == "2.7.16" ]; then
                 virtualenv ${HOME}/.venv/
             else
@@ -76,7 +81,11 @@ commands:
             fi
             . ~/.venv/bin/activate
             echo "source ${HOME}/.venv/bin/activate" >> $BASH_ENV
-            pip install flake8 | cat; test ${PIPESTATUS[0]} -eq 0
+            if [ -f flake8_requirements.txt ]; then
+                pip install -r flake8_requirements.txt | cat; test ${PIPESTATUS[0]} -eq 0
+            else
+                pip install flake8 | cat; test ${PIPESTATUS[0]} -eq 0
+            fi
   flake8_errors:
     description: "Run flake8, checking for errors only."
     parameters:
@@ -87,7 +96,11 @@ commands:
           name: "Check for errors."
           command: |
             cd <<parameters.wd>>
-            flake8 --extend-ignore="$FLAKE8_WARNINGS"
+            if [ -f .flake8errors ]; then
+                flake8 --append-config=.flake8errors
+            else
+                flake8 --extend-ignore="$FLAKE8_WARNINGS"
+            fi
   flake8_warnings:
     description: "Run flake8, checking for warnings only."
     parameters:
@@ -98,5 +111,9 @@ commands:
           name: "Check for warnings."
           command: |
             cd <<parameters.wd>>
-            flake8 --extend-ignore="$FLAKE8_ERRORS"
+            if [ -f .flake8warnings ]; then
+                flake8 --append-config=.flake8warnings
+            else
+                flake8 --extend-ignore="$FLAKE8_ERRORS"
+            fi
           when: always
