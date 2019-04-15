@@ -120,7 +120,9 @@ commands:
       - run:
           name: rsync file (<<parameters.file>> -> <<parameters.remote_file>>)
           command: |
-            rsync -t -e "ssh" <<parameters.file>> "<<parameters.host>>:/<<parameters.remote_file>>"
+            if [ -f <<parameters.file>> ]; then
+                rsync -t -e "ssh" <<parameters.file>> "<<parameters.host>>:/<<parameters.remote_file>>"
+            fi
           when: <<parameters.when>>
   rsync_folder:
     description: "Recursively copy a folder to a remote destination via rsync."
@@ -146,6 +148,8 @@ commands:
       - run:
           name: rsync folder (<<parameters.folder>> -> <<parameters.remote_folder>>)
           command: |
-            rsync <<# parameters.delete>>--delete<</ parameters.delete>> -r -l -t -e "ssh" <<parameters.folder>> "<<parameters.host>>:/<<parameters.remote_folder>>"
+            if [ -d <<parameters.folder>> ]; then
+                rsync <<# parameters.delete>>--delete<</ parameters.delete>> -r -l -t -e "ssh" <<parameters.folder>> "<<parameters.host>>:/<<parameters.remote_folder>>"
+            fi
           when: <<parameters.when>>
 
