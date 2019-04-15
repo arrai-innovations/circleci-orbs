@@ -6,7 +6,7 @@ executors:
     environment:
         LANG: en_US.UTF-8
     docker:
-     - image: circleci/python:3.7.2
+     - image: circleci/python:3.7.3
   python36:
     environment:
         LANG: en_US.UTF-8
@@ -16,7 +16,7 @@ executors:
     environment:
         LANG: en_US.UTF-8
     docker:
-     - image: circleci/python:3.5.6
+     - image: circleci/python:3.5.7
   python27:
     environment:
         LANG: en_US.UTF-8
