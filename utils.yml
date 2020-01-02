@@ -126,7 +126,10 @@ commands:
                 set +e
                 MATCH=$(grep -Pc "^Host <<parameters.host>>$" ~/.ssh/config)
                 if [ "${MATCH}" -gt "0" ]; then
+                    OLD_LANG="${LANG}"
+                    LANG=en_US.UTF-8
                     rsync -t -e "ssh" <<parameters.file>> "<<parameters.host>>:/<<parameters.remote_file>>"
+                    LANG="${OLD_LANG}"
                 fi
             fi
           when: <<parameters.when>>
@@ -158,8 +161,10 @@ commands:
                 set +e
                 MATCH=$(grep -Pc "^Host <<parameters.host>>$" ~/.ssh/config)
                 if [ "${MATCH}" -gt "0" ]; then
-                    echo "3: got here"
+                    OLD_LANG="${LANG}"
+                    LANG=en_US.UTF-8
                     rsync <<# parameters.delete>>--delete<</ parameters.delete>> -r -l -t -e "ssh" <<parameters.folder>> "<<parameters.host>>:/<<parameters.remote_folder>>"
+                    LANG="${OLD_LANG}"
                 fi
             fi
           when: <<parameters.when>>
