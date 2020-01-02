@@ -21,11 +21,13 @@ commands:
         default: ${DOCS_USER}
     steps:
       - run:
-          name: "Scan for SSH host keys."
-          command: ssh-keyscan -p <<parameters.port>> <<parameters.hostname>> >> ~/.ssh/known_hosts
-      - run:
-          name: "Generate ~/.ssh/config."
-          command: echo -e "Host <<parameters.host>>\n\tHostName <<parameters.hostname>>\n\tPort <<parameters.port>>\n\tUser <<parameters.user>>" >> ~/.ssh/config
+          name: "Configure SSH Client"
+          command: |
+            touch ~/.ssh/config
+            if [ -n "<<parameters.hostname>>" ]; then
+                ssh-keyscan -p <<parameters.port>> <<parameters.hostname>> >> ~/.ssh/known_hosts
+                echo -e "Host <<parameters.host>>\n\tHostName <<parameters.hostname>>\n\tPort <<parameters.port>>\n\tUser <<parameters.user>>" >> ~/.ssh/config
+            fi
   make_status_shield:
     description: "Fetch status shield from shields.io."
     parameters:
@@ -120,8 +122,12 @@ commands:
       - run:
           name: rsync file (<<parameters.file>> -> <<parameters.remote_file>>)
           command: |
-            if [ -f <<parameters.file>> ]; then
-                rsync -t -e "ssh" <<parameters.file>> "<<parameters.host>>:/<<parameters.remote_file>>"
+            if [ -f <<parameters.file>> ] && [ -f ~/.ssh/config ]; then
+                set +e
+                MATCH=$(grep -Pc "^Host <<parameters.host>>$" ~/.ssh/config)
+                if [ "${MATCH}" -gt "0" ]; then
+                    rsync -t -e "ssh" <<parameters.file>> "<<parameters.host>>:/<<parameters.remote_file>>"
+                fi
             fi
           when: <<parameters.when>>
   rsync_folder:
@@ -148,8 +154,13 @@ commands:
       - run:
           name: rsync folder (<<parameters.folder>> -> <<parameters.remote_folder>>)
           command: |
-            if [ -d <<parameters.folder>> ]; then
-                rsync <<# parameters.delete>>--delete<</ parameters.delete>> -r -l -t -e "ssh" <<parameters.folder>> "<<parameters.host>>:/<<parameters.remote_folder>>"
+            if [ -d <<parameters.folder>> ] && [ -f ~/.ssh/config ]; then
+                set +e
+                MATCH=$(grep -Pc "^Host <<parameters.host>>$" ~/.ssh/config)
+                if [ "${MATCH}" -gt "0" ]; then
+                    echo "3: got here"
+                    rsync <<# parameters.delete>>--delete<</ parameters.delete>> -r -l -t -e "ssh" <<parameters.folder>> "<<parameters.host>>:/<<parameters.remote_folder>>"
+                fi
             fi
           when: <<parameters.when>>
 
