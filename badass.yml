@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-  utils: arrai/utils@1.3.1
+  utils: arrai/utils@1.5.0
 executors:
   python36:
     environment:
@@ -89,6 +89,7 @@ jobs:
     working_directory: ~/repo
     steps:
       - checkout
+      - utils/add_maxmind_config
       - utils/add_ssh_config
       - utils/make_status_shield:
           status: running
