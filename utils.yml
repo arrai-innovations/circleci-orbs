@@ -1,5 +1,26 @@
 version: 2.1
 commands:
+  add_maxmind_config:
+    description: "Configure GeoIP.conf with a valid account id and license key."
+    parameters:
+      account:
+        description: "The id of the Maxmind account."
+        type: string
+        default: ${MAXMIND_ID}
+      licence:
+        description: "The license key to use to fetch the GeoIP2 Lite databases."
+        type: string
+        default: ${MAXMIND_KEY}
+    steps:
+      - run:
+          name: "Configure GeoIP"
+          command: |
+            if [ -e /etc/GeoIP.conf ]; then
+                sed -i -e "s/^AccountID.*/AccountID $MAXMIND_ID/" -e "s/^LicenseKey.*/LicenseKey $MAXMIND_KEY/" /etc/GeoIP.conf
+            fi
+            if [ -e /usr/local/etc/GeoIP.conf ]; then
+                sed -i -e "s/^AccountID.*/AccountID $MAXMIND_ID/" -e "s/^LicenseKey.*/LicenseKey $MAXMIND_KEY/" /usr/local/etc/GeoIP.conf
+            fi
   add_ssh_config:
     description: "Fetch host keys from a SSH server and generate ~/.ssh/config and ~/.ssh/known_hosts."
     parameters:
