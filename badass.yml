@@ -2,6 +2,20 @@ version: 2.1
 orbs:
   utils: arrai/utils@1.5.0
 executors:
+  python38:
+    environment:
+        LANG: en_US.UTF-8
+    docker:
+     - image: arrai/python:38-fedora
+     - image: circleci/postgres:11-alpine-ram
+     - image: circleci/redis:5
+  python37:
+    environment:
+        LANG: en_US.UTF-8
+    docker:
+     - image: arrai/python:37-fedora
+     - image: circleci/postgres:11-alpine-ram
+     - image: circleci/redis:5
   python36:
     environment:
         LANG: en_US.UTF-8
@@ -23,6 +37,22 @@ executors:
      - image: arrai/python:27-centos
      - image: circleci/postgres:10-alpine-ram
      - image: circleci/redis:4
+  python38-selenium:
+    environment:
+        LANG: en_US.UTF-8
+    docker:
+     - image: arrai/python:38-fedora
+     - image: circleci/postgres:11-alpine-ram
+     - image: circleci/redis:5
+     - image: selenium/standalone-chrome:latest
+  python37-selenium:
+    environment:
+        LANG: en_US.UTF-8
+    docker:
+     - image: arrai/python:37-fedora
+     - image: circleci/postgres:11-alpine-ram
+     - image: circleci/redis:5
+     - image: selenium/standalone-chrome:latest
   python36-selenium:
     environment:
         LANG: en_US.UTF-8
