@@ -30,13 +30,6 @@ executors:
      - image: arrai/python:35-centos
      - image: circleci/postgres:10-alpine-ram
      - image: circleci/redis:4
-  python27:
-    environment:
-        LANG: en_US.UTF-8
-    docker:
-     - image: arrai/python:27-centos
-     - image: circleci/postgres:10-alpine-ram
-     - image: circleci/redis:4
   python38-selenium:
     environment:
         LANG: en_US.UTF-8
@@ -66,14 +59,6 @@ executors:
         LANG: en_US.UTF-8
     docker:
      - image: arrai/python:35-centos
-     - image: circleci/postgres:10-alpine-ram
-     - image: circleci/redis:4
-     - image: selenium/standalone-chrome:latest
-  python27-selenium:
-    environment:
-        LANG: en_US.UTF-8
-    docker:
-     - image: arrai/python:27-centos
      - image: circleci/postgres:10-alpine-ram
      - image: circleci/redis:4
      - image: selenium/standalone-chrome:latest
