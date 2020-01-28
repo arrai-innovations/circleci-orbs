@@ -17,11 +17,6 @@ executors:
         LANG: C.UTF-8
     docker:
      - image: circleci/python:3.5
-  python27:
-    environment:
-        LANG: C.UTF-8
-    docker:
-     - image: circleci/python:2.7
 jobs:
   flake8:
     parameters:
@@ -74,11 +69,7 @@ commands:
           name: "Set up python virtual environment."
           command: |
             cd <<parameters.wd>>
-            if [ "${PYTHON_VERSION}" == "2.7.16" ]; then
-                virtualenv ${HOME}/.venv/
-            else
-                python3 -m venv ${HOME}/.venv/
-            fi
+            python3 -m venv ${HOME}/.venv/
             . ~/.venv/bin/activate
             echo "source ${HOME}/.venv/bin/activate" >> $BASH_ENV
             if [ -f flake8_requirements.txt ]; then
