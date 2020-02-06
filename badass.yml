@@ -4,14 +4,16 @@ orbs:
 executors:
   python38:
     environment:
-        LANG: en_US.UTF-8
+        LANG: C.UTF-8
+        LC_ALL: C.UTF-8
     docker:
      - image: arrai/python:38-fedora
      - image: circleci/postgres:11-alpine-ram
      - image: circleci/redis:5
   python37:
     environment:
-        LANG: en_US.UTF-8
+        LANG: C.UTF-8
+        LC_ALL: C.UTF-8
     docker:
      - image: arrai/python:37-fedora
      - image: circleci/postgres:11-alpine-ram
@@ -32,7 +34,8 @@ executors:
      - image: circleci/redis:4
   python38-selenium:
     environment:
-        LANG: en_US.UTF-8
+        LANG: C.UTF-8
+        LC_ALL: C.UTF-8
     docker:
      - image: arrai/python:38-fedora
      - image: circleci/postgres:11-alpine-ram
@@ -40,7 +43,8 @@ executors:
      - image: selenium/standalone-chrome:latest
   python37-selenium:
     environment:
-        LANG: en_US.UTF-8
+        LANG: C.UTF-8
+        LC_ALL: C.UTF-8
     docker:
      - image: arrai/python:37-fedora
      - image: circleci/postgres:11-alpine-ram
