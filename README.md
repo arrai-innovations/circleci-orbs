@@ -20,10 +20,10 @@ This Orb provides an environment for running our BMS/Django tests. Not likely to
 Provides functionality for running flake8 on the project code. Errors and warnings are reported in separate steps. Note that warnings are treated as job failures. For a decription of the Orb, available steps, parameters, etc, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/flake8).
 
 ### eslint
-Runs eslint on the project code. Note that any warnings are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/eslint),
+Runs eslint on the project code. Note that any warnings are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/eslint).
 
 ### deepcode
-Runs the [DeepCode CLI](https://github.com/DeepCodeAI/cli) on the project code. Note that suggestions of any severity (info, warning, or critical) are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/deepcode),
+Runs the [DeepCode CLI](https://github.com/DeepCodeAI/cli) on the project code. Note that suggestions of any severity (info, warning, or critical) are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/deepcode).
 
 ### utils
 This orb provides utility functions such as status badging, file uploads, and ssh key import. This is required by the other orbs. For information on the available utility functions, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/utils).
