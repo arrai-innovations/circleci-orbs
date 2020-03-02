@@ -1,0 +1,53 @@
+version: 1.0
+orbs:
+  utils: arrai/utils@2.1
+executors:
+  python38:
+    environment:
+        LANG: C.UTF-8
+    docker:
+     - image: circleci/python:3.8
+jobs:
+  deepcode:
+    parameters:
+      wd:
+        type: string
+        default: ./${CIRCLE_PROJECT_REPONAME}
+      files:
+        type: string
+        default: "."
+    executor: python38
+    steps:
+      - checkout
+      - utils/add_ssh_config
+      - run:
+          name: Install additional OS packages
+          command: sudo apt-get install rsync
+      - run:
+          name: Install DeepCode CLI
+          command: |
+            cd <<parameters.wd>>
+            python3 -m venv ${HOME}/.venv/
+            . ~/.venv/bin/activate
+            echo "source ${HOME}/.venv/bin/activate" >> $BASH_ENV
+            pip install deepcode
+      - run:
+          name: Run DeepCode CLI
+          command: |
+            cd <<parameters.wd>>
+            deepcode analyze -txt -p <<parameters.files>>
+      - utils/make_status_shield:
+          when: on_fail
+          status: errors
+          color: red
+          logo: circleci
+      - utils/make_status_shield:
+          when: on_success
+          status: passed
+          color: brightgreen
+          logo: circleci
+      - utils/rsync_file:
+          when: always
+          file: ~/status.svg
+          remote_file: $CIRCLE_BRANCH.$CIRCLE_JOB.svg
+          host: docs
