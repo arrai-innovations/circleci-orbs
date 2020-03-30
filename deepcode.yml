@@ -35,19 +35,32 @@ jobs:
           name: Run DeepCode CLI
           command: |
             cd <<parameters.wd>>
-            deepcode analyze -txt -p <<parameters.files>>
-      - utils/make_status_shield:
-          when: on_fail
-          status: errors
-          color: red
-          logo: circleci
-      - utils/make_status_shield:
-          when: on_success
-          status: passed
-          color: brightgreen
-          logo: circleci
-      - utils/rsync_file:
+            deepcode analyze -p <<parameters.files>> > results.json
+      - run:
+          name: Determine issue severity
+          command: |
+            DEEPCODE_SEVERITY="$(python -c 'import sys;import json;print(max([suggestion["severity"] for suggestion in json.load(open("results.json", "r"))["results"]["suggestions"].values()] or [0]))')"
+            if [ "${DEEPCODE_SEVERITY}" = "1" ]; then
+                DEEPCODE_STATUS_TEXT="info"
+                DEEPCODE_STATUS_COLOUR="yellow"
+            elif [ "${DEEPCODE_SEVERITY}" = "2" ]; then
+                DEEPCODE_STATUS_TEXT="warning"
+                DEEPCODE_STATUS_COLOUR="orange"
+            elif [ "${DEEPCODE_SEVERITY}" = "3" ]; then
+                DEEPCODE_STATUS_TEXT="critical"
+                DEEPCODE_STATUS_COLOUR="red"
+            else
+                DEEPCODE_STATUS_TEXT="passed"
+                DEEPCODE_STATUS_COLOUR="brightgreen"
+            fi
           when: always
+      - utils/make_status_shield:
+          status: ${DEEPCODE_STATUS_TEXT}
+          color: ${DEEPCODE_STATUS_COLOUR}
+          logo: circleci
+          when: always
+      - utils/rsync_file:
           file: ~/status.svg
           remote_file: $CIRCLE_BRANCH.$CIRCLE_JOB.svg
           host: docs
+          when: always
