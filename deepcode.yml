@@ -36,6 +36,7 @@ jobs:
           command: |
             cd <<parameters.wd>>
             deepcode analyze -p <<parameters.files>> > results.json
+            cat results.json
       - run:
           name: Determine issue severity
           command: |
