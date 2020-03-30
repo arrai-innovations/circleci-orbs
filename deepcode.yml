@@ -41,13 +41,13 @@ jobs:
           command: |
             SEVERITY="$(python -c 'import sys;import json;print(max([suggestion["severity"] for suggestion in json.load(open("results.json", "r"))["results"]["suggestions"].values()] or [0]))')"
             echo $SEVERITY
-            if [ "${SEVERITY}" -eq 1 ]; then
+            if [ $SEVERITY -eq 1 ]; then
                 STATUS_TEXT="info"
                 STATUS_COLOUR="yellow"
-            elif [ "${SEVERITY}" -eq 2 ]; then
+            elif [ $SEVERITY -eq 2 ]; then
                 STATUS_TEXT="warning"
                 STATUS_COLOUR="orange"
-            elif [ "${SEVERITY}" -eq 3 ]; then
+            elif [ $SEVERITY -eq 3 ]; then
                 STATUS_TEXT="critical"
                 STATUS_COLOUR="red"
             else
