@@ -16,6 +16,11 @@ jobs:
       files:
         type: string
         default: "."
+      severity:
+        description: "Minimum severity level."
+        type: enum
+        enum: ["info", "warning", "critical"]
+        default: "info"
     executor: python38
     steps:
       - checkout
@@ -35,7 +40,7 @@ jobs:
           name: Run DeepCode CLI
           command: |
             cd <<parameters.wd>>
-            deepcode analyze -p <<parameters.files>> | tee results.json
+            deepcode analyze -sev <<parameters.severity>> -p <<parameters.files>> | tee results.json
       - run:
           name: Determine issue severity
           command: |
