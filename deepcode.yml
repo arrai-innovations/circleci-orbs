@@ -35,8 +35,7 @@ jobs:
           name: Run DeepCode CLI
           command: |
             cd <<parameters.wd>>
-            deepcode analyze -p <<parameters.files>> > results.json
-            cat results.json
+            deepcode analyze -p <<parameters.files>> | tee results.json
       - run:
           name: Determine issue severity
           command: |
