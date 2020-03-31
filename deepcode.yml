@@ -1,4 +1,5 @@
 version: 2.1
+description: Deepcode intergration for detailed instructions see https://medium.com/@james_osgood/using-deepcodeai-in-a-ci-pipeline-dac62c4b64bf
 orbs:
   utils: arrai/utils@1.5.0
 executors:
@@ -38,6 +39,7 @@ jobs:
             pip install deepcode
       - run:
           name: Run DeepCode CLI
+          description: This runs deepcode on your project, ensure you have set the environment variable DEEPCODE_API_KEY.
           command: |
             cd <<parameters.wd>>
             deepcode analyze -sev <<parameters.severity>> -p <<parameters.files>> | tee results.json
