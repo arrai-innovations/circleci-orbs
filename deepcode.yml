@@ -1,5 +1,5 @@
 version: 2.1
-description: Deepcode intergration for detailed instructions see https://medium.com/@james_osgood/using-deepcodeai-in-a-ci-pipeline-dac62c4b64bf
+description: Deepcode.ai intergration for detailed instructions see https://medium.com/@james_osgood/using-deepcodeai-in-a-ci-pipeline-dac62c4b64bf
 orbs:
   utils: arrai/utils@1.5.0
 executors:
