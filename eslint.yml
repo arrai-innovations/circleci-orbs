@@ -12,7 +12,7 @@ jobs:
         default: lib/**
       executor:
         type: executor
-        default: v8
+        default: v12
       config:
         description: "Any additional configuration steps."
         type: steps
@@ -59,11 +59,6 @@ jobs:
           remote_file: $CIRCLE_BRANCH.$CIRCLE_JOB.svg
           host: docs
 executors:
-  v8:
-    environment:
-        LANG: en_US.UTF-8
-    docker:
-     - image: circleci/node:8-buster
   v10:
     environment:
         LANG: en_US.UTF-8
@@ -74,4 +69,9 @@ executors:
         LANG: en_US.UTF-8
     docker:
      - image: circleci/node:12-buster
+  v14:
+    environment:
+        LANG: en_US.UTF-8
+    docker:
+     - image: circleci/node:14-buster
 
