@@ -206,6 +206,7 @@ commands:
             export DJANGO_SECRET_KEY=$(openssl rand -base64 33)
             jq '.DJANGO_SECRET_KEY = env.DJANGO_SECRET_KEY' ci_config.json | sponge ci_config.json
             cp ci_config.json test_config.json
+            echo '{}' > config.json
   run_tests:
     description: "Run the test suite."
     parameters:
