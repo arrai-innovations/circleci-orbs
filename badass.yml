@@ -8,6 +8,9 @@ executors:
         LC_ALL: C.UTF-8
     docker:
      - image: arrai/python:38-fedora
+       auth:
+         username: $DOCKERHUB_USERNAME
+         password: $DOCKERHUB_PASSWORD
      - image: circleci/postgres:11-alpine-ram
      - image: circleci/redis:5
   python37:
@@ -16,6 +19,9 @@ executors:
         LC_ALL: C.UTF-8
     docker:
      - image: arrai/python:37-fedora
+       auth:
+         username: $DOCKERHUB_USERNAME
+         password: $DOCKERHUB_PASSWORD
      - image: circleci/postgres:11-alpine-ram
      - image: circleci/redis:5
   python36:
@@ -23,6 +29,9 @@ executors:
         LANG: en_US.UTF-8
     docker:
      - image: arrai/python:36-centos
+       auth:
+         username: $DOCKERHUB_USERNAME
+         password: $DOCKERHUB_PASSWORD
      - image: circleci/postgres:10-alpine-ram
      - image: circleci/redis:4
   python35:
@@ -30,6 +39,9 @@ executors:
         LANG: en_US.UTF-8
     docker:
      - image: arrai/python:35-centos
+       auth:
+         username: $DOCKERHUB_USERNAME
+         password: $DOCKERHUB_PASSWORD
      - image: circleci/postgres:10-alpine-ram
      - image: circleci/redis:4
   python38-selenium:
@@ -38,6 +50,9 @@ executors:
         LC_ALL: C.UTF-8
     docker:
      - image: arrai/python:38-fedora
+       auth:
+         username: $DOCKERHUB_USERNAME
+         password: $DOCKERHUB_PASSWORD
      - image: circleci/postgres:11-alpine-ram
      - image: circleci/redis:5
      - image: selenium/standalone-chrome:latest
@@ -47,6 +62,9 @@ executors:
         LC_ALL: C.UTF-8
     docker:
      - image: arrai/python:37-fedora
+       auth:
+         username: $DOCKERHUB_USERNAME
+         password: $DOCKERHUB_PASSWORD
      - image: circleci/postgres:11-alpine-ram
      - image: circleci/redis:5
      - image: selenium/standalone-chrome:latest
@@ -55,6 +73,9 @@ executors:
         LANG: en_US.UTF-8
     docker:
      - image: arrai/python:36-centos
+       auth:
+         username: $DOCKERHUB_USERNAME
+         password: $DOCKERHUB_PASSWORD
      - image: circleci/postgres:10-alpine-ram
      - image: circleci/redis:4
      - image: selenium/standalone-chrome:latest
@@ -63,6 +84,9 @@ executors:
         LANG: en_US.UTF-8
     docker:
      - image: arrai/python:35-centos
+       auth:
+         username: $DOCKERHUB_USERNAME
+         password: $DOCKERHUB_PASSWORD
      - image: circleci/postgres:10-alpine-ram
      - image: circleci/redis:4
      - image: selenium/standalone-chrome:latest
