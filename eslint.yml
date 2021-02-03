@@ -18,6 +18,7 @@ jobs:
         type: steps
         default: []
     executor: <<parameters.executor>>
+    resource_class: small
     steps:
       - checkout
       - utils/add_ssh_config

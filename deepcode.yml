@@ -23,6 +23,7 @@ jobs:
         enum: ["info", "warning", "critical"]
         default: "info"
     executor: python38
+    resource_class: small
     steps:
       - checkout
       - utils/add_ssh_config
