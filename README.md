@@ -15,6 +15,7 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [eslint](#eslint)
   - [deepcode](#deepcode)
   - [flake8](#flake8)
+  - [prettier](#prettier)
   - [pytest](#pytest)
   - [utils](#utils)
 - [Developing Orbs](#developing-orbs)
@@ -31,15 +32,19 @@ This Orb provides an environment for running our BMS/Django tests. Not likely to
 
 ### eslint
 
-Runs eslint on the project code. Note that any warnings are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/eslint).
+Runs eslint on project code. Note that any warnings are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/eslint).
 
 ### deepcode
 
-Runs the [DeepCode CLI](https://github.com/DeepCodeAI/cli) on the project code. Note that suggestions of any severity (info, warning, or critical) are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/deepcode).
+Runs the [DeepCode CLI](https://github.com/DeepCodeAI/cli) on project code. Note that suggestions of any severity (info, warning, or critical) are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/deepcode).
 
 ### flake8
 
-Provides functionality for running flake8 on the project code. Errors and warnings are reported in separate steps. Note that warnings are treated as job failures. For a description of the Orb, available steps, parameters, etc, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/flake8).
+Provides functionality for running flake8 on project code. Errors and warnings are reported in separate steps. Note that warnings are treated as job failures. For a description of the Orb, available steps, parameters, etc, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/flake8).
+
+### prettier
+
+Provides functionality for running prettier on project code. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/prettier).
 
 ### pytest
 

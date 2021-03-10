@@ -2,35 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="27eede68-9b21-4a5c-994a-2fc7421bda75" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.commitlintrc.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.editorconfig" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.husky/.gitignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.husky/commit-msg" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.husky/pre-commit" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/circleci-orbs.iml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/dictionaries/joel.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/encodings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/jsLibraryMappings.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/prettier.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vagrant.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.lintstagedrc" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.prettierignore" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/prettier.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/badass.yml" beforeDir="false" afterPath="$PROJECT_DIR$/badass.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/deepcode.yml" beforeDir="false" afterPath="$PROJECT_DIR$/deepcode.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/eslint.yml" beforeDir="false" afterPath="$PROJECT_DIR$/eslint.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/flake8.yml" beforeDir="false" afterPath="$PROJECT_DIR$/flake8.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pytest.yml" beforeDir="false" afterPath="$PROJECT_DIR$/pytest.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/utils.yml" beforeDir="false" afterPath="$PROJECT_DIR$/utils.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,7 +89,7 @@
       <workItem from="1589751702160" duration="60000" />
       <workItem from="1612389499672" duration="791000" />
       <workItem from="1615394265462" duration="5637000" />
-      <workItem from="1615408524743" duration="5812000" />
+      <workItem from="1615408524743" duration="7780000" />
     </task>
     <servers />
   </component>
