@@ -1,192 +1,209 @@
 version: 2.1
 commands:
-  add_maxmind_config:
-    description: "Configure GeoIP.conf with a valid account id and license key."
-    parameters:
-      account:
-        description: "The id of the Maxmind account."
-        type: string
-        default: ${MAXMIND_ID}
-      licence:
-        description: "The license key to use to fetch the GeoIP2 Lite databases."
-        type: string
-        default: ${MAXMIND_KEY}
-    steps:
-      - run:
-          name: "Configure GeoIP"
-          command: |
-            if [ -e /etc/GeoIP.conf ]; then
-                sed -i -e "s/^AccountID.*/AccountID $MAXMIND_ID/" -e "s/^LicenseKey.*/LicenseKey $MAXMIND_KEY/" /etc/GeoIP.conf
-            fi
-            if [ -e /usr/local/etc/GeoIP.conf ]; then
-                sed -i -e "s/^AccountID.*/AccountID $MAXMIND_ID/" -e "s/^LicenseKey.*/LicenseKey $MAXMIND_KEY/" /usr/local/etc/GeoIP.conf
-            fi
-  add_ssh_config:
-    description: "Fetch host keys from a SSH server and generate ~/.ssh/config and ~/.ssh/known_hosts."
-    parameters:
-      host:
-        description: "The name of the entry in ~/.ssh/config to use as a short-hand in SSH commands."
-        type: string
-        default: docs
-      hostname:
-        description: "The host name or IP address of the remote SSH server."
-        type: string
-        default: ${DOCS_HOST}
-      port:
-        description: "The TCP port the remote SSH server is listening on."
-        type: string
-        default: ${DOCS_PORT}
-      user:
-        description: "The user name to present to the remote SSH server."
-        type: string
-        default: ${DOCS_USER}
-    steps:
-      - run:
-          name: "Configure SSH Client"
-          command: |
-            touch ~/.ssh/config
-            if [ -n "<<parameters.hostname>>" ]; then
-                ssh-keyscan -p <<parameters.port>> <<parameters.hostname>> >> ~/.ssh/known_hosts
-                echo -e "Host <<parameters.host>>\n\tHostName <<parameters.hostname>>\n\tPort <<parameters.port>>\n\tUser <<parameters.user>>" >> ~/.ssh/config
-            fi
-  make_status_shield:
-    description: "Fetch status shield from shields.io."
-    parameters:
-      file:
-        description: "Output file name."
-        type: string
-        default: "~/status.svg"
-      status:
-        description: "Status to set on the shield."
-        type: string
-      color:
-        description: "Color of the shield."
-        type: string
-      style:
-        description: "Shield style."
-        type: enum
-        enum: ["plastic", "flat", "flat-square", "for-the-badge", "popout", "popout-square", "social"]
-        default: for-the-badge
-      label:
-        description: "The text to use for the shield label."
-        type: string
-        default: ${CIRCLE_JOB}
-      logo:
-        description: "The logo to use on the shield."
-        type: string
-        default: circleci
-      preserve:
-        description: "Prevent any existing shield of the same name from being overwritten."
-        type: boolean
-        default: false
-      when:
-        type: enum
-        enum: ["always", "on_success", "on_fail"]
-        default: on_success
-    steps:
-      - run:
-          name: Make status shield (<<parameters.status>>)
-          command: |
-            <<# parameters.preserve>>[ ! -f <<parameters.file>> ] && <</ parameters.preserve>> curl -sS -o <<parameters.file>> "https://img.shields.io/badge/<<parameters.label>>-<<parameters.status>>-<<parameters.color>>.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>&link=${CIRCLE_BUILD_URL}" || :
-          when: <<parameters.when>>
-  make_coverage_shield:
-    description: "Fetch coverage shield from shields.io."
-    parameters:
-      file:
-        description: "Output file name."
-        type: string
-        default: "~/coverage.svg"
-      style:
-        description: "Shield style."
-        type: enum
-        enum: ["plastic", "flat", "flat-square", "for-the-badge", "popout", "popout-square", "social"]
-        default: for-the-badge
-      logo:
-        description: "The logo to use on the shield."
-        type: string
-        default: codecov
-      link:
-        description: "The link embedded in the shield."
-        type: string
-      when:
-        type: enum
-        enum: ["always", "on_success", "on_fail"]
-        default: on_success
-    steps:
-      - run:
-          name: Make coverage shield
-          command: |
-            COVERAGE_PERCENTAGE=$(cat ~/.coveragep 2> /dev/null || echo 0)
-            declare -A COLORS; declare -a VALUES;
-            COLORS=(["95"]="brightgreen" ["90"]="green" ["75"]="yellowgreen" ["60"]="yellow" ["40"]="orange" ["0"]="red")
-            VALUES=("95" "90" "75" "60" "40" "0");
-            for KEY in "${VALUES[@]}"; do if [ "${COVERAGE_PERCENTAGE}" -ge "$KEY" ]; then COVERAGE_COLOR=${COLORS[$KEY]}; break; fi; done;
-            curl -sS -o <<parameters.file>> "https://img.shields.io/badge/Coverage-${COVERAGE_PERCENTAGE}%25-${COVERAGE_COLOR}.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>&link=<<parameters.link>>"
-          when: <<parameters.when>>
-  rsync_file:
-    description: "Copy a single file to a remote destination via rsync."
-    parameters:
-      file:
-        description: "The local file(path) to rsync."
-        type: string
-      remote_file:
-        description: "The name of the remote file."
-        type: string
-      host:
-        description: "The host name of the ssh/rsync server."
-        type: string
-      when:
-        type: enum
-        enum: ["always", "on_success", "on_fail"]
-        default: on_success
-    steps:
-      - run:
-          name: rsync file (<<parameters.file>> -> <<parameters.remote_file>>)
-          command: |
-            if [ -f <<parameters.file>> ] && [ -f ~/.ssh/config ]; then
-                set +e
-                MATCH=$(grep -Pc "^Host <<parameters.host>>$" ~/.ssh/config)
-                if [ "${MATCH}" -gt "0" ]; then
-                    OLD_LANG="${LANG}"
-                    LANG=en_US.UTF-8
-                    rsync -t -e "ssh" <<parameters.file>> "<<parameters.host>>:/<<parameters.remote_file>>"
-                    LANG="${OLD_LANG}"
-                fi
-            fi
-          when: <<parameters.when>>
-  rsync_folder:
-    description: "Recursively copy a folder to a remote destination via rsync."
-    parameters:
-      folder:
-        description: "The local folder(path) to rsync."
-        type: string
-      remote_folder:
-        description: "The name of the remote folder."
-        type: string
-      host:
-        description: "The host name of the ssh/rsync server."
-        type: string
-      delete:
-        description: "Delete extraneous files from the destination."
-        type: boolean
-        default: true
-      when:
-        type: enum
-        enum: ["always", "on_success", "on_fail"]
-        default: on_success
-    steps:
-      - run:
-          name: rsync folder (<<parameters.folder>> -> <<parameters.remote_folder>>)
-          command: |
-            if [ -d <<parameters.folder>> ] && [ -f ~/.ssh/config ]; then
-                set +e
-                MATCH=$(grep -Pc "^Host <<parameters.host>>$" ~/.ssh/config)
-                if [ "${MATCH}" -gt "0" ]; then
-                    OLD_LANG="${LANG}"
-                    LANG=en_US.UTF-8
-                    rsync <<# parameters.delete>>--delete<</ parameters.delete>> -r -l -t -e "ssh" <<parameters.folder>> "<<parameters.host>>:/<<parameters.remote_folder>>"
-                    LANG="${OLD_LANG}"
-                fi
-            fi
-          when: <<parameters.when>>
-
+    add_maxmind_config:
+        description: "Configure GeoIP.conf with a valid account id and license key."
+        parameters:
+            account:
+                description: "The id of the Maxmind account."
+                type: string
+                default: ${MAXMIND_ID}
+            licence:
+                description: "The license key to use to fetch the GeoIP2 Lite databases."
+                type: string
+                default: ${MAXMIND_KEY}
+        steps:
+            - run:
+                  name: "Configure GeoIP"
+                  command: |
+                      if [ -e /etc/GeoIP.conf ]; then
+                          sed -i -e "s/^AccountID.*/AccountID $MAXMIND_ID/" -e "s/^LicenseKey.*/LicenseKey $MAXMIND_KEY/" /etc/GeoIP.conf
+                      fi
+                      if [ -e /usr/local/etc/GeoIP.conf ]; then
+                          sed -i -e "s/^AccountID.*/AccountID $MAXMIND_ID/" -e "s/^LicenseKey.*/LicenseKey $MAXMIND_KEY/" /usr/local/etc/GeoIP.conf
+                      fi
+    add_ssh_config:
+        description: "Fetch host keys from a SSH server and generate ~/.ssh/config and ~/.ssh/known_hosts."
+        parameters:
+            host:
+                description: "The name of the entry in ~/.ssh/config to use as a short-hand in SSH commands."
+                type: string
+                default: docs
+            hostname:
+                description: "The host name or IP address of the remote SSH server."
+                type: string
+                default: ${DOCS_HOST}
+            port:
+                description: "The TCP port the remote SSH server is listening on."
+                type: string
+                default: ${DOCS_PORT}
+            user:
+                description: "The user name to present to the remote SSH server."
+                type: string
+                default: ${DOCS_USER}
+        steps:
+            - run:
+                  name: "Configure SSH Client"
+                  command: |
+                      touch ~/.ssh/config
+                      if [ -n "<<parameters.hostname>>" ]; then
+                          ssh-keyscan -p <<parameters.port>> <<parameters.hostname>> >> ~/.ssh/known_hosts
+                          echo -e "Host <<parameters.host>>\n\tHostName <<parameters.hostname>>\n\tPort <<parameters.port>>\n\tUser <<parameters.user>>" >> ~/.ssh/config
+                      fi
+    make_status_shield:
+        description: "Fetch status shield from shields.io."
+        parameters:
+            file:
+                description: "Output file name."
+                type: string
+                default: "~/status.svg"
+            status:
+                description: "Status to set on the shield."
+                type: string
+            color:
+                description: "Color of the shield."
+                type: string
+            style:
+                description: "Shield style."
+                type: enum
+                enum:
+                    [
+                        "plastic",
+                        "flat",
+                        "flat-square",
+                        "for-the-badge",
+                        "popout",
+                        "popout-square",
+                        "social",
+                    ]
+                default: for-the-badge
+            label:
+                description: "The text to use for the shield label."
+                type: string
+                default: ${CIRCLE_JOB}
+            logo:
+                description: "The logo to use on the shield."
+                type: string
+                default: circleci
+            preserve:
+                description: "Prevent any existing shield of the same name from being overwritten."
+                type: boolean
+                default: false
+            when:
+                type: enum
+                enum: ["always", "on_success", "on_fail"]
+                default: on_success
+        steps:
+            - run:
+                  name: Make status shield (<<parameters.status>>)
+                  command: |
+                      <<# parameters.preserve>>[ ! -f <<parameters.file>> ] && <</ parameters.preserve>> curl -sS -o <<parameters.file>> "https://img.shields.io/badge/<<parameters.label>>-<<parameters.status>>-<<parameters.color>>.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>&link=${CIRCLE_BUILD_URL}" || :
+                  when: <<parameters.when>>
+    make_coverage_shield:
+        description: "Fetch coverage shield from shields.io."
+        parameters:
+            file:
+                description: "Output file name."
+                type: string
+                default: "~/coverage.svg"
+            style:
+                description: "Shield style."
+                type: enum
+                enum:
+                    [
+                        "plastic",
+                        "flat",
+                        "flat-square",
+                        "for-the-badge",
+                        "popout",
+                        "popout-square",
+                        "social",
+                    ]
+                default: for-the-badge
+            logo:
+                description: "The logo to use on the shield."
+                type: string
+                default: codecov
+            link:
+                description: "The link embedded in the shield."
+                type: string
+            when:
+                type: enum
+                enum: ["always", "on_success", "on_fail"]
+                default: on_success
+        steps:
+            - run:
+                  name: Make coverage shield
+                  command: |
+                      COVERAGE_PERCENTAGE=$(cat ~/.coveragep 2> /dev/null || echo 0)
+                      declare -A COLORS; declare -a VALUES;
+                      COLORS=(["95"]="brightgreen" ["90"]="green" ["75"]="yellowgreen" ["60"]="yellow" ["40"]="orange" ["0"]="red")
+                      VALUES=("95" "90" "75" "60" "40" "0");
+                      for KEY in "${VALUES[@]}"; do if [ "${COVERAGE_PERCENTAGE}" -ge "$KEY" ]; then COVERAGE_COLOR=${COLORS[$KEY]}; break; fi; done;
+                      curl -sS -o <<parameters.file>> "https://img.shields.io/badge/Coverage-${COVERAGE_PERCENTAGE}%25-${COVERAGE_COLOR}.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>&link=<<parameters.link>>"
+                  when: <<parameters.when>>
+    rsync_file:
+        description: "Copy a single file to a remote destination via rsync."
+        parameters:
+            file:
+                description: "The local file(path) to rsync."
+                type: string
+            remote_file:
+                description: "The name of the remote file."
+                type: string
+            host:
+                description: "The host name of the ssh/rsync server."
+                type: string
+            when:
+                type: enum
+                enum: ["always", "on_success", "on_fail"]
+                default: on_success
+        steps:
+            - run:
+                  name: rsync file (<<parameters.file>> -> <<parameters.remote_file>>)
+                  command: |
+                      if [ -f <<parameters.file>> ] && [ -f ~/.ssh/config ]; then
+                          set +e
+                          MATCH=$(grep -Pc "^Host <<parameters.host>>$" ~/.ssh/config)
+                          if [ "${MATCH}" -gt "0" ]; then
+                              OLD_LANG="${LANG}"
+                              LANG=en_US.UTF-8
+                              rsync -t -e "ssh" <<parameters.file>> "<<parameters.host>>:/<<parameters.remote_file>>"
+                              LANG="${OLD_LANG}"
+                          fi
+                      fi
+                  when: <<parameters.when>>
+    rsync_folder:
+        description: "Recursively copy a folder to a remote destination via rsync."
+        parameters:
+            folder:
+                description: "The local folder(path) to rsync."
+                type: string
+            remote_folder:
+                description: "The name of the remote folder."
+                type: string
+            host:
+                description: "The host name of the ssh/rsync server."
+                type: string
+            delete:
+                description: "Delete extraneous files from the destination."
+                type: boolean
+                default: true
+            when:
+                type: enum
+                enum: ["always", "on_success", "on_fail"]
+                default: on_success
+        steps:
+            - run:
+                  name: rsync folder (<<parameters.folder>> -> <<parameters.remote_folder>>)
+                  command: |
+                      if [ -d <<parameters.folder>> ] && [ -f ~/.ssh/config ]; then
+                          set +e
+                          MATCH=$(grep -Pc "^Host <<parameters.host>>$" ~/.ssh/config)
+                          if [ "${MATCH}" -gt "0" ]; then
+                              OLD_LANG="${LANG}"
+                              LANG=en_US.UTF-8
+                              rsync <<# parameters.delete>>--delete<</ parameters.delete>> -r -l -t -e "ssh" <<parameters.folder>> "<<parameters.host>>:/<<parameters.remote_folder>>"
+                              LANG="${OLD_LANG}"
+                          fi
+                      fi
+                  when: <<parameters.when>>

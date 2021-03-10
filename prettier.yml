@@ -1,0 +1,41 @@
+jobs:
+    code_style:
+        parameters:
+            executor:
+                description: "Execution environment for the test job."
+                type: executor
+            resource_class:
+                type: string
+                default: medium
+        executor: <<parameters.executor>>
+        resource_class: small
+        steps:
+            - checkout
+            - utils/add_ssh_config
+            - run:
+                  name: Install additional OS packages
+                  command: |
+                      sudo apt-get install rsync
+            - run:
+                  name: Install prettier
+                  command: |
+                      sudo npm install -g prettier
+            - run:
+                  name: Check prettier
+                  command: |
+                      npx prettier -c .
+            - utils/make_status_shield:
+                  when: on_fail
+                  status: not_quite_prettier
+                  color: red
+                  logo: prettier
+            - utils/make_status_shield:
+                  when: on_success
+                  status: prettier
+                  color: ff69b4
+                  logo: prettier
+            - utils/rsync_file:
+                  when: always
+                  file: ~/status.svg
+                  remote_file: $CIRCLE_BRANCH.$CIRCLE_JOB.svg
+                  host: docs

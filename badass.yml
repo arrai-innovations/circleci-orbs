@@ -1,289 +1,289 @@
 version: 2.1
 orbs:
-  utils: arrai/utils@1.5.0
+    utils: arrai/utils@1.5.0
 executors:
-  python38:
-    environment:
-        LANG: C.UTF-8
-        LC_ALL: C.UTF-8
-    docker:
-     - image: arrai/python:38-fedora
-       auth:
-         username: $DOCKERHUB_USERNAME
-         password: $DOCKERHUB_PASSWORD
-     - image: circleci/postgres:11-alpine-ram
-     - image: circleci/redis:5
-  python37:
-    environment:
-        LANG: C.UTF-8
-        LC_ALL: C.UTF-8
-    docker:
-     - image: arrai/python:37-fedora
-       auth:
-         username: $DOCKERHUB_USERNAME
-         password: $DOCKERHUB_PASSWORD
-     - image: circleci/postgres:11-alpine-ram
-     - image: circleci/redis:5
-  python36:
-    environment:
-        LANG: en_US.UTF-8
-    docker:
-     - image: arrai/python:36-centos
-       auth:
-         username: $DOCKERHUB_USERNAME
-         password: $DOCKERHUB_PASSWORD
-     - image: circleci/postgres:10-alpine-ram
-     - image: circleci/redis:4
-  python35:
-    environment:
-        LANG: en_US.UTF-8
-    docker:
-     - image: arrai/python:35-centos
-       auth:
-         username: $DOCKERHUB_USERNAME
-         password: $DOCKERHUB_PASSWORD
-     - image: circleci/postgres:10-alpine-ram
-     - image: circleci/redis:4
-  python38-selenium:
-    environment:
-        LANG: C.UTF-8
-        LC_ALL: C.UTF-8
-    docker:
-     - image: arrai/python:38-fedora
-       auth:
-         username: $DOCKERHUB_USERNAME
-         password: $DOCKERHUB_PASSWORD
-     - image: circleci/postgres:11-alpine-ram
-     - image: circleci/redis:5
-     - image: selenium/standalone-chrome:latest
-  python37-selenium:
-    environment:
-        LANG: C.UTF-8
-        LC_ALL: C.UTF-8
-    docker:
-     - image: arrai/python:37-fedora
-       auth:
-         username: $DOCKERHUB_USERNAME
-         password: $DOCKERHUB_PASSWORD
-     - image: circleci/postgres:11-alpine-ram
-     - image: circleci/redis:5
-     - image: selenium/standalone-chrome:latest
-  python36-selenium:
-    environment:
-        LANG: en_US.UTF-8
-    docker:
-     - image: arrai/python:36-centos
-       auth:
-         username: $DOCKERHUB_USERNAME
-         password: $DOCKERHUB_PASSWORD
-     - image: circleci/postgres:10-alpine-ram
-     - image: circleci/redis:4
-     - image: selenium/standalone-chrome:latest
-  python35-selenium:
-    environment:
-        LANG: en_US.UTF-8
-    docker:
-     - image: arrai/python:35-centos
-       auth:
-         username: $DOCKERHUB_USERNAME
-         password: $DOCKERHUB_PASSWORD
-     - image: circleci/postgres:10-alpine-ram
-     - image: circleci/redis:4
-     - image: selenium/standalone-chrome:latest
+    python38:
+        environment:
+            LANG: C.UTF-8
+            LC_ALL: C.UTF-8
+        docker:
+            - image: arrai/python:38-fedora
+              auth:
+                  username: $DOCKERHUB_USERNAME
+                  password: $DOCKERHUB_PASSWORD
+            - image: circleci/postgres:11-alpine-ram
+            - image: circleci/redis:5
+    python37:
+        environment:
+            LANG: C.UTF-8
+            LC_ALL: C.UTF-8
+        docker:
+            - image: arrai/python:37-fedora
+              auth:
+                  username: $DOCKERHUB_USERNAME
+                  password: $DOCKERHUB_PASSWORD
+            - image: circleci/postgres:11-alpine-ram
+            - image: circleci/redis:5
+    python36:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: arrai/python:36-centos
+              auth:
+                  username: $DOCKERHUB_USERNAME
+                  password: $DOCKERHUB_PASSWORD
+            - image: circleci/postgres:10-alpine-ram
+            - image: circleci/redis:4
+    python35:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: arrai/python:35-centos
+              auth:
+                  username: $DOCKERHUB_USERNAME
+                  password: $DOCKERHUB_PASSWORD
+            - image: circleci/postgres:10-alpine-ram
+            - image: circleci/redis:4
+    python38-selenium:
+        environment:
+            LANG: C.UTF-8
+            LC_ALL: C.UTF-8
+        docker:
+            - image: arrai/python:38-fedora
+              auth:
+                  username: $DOCKERHUB_USERNAME
+                  password: $DOCKERHUB_PASSWORD
+            - image: circleci/postgres:11-alpine-ram
+            - image: circleci/redis:5
+            - image: selenium/standalone-chrome:latest
+    python37-selenium:
+        environment:
+            LANG: C.UTF-8
+            LC_ALL: C.UTF-8
+        docker:
+            - image: arrai/python:37-fedora
+              auth:
+                  username: $DOCKERHUB_USERNAME
+                  password: $DOCKERHUB_PASSWORD
+            - image: circleci/postgres:11-alpine-ram
+            - image: circleci/redis:5
+            - image: selenium/standalone-chrome:latest
+    python36-selenium:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: arrai/python:36-centos
+              auth:
+                  username: $DOCKERHUB_USERNAME
+                  password: $DOCKERHUB_PASSWORD
+            - image: circleci/postgres:10-alpine-ram
+            - image: circleci/redis:4
+            - image: selenium/standalone-chrome:latest
+    python35-selenium:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: arrai/python:35-centos
+              auth:
+                  username: $DOCKERHUB_USERNAME
+                  password: $DOCKERHUB_PASSWORD
+            - image: circleci/postgres:10-alpine-ram
+            - image: circleci/redis:4
+            - image: selenium/standalone-chrome:latest
 jobs:
-  badass:
-    parameters:
-      venv:
-        description: "Location of the Python virtual environment (no trailing slash)."
-        type: string
-        default: ${HOME}/.venv
-      wd:
-        description: "Where tests should be run in the repo (no trailing slash)."
-        type: string
-        default: ./${CIRCLE_PROJECT_REPONAME}
-      setup:
-        description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
-        type: steps
-        default: []
-      pip_install_args:
-        description: "Any additional arguments to pip install (e.g., -r ./requirements.txt)."
-        type: string
-      config:
-        description: "Any additional BMS configuration steps."
-        type: steps
-        default: []
-      executor:
-        description: "Execution environment for the test job."
-        type: executor
-        default: python36
-      parallel:
-        description: "The level of test parallelism."
-        type: integer
-        default: 4
-      badge_label:
-        description: "The label to use for the badge."
-        type: string
-        default: ${CIRCLE_JOB}
-      test_script:
-        description: "The test script to run (e.g., manage.py test)."
-        type: string
-        default: manage.py test
-    executor: <<parameters.executor>>
-    working_directory: ~/repo
-    steps:
-      - checkout
-      - utils/add_maxmind_config
-      - utils/add_ssh_config
-      - utils/make_status_shield:
-          status: running
-          color: lightblue
-          file: ~/status.svg
-          label: <<parameters.badge_label>>
-      - utils/rsync_file:
-          file: ~/status.svg
-          remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
-          host: docs
-      - steps: <<parameters.setup>>
-      - setup_python_env:
-          venv: <<parameters.venv>>
-          pip_install_args: <<parameters.pip_install_args>>
-      - setup_badass_config:
-          venv: <<parameters.venv>>
-          wd: <<parameters.wd>>
-      - steps: <<parameters.config>>
-      - run_tests:
-          venv: <<parameters.venv>>
-          wd: <<parameters.wd>>
-          parallel: <<parameters.parallel>>
-          test_script: <<parameters.test_script>>
-      - coverage_combine_and_html:
-          venv: <<parameters.venv>>
-          wd: <<parameters.wd>>
-      - utils/rsync_folder:
-          when: always
-          folder: <<parameters.wd>>/htmlcov/
-          remote_folder: htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}
-          host: docs
-      - utils/make_coverage_shield:
-          when: always
-          link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}/
-      - utils/rsync_file:
-          when: always
-          file: ~/coverage.svg
-          remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.coverage.svg
-          host: docs
-      - pip_freeze:
-          venv: <<parameters.venv>>
-          file: ~/pip.freeze
-      - utils/rsync_file:
-          when: always
-          file: ~/pip.freeze
-          remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.freeze
-          host: docs
-      - utils/make_status_shield:
-          when: on_success
-          status: passed
-          color: brightgreen
-          file: ~/status.svg
-          label: <<parameters.badge_label>>
-      - utils/make_status_shield:
-          when: on_fail
-          status: failed
-          color: red
-          file: ~/status.svg
-          label: <<parameters.badge_label>>
-      - utils/rsync_file:
-          when: always
-          file: ~/status.svg
-          remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
-          host: docs
+    badass:
+        parameters:
+            venv:
+                description: "Location of the Python virtual environment (no trailing slash)."
+                type: string
+                default: ${HOME}/.venv
+            wd:
+                description: "Where tests should be run in the repo (no trailing slash)."
+                type: string
+                default: ./${CIRCLE_PROJECT_REPONAME}
+            setup:
+                description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
+                type: steps
+                default: []
+            pip_install_args:
+                description: "Any additional arguments to pip install (e.g., -r ./requirements.txt)."
+                type: string
+            config:
+                description: "Any additional BMS configuration steps."
+                type: steps
+                default: []
+            executor:
+                description: "Execution environment for the test job."
+                type: executor
+                default: python36
+            parallel:
+                description: "The level of test parallelism."
+                type: integer
+                default: 4
+            badge_label:
+                description: "The label to use for the badge."
+                type: string
+                default: ${CIRCLE_JOB}
+            test_script:
+                description: "The test script to run (e.g., manage.py test)."
+                type: string
+                default: manage.py test
+        executor: <<parameters.executor>>
+        working_directory: ~/repo
+        steps:
+            - checkout
+            - utils/add_maxmind_config
+            - utils/add_ssh_config
+            - utils/make_status_shield:
+                  status: running
+                  color: lightblue
+                  file: ~/status.svg
+                  label: <<parameters.badge_label>>
+            - utils/rsync_file:
+                  file: ~/status.svg
+                  remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
+                  host: docs
+            - steps: <<parameters.setup>>
+            - setup_python_env:
+                  venv: <<parameters.venv>>
+                  pip_install_args: <<parameters.pip_install_args>>
+            - setup_badass_config:
+                  venv: <<parameters.venv>>
+                  wd: <<parameters.wd>>
+            - steps: <<parameters.config>>
+            - run_tests:
+                  venv: <<parameters.venv>>
+                  wd: <<parameters.wd>>
+                  parallel: <<parameters.parallel>>
+                  test_script: <<parameters.test_script>>
+            - coverage_combine_and_html:
+                  venv: <<parameters.venv>>
+                  wd: <<parameters.wd>>
+            - utils/rsync_folder:
+                  when: always
+                  folder: <<parameters.wd>>/htmlcov/
+                  remote_folder: htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}
+                  host: docs
+            - utils/make_coverage_shield:
+                  when: always
+                  link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}/
+            - utils/rsync_file:
+                  when: always
+                  file: ~/coverage.svg
+                  remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.coverage.svg
+                  host: docs
+            - pip_freeze:
+                  venv: <<parameters.venv>>
+                  file: ~/pip.freeze
+            - utils/rsync_file:
+                  when: always
+                  file: ~/pip.freeze
+                  remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.freeze
+                  host: docs
+            - utils/make_status_shield:
+                  when: on_success
+                  status: passed
+                  color: brightgreen
+                  file: ~/status.svg
+                  label: <<parameters.badge_label>>
+            - utils/make_status_shield:
+                  when: on_fail
+                  status: failed
+                  color: red
+                  file: ~/status.svg
+                  label: <<parameters.badge_label>>
+            - utils/rsync_file:
+                  when: always
+                  file: ~/status.svg
+                  remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
+                  host: docs
 commands:
-  setup_python_env:
-    description: "Set up the Python virtual environment for the test suite."
-    parameters:
-      venv:
-        description: "Location of the Python virtual environment (no trailing slash)."
-        type: string
-      pip_install_args:
-        description: "Any additional arguments to pip install (e.g., -r ./requirements.txt)."
-        type: string
-    steps:
-      - run:
-          name: Setup Python environment
-          command: |
-            mkdir -p ./logs/${CIRCLE_PROJECT_REPONAME}
-            pip install <<parameters.pip_install_args>> | cat; test ${PIPESTATUS[0]} -eq 0
-            echo "import coverage; coverage.process_startup()" > `python -c "import sys; print([x for x in sys.path if x.find('<<parameters.venv>>') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
-  setup_badass_config:
-    parameters:
-      venv:
-        description: "Location of the Python virtual environment (no trailing slash)."
-        type: string
-      wd:
-        description: "Where tests should be run in the repo (no trailing slash)."
-        type: string
-    steps:
-      - run:
-          name: Setup badass config
-          command: |
-            cd <<parameters.wd>>
-            export DJANGO_SECRET_KEY=$(openssl rand -base64 33)
-            jq '.DJANGO_SECRET_KEY = env.DJANGO_SECRET_KEY' ci_config.json | sponge ci_config.json
-            cp ci_config.json test_config.json
-            echo '{}' > config.json
-  run_tests:
-    description: "Run the test suite."
-    parameters:
-      venv:
-        description: "Location of the Python virtual environment (no trailing slash)."
-        type: string
-      wd:
-        description: "Where tests should be run in the repo (no trailing slash)."
-        type: string
-      parallel:
-        description: "The level of test parallelism."
-        type: integer
-      test_script:
-        description: "The test script to run (e.g., manage.py test)."
-        type: string
-    steps:
-      - run:
-          name: Run test suite
-          command: |
-              cd <<parameters.wd>>
-              if [ "<<parameters.parallel>>" -eq "0" ]; then
-                  coverage run -p <<parameters.test_script>>
-              else
-                  coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>>
-              fi
-  coverage_combine_and_html:
-    description: "Combine coverage and generate reports."
-    parameters:
-      venv:
-        description: "Location of the Python virtual environment (no trailing slash)."
-        type: string
-      wd:
-        description: "Where tests should be run in the repo (no trailing slash)."
-        type: string
-    steps:
-      - run:
-          name: Combine coverage and build reports
-          command: |
-            cd <<parameters.wd>>
-            coverage combine
-            coverage html
-            coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> ~/.coveragep
-          when: always
-  pip_freeze:
-    description: "Create pip freeze file."
-    parameters:
-      venv:
-        description: "Location of the Python virtual environment (no trailing slash)."
-        type: string
-      file:
-        description: "Output location of the freeze file."
-        type: string
-    steps:
-      - run:
-          command: pip freeze > <<parameters.file>>
-          when: always
+    setup_python_env:
+        description: "Set up the Python virtual environment for the test suite."
+        parameters:
+            venv:
+                description: "Location of the Python virtual environment (no trailing slash)."
+                type: string
+            pip_install_args:
+                description: "Any additional arguments to pip install (e.g., -r ./requirements.txt)."
+                type: string
+        steps:
+            - run:
+                  name: Setup Python environment
+                  command: |
+                      mkdir -p ./logs/${CIRCLE_PROJECT_REPONAME}
+                      pip install <<parameters.pip_install_args>> | cat; test ${PIPESTATUS[0]} -eq 0
+                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; print([x for x in sys.path if x.find('<<parameters.venv>>') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
+    setup_badass_config:
+        parameters:
+            venv:
+                description: "Location of the Python virtual environment (no trailing slash)."
+                type: string
+            wd:
+                description: "Where tests should be run in the repo (no trailing slash)."
+                type: string
+        steps:
+            - run:
+                  name: Setup badass config
+                  command: |
+                      cd <<parameters.wd>>
+                      export DJANGO_SECRET_KEY=$(openssl rand -base64 33)
+                      jq '.DJANGO_SECRET_KEY = env.DJANGO_SECRET_KEY' ci_config.json | sponge ci_config.json
+                      cp ci_config.json test_config.json
+                      echo '{}' > config.json
+    run_tests:
+        description: "Run the test suite."
+        parameters:
+            venv:
+                description: "Location of the Python virtual environment (no trailing slash)."
+                type: string
+            wd:
+                description: "Where tests should be run in the repo (no trailing slash)."
+                type: string
+            parallel:
+                description: "The level of test parallelism."
+                type: integer
+            test_script:
+                description: "The test script to run (e.g., manage.py test)."
+                type: string
+        steps:
+            - run:
+                  name: Run test suite
+                  command: |
+                      cd <<parameters.wd>>
+                      if [ "<<parameters.parallel>>" -eq "0" ]; then
+                          coverage run -p <<parameters.test_script>>
+                      else
+                          coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>>
+                      fi
+    coverage_combine_and_html:
+        description: "Combine coverage and generate reports."
+        parameters:
+            venv:
+                description: "Location of the Python virtual environment (no trailing slash)."
+                type: string
+            wd:
+                description: "Where tests should be run in the repo (no trailing slash)."
+                type: string
+        steps:
+            - run:
+                  name: Combine coverage and build reports
+                  command: |
+                      cd <<parameters.wd>>
+                      coverage combine
+                      coverage html
+                      coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> ~/.coveragep
+                  when: always
+    pip_freeze:
+        description: "Create pip freeze file."
+        parameters:
+            venv:
+                description: "Location of the Python virtual environment (no trailing slash)."
+                type: string
+            file:
+                description: "Output location of the freeze file."
+                type: string
+        steps:
+            - run:
+                  command: pip freeze > <<parameters.file>>
+                  when: always

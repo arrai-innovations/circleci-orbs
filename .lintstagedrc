@@ -1,0 +1,8 @@
+{
+    "**/*.{markdown,md}": [
+        "npx --no-install doctoc --github -u ."
+    ],
+    "**/*.{js,ts,jsx,tsx,less,scss,css,vue,markdown,json,md,yml,yaml}": [
+        "npx --no-install prettier --write"
+    ]
+}
