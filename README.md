@@ -8,22 +8,26 @@ This repository keeps track of the Orbs Arrai Innovations publishes to the Circl
 
 This repository currently contains the following Orbs:
 - [badass](https://circleci.com/orbs/registry/orb/arrai/badass)
-- [flake8](https://circleci.com/orbs/registry/orb/arrai/flake8)
-- [eslint](https://circleci.com/orbs/registry/orb/arrai/eslint)
 - [deepcode](https://circleci.com/orbs/registry/orb/arrai/deepcode)
+- [eslint](https://circleci.com/orbs/registry/orb/arrai/eslint)
+- [flake8](https://circleci.com/orbs/registry/orb/arrai/flake8)
+- [pytest](https://circleci.com/orbs/registry/orb/arrai/pytest)
 - [utils](https://circleci.com/orbs/registry/orb/arrai/utils)
 
 ### badass
 This Orb provides an environment for running our BMS/Django tests. Not likely to be useful for testing Django instances not built or based on BMS. For a description of the Orb, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/badass).
-
-### flake8
-Provides functionality for running flake8 on the project code. Errors and warnings are reported in separate steps. Note that warnings are treated as job failures. For a decription of the Orb, available steps, parameters, etc, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/flake8).
 
 ### eslint
 Runs eslint on the project code. Note that any warnings are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/eslint).
 
 ### deepcode
 Runs the [DeepCode CLI](https://github.com/DeepCodeAI/cli) on the project code. Note that suggestions of any severity (info, warning, or critical) are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/deepcode).
+
+### flake8
+Provides functionality for running flake8 on the project code. Errors and warnings are reported in separate steps. Note that warnings are treated as job failures. For a description of the Orb, available steps, parameters, etc, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/flake8).
+
+### pytest
+Provides generic test environment for pytest based tests that have dependencies installed using `pipenv`. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pytest). 
 
 ### utils
 This orb provides utility functions such as status badging, file uploads, and ssh key import. This is required by the other orbs. For information on the available utility functions, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/utils).

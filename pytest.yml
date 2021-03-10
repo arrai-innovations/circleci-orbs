@@ -1,0 +1,83 @@
+version: 2.1
+orbs:
+  utils: arrai/utils@1.5.0
+jobs:
+  pytest:
+    parameters:
+      wd:
+        description: "Where tests should be run in the repo (no trailing slash)."
+        type: string
+        default: .
+      executor:
+        type: executor
+      resource_class:
+        type: string
+        default: medium
+      setup:
+        description: "Any additional setup steps to run (e.g., yum install foo-bar-baz). If you passed a wd, you need to cd to it if desired."
+        type: steps
+        default: []
+      config:
+        description: "Any additional configuration steps (e.g., cp .env.circleci .env.local). If you passed a wd, you need to cd to it if desired."
+        type: steps
+        default: []
+    executor: <<parameters.executor>>
+    resource_class: <<parameters.resource_class>>
+    steps:
+      - checkout
+      - utils/add_ssh_config
+      - run: sudo apt-get install rsync pipenv
+      - steps: <<parameters.setup>>
+      - utils/make_status_shield:
+          status: running
+          color: lightblue
+      - utils/rsync_file:
+          file: ~/status.svg
+          remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
+          host: docs
+      - run:
+          name: Setup pipenv environment.
+          command: |
+            cd <<parameters.wd>>
+            pipenv install --dev | cat; test ${PIPESTATUS[0]} -eq 0
+      - run:
+          name: Run tests
+          command: |
+            cd <<parameters.wd>>
+            pipenv run coverage run -m pytest
+      - run:
+          name: Build coverage reports
+          command: |
+            cd <<parameters.wd>>
+            pipenv run coverage combine
+            pipenv run coverage html
+            pipenv run coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> ~/.coveragep
+          when: always
+      - utils/rsync_folder:
+          when: always
+          folder: htmlcov/
+          remote_folder: htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}
+          host: docs
+      - utils/make_coverage_shield:
+          when: always
+          link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}/
+      - utils/rsync_file:
+          when: always
+          file: ~/coverage.svg
+          remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.coverage.svg
+          host: docs
+      - utils/make_status_shield:
+          when: on_success
+          status: passed
+          color: brightgreen
+          file: ~/status.svg
+      - utils/make_status_shield:
+          when: on_fail
+          status: failed
+          color: red
+          file: ~/status.svg
+      - utils/rsync_file:
+          when: always
+          file: ~/status.svg
+          remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
+          host: docs
