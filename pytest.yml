@@ -45,8 +45,7 @@ jobs:
                   command: |
                       cd <<parameters.wd>>
                       pipenv install --dev | cat; test ${PIPESTATUS[0]} -eq 0
-                      pipenv shell
-                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; print([x for x in sys.path if x.find('.local/share/virtualenvs') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
+                      echo "import coverage; coverage.process_startup()" > `pipenv run python -c "import sys; print([x for x in sys.path if x.find('.local/share/virtualenvs') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
             - save_cache:
                   paths:
                       - ~/.local/share/virtualenvs/
