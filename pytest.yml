@@ -35,11 +35,21 @@ jobs:
                   file: ~/status.svg
                   remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
                   host: docs
+            - restore_cache: # ensure this step occurs *before* installing dependencies
+                  keys:
+                      - pipenv-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                      - pipenv-{{ .Branch }}-
+                      - pipenv-
             - run:
                   name: Setup pipenv environment.
                   command: |
                       cd <<parameters.wd>>
                       pipenv install --dev | cat; test ${PIPESTATUS[0]} -eq 0
+                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; print([x for x in sys.path if x.find('.local/share/virtualenvs') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
+            - save_cache:
+                  paths:
+                      - ~/.local/share/virtualenvs/
+                  key: pipenv-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
             - run:
                   name: Run tests
                   command: |
