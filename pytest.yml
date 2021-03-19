@@ -1,11 +1,14 @@
 version: 2.1
+description: |
+    This job requires `pytest-cov` and `coverage` to be installed as `pipenv` `devDependences` and assumes
+    you have a `.coveragerc` in the working directory.
 orbs:
     utils: arrai/utils@1.5.0
 jobs:
     pytest:
         parameters:
             wd:
-                description: "Where tests should be run in the repo (no trailing slash)."
+                description: "Working Directory - where tests should be run in the repo (no trailing slash)."
                 type: string
                 default: .
             executor:
@@ -54,7 +57,7 @@ jobs:
                   name: Run tests
                   command: |
                       cd <<parameters.wd>>
-                      pipenv run coverage run -m pytest
+                      pipenv run pytest --cov-config=.coveragerc
             - run:
                   name: Build coverage reports
                   command: |
