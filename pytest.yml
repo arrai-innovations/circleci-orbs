@@ -63,7 +63,7 @@ jobs:
                   name: Build coverage reports
                   command: |
                       cd <<parameters.wd>>
-                      pipenv run coverage combine
+                      pipenv run coverage combine && exit 0
                       pipenv run coverage html
                       pipenv run coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> ~/.coveragep
                   when: always
