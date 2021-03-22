@@ -17,11 +17,11 @@ jobs:
                 type: string
                 default: medium
             setup:
-                description: "Any additional setup steps to run (e.g., yum install foo-bar-baz). If you passed a wd, you need to cd to it if desired."
+                description: "Any additional setup steps to run (e.g., yum install foo-bar-baz). It occurs before pipenv install. If you passed a wd, you need to cd to it if desired."
                 type: steps
                 default: []
             config:
-                description: "Any additional configuration steps (e.g., cp .env.circleci .env.local). If you passed a wd, you need to cd to it if desired."
+                description: "Any additional configuration steps (e.g., cp .env.circleci .env.local). It occurs after pipenv install. If you passed a wd, you need to cd to it if desired."
                 type: steps
                 default: []
         executor: <<parameters.executor>>
@@ -53,6 +53,7 @@ jobs:
                   paths:
                       - ~/.local/share/virtualenvs/
                   key: pipenv-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+            - steps: <<parameters.config>>
             - run:
                   name: Run tests
                   command: |
