@@ -58,7 +58,7 @@ jobs:
                   name: Run tests
                   command: |
                       cd <<parameters.wd>>
-                      pipenv run pytest --cov-config=.coveragerc
+                      pipenv run pytest --cov --cov-config=.coveragerc
             - run:
                   name: Build coverage reports
                   command: |
