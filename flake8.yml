@@ -167,11 +167,20 @@ commands:
             wd:
                 type: string
         steps:
+            - restore_cache: # ensure this step occurs *before* installing dependencies
+                  keys:
+                      - pipenv-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                      - pipenv-{{ .Branch }}-
+                      - pipenv-
             - run:
                   name: "Set up python virtual environment."
                   command: |
                       cd <<parameters.wd>>
                       pipenv install --dev | cat; test ${PIPESTATUS[0]} -eq 0
+            - save_cache:
+                  paths:
+                      - ~/.local/share/virtualenvs/
+                  key: pipenv-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
     flake8_errors_pipenv:
         description: "Run flake8, checking for errors only."
         parameters:
