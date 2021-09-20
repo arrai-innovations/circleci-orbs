@@ -4,6 +4,9 @@ orbs:
 jobs:
     code_style:
         parameters:
+            wd:
+                type: string
+                default: ~/project
             executor:
                 description: "Execution environment for the test job."
                 type: executor
@@ -26,6 +29,7 @@ jobs:
             - run:
                   name: Check prettier
                   command: |
+                      cd <<parameters.wd>>
                       npx prettier -c .
             - utils/make_status_shield:
                   when: on_fail
