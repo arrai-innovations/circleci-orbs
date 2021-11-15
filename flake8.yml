@@ -34,12 +34,19 @@ jobs:
             resource_class:
                 type: string
                 default: small
+            setup:
+                description: "Any additional setup steps."
+                type: steps
+                default:
+                    - run:
+                          name: Install additional OS packages
+                          command: sudo apt-get install rsync
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
             - checkout
             - utils/add_ssh_config
-            - run: sudo apt-get install rsync
+            - steps: <<parameters.setup>>
             - setup_flake8:
                   wd: <<parameters.wd>>
             - flake8_errors:

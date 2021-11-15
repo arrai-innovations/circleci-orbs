@@ -13,15 +13,19 @@ jobs:
             resource_class:
                 type: string
                 default: medium
+            setup:
+                description: "Any additional setup steps."
+                type: steps
+                default:
+                    - run:
+                          name: Install additional OS packages
+                          command: sudo apt-get install rsync
         executor: <<parameters.executor>>
         resource_class: small
         steps:
             - checkout
             - utils/add_ssh_config
-            - run:
-                  name: Install additional OS packages
-                  command: |
-                      sudo apt-get install rsync
+            - steps: <<parameters.setup>>
             - run:
                   name: Install prettier
                   command: |
