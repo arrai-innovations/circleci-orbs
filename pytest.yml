@@ -16,6 +16,12 @@ jobs:
             resource_class:
                 type: string
                 default: medium
+            presetup:
+                description: "Any additional pre-setup steps."
+                type: steps
+                default:
+                    - run:
+                          command: sudo apt-get install rsync pipenv
             setup:
                 description: "Any additional setup steps to run (e.g., yum install foo-bar-baz). It occurs before pipenv install. If you passed a wd, you need to cd to it if desired."
                 type: steps
@@ -29,7 +35,7 @@ jobs:
         steps:
             - checkout
             - utils/add_ssh_config
-            - run: sudo apt-get install rsync pipenv
+            - steps: <<parameters.presetup>>
             - steps: <<parameters.setup>>
             - utils/make_status_shield:
                   status: running
