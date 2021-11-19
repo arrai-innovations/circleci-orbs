@@ -1,5 +1,44 @@
 version: 2.1
 commands:
+    send_email:
+        description: "Send e-mail message using the mailgun API."
+        parameters:
+            from:
+                description: "E-mail address for the From: header."
+                type: string
+                default: "CircleCI <circleci@${MAILGUN_DOMAIN}>"
+            to:
+                description: "E-mail address for the To: header."
+                type: string
+            subject:
+                description: "Message subject."
+                type: string
+            html:
+                description: "Body of the message, in HTML format."
+                type: string
+            key:
+                description: "Your mailgun API key."
+                type: string
+                default: ${MAILGUN_API}
+            domain:
+                description: "Your mailgun domain."
+                type: string
+                default: ${MAILGUN_DOMAIN}
+            when:
+                type: enum
+                enum: ["always", "on_success", "on_fail"]
+                default: on_success
+        steps:
+            - run:
+                  name: "Send e-mail."
+                  command: |
+                      curl --silent \
+                           --user "api:<<parameters.key>>" https://api.mailgun.net/v3/<<parameters.domain>>/messages \
+                           --form from="<<parameters.from>>" \
+                           --form to="<<parameters.to>>" \
+                           --form subject="<<parameters.subject>>" \
+                           --form html="<<parameters.html>>"
+                  when: <<parameters.when>>
     add_maxmind_config:
         description: "Configure GeoIP.conf with a valid account id and license key."
         parameters:
