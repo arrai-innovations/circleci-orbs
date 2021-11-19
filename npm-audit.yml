@@ -1,0 +1,101 @@
+version: 2.1
+orbs:
+    utils: arrai/utils@1.6.0
+jobs:
+    npm-audit:
+        parameters:
+            wd:
+                type: string
+                default: ~/project
+            executor:
+                type: executor
+                default: lts
+            setup:
+                description: "Any additional setup steps."
+                type: steps
+                default:
+                    - run:
+                          name: Install additional OS packages
+                          command: |
+                              sudo apt-get update
+                              sudo apt-get install rsync colorized-logs jq
+            report_to:
+                description: "E-mail address to send npm audit failure report to."
+                type: string
+        executor: <<parameters.executor>>
+        resource_class: small
+        steps:
+            - checkout
+            - utils/add_ssh_config
+            - steps: <<parameters.setup>>
+            - run:
+                  name: Install the latest npm
+                  command: sudo npm install -g --upgrade npm
+            - run:
+                  name: Run npm audit
+                  command: |
+                      cd <<parameters.wd>>
+                      npm audit --production | tee ~/audit.log
+            - run:
+                  name: Generate HTML audit report
+                  when: on_fail
+                  command: cat ${HOME}/audit.log | ansi2html > ${HOME}/audit.html
+            - run:
+                  name: Count vulnerabilities
+                  when: on_fail
+                  command: |
+                      cd <<parameters.wd>>
+                      echo "export TOTAL_VULNERABILITIES=`npm audit --json --production | jq '.metadata.vulnerabilities.total'`" >> $BASH_ENV
+            - utils/send_email:
+                  when: on_fail
+                  to: <<parameters.report_to>>
+                  subject: "npm audit report for ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}"
+                  html: "<${HOME}/audit.html"
+            - utils/make_status_shield:
+                  when: on_fail
+                  status: "${TOTAL_VULNERABILITIES}"
+                  label: vulnerabilities
+                  color: red
+                  logo: npm
+            - utils/make_status_shield:
+                  when: on_success
+                  status: "0"
+                  label: vulnerabilities
+                  color: brightgreen
+                  logo: eslint
+            - utils/rsync_file:
+                  when: always
+                  file: ~/status.svg
+                  remote_file: $CIRCLE_BRANCH.$CIRCLE_JOB.svg
+                  host: docs
+executors:
+    lts:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:lts
+    current:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:current
+    v12:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:12.22
+    v14:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:14.18
+    v16:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:16.13
+    v17:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:17.1
