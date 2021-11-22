@@ -35,7 +35,7 @@ jobs:
                   name: Run npm audit
                   command: |
                       cd <<parameters.wd>>
-                      npm audit --production | tee ~/audit.log
+                      npx -y better-npm-audit audit --production |& tee ~/audit.log
             - run:
                   name: Generate HTML audit report
                   when: on_fail
@@ -45,7 +45,7 @@ jobs:
                   when: on_fail
                   command: |
                       cd <<parameters.wd>>
-                      echo "export TOTAL_VULNERABILITIES=`npm audit --json --production | jq '.metadata.vulnerabilities.total'`" >> $BASH_ENV
+                      echo "export TOTAL_VULNERABILITIES=`tail -1 audit.log | grep -Po '^(\d+)' --color=never`" >> $BASH_ENV
             - utils/send_email:
                   when: on_fail
                   to: <<parameters.report_to>>
