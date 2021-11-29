@@ -12,7 +12,7 @@ executors:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
             - image: circleci/postgres:11-alpine-ram
-            - image: circleci/redis:5
+            - image: cimg/redis:5.0
     python37:
         environment:
             LANG: C.UTF-8
@@ -23,7 +23,7 @@ executors:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
             - image: circleci/postgres:11-alpine-ram
-            - image: circleci/redis:5
+            - image: cimg/redis:5.0
     python36:
         environment:
             LANG: en_US.UTF-8
@@ -33,7 +33,7 @@ executors:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
             - image: circleci/postgres:10-alpine-ram
-            - image: circleci/redis:4
+            - image: cimg/redis:5.0
     python35:
         environment:
             LANG: en_US.UTF-8
@@ -43,7 +43,7 @@ executors:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
             - image: circleci/postgres:10-alpine-ram
-            - image: circleci/redis:4
+            - image: cimg/redis:5.0
     python38-selenium:
         environment:
             LANG: C.UTF-8
@@ -54,7 +54,7 @@ executors:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
             - image: circleci/postgres:11-alpine-ram
-            - image: circleci/redis:5
+            - image: cimg/redis:5.0
             - image: selenium/standalone-chrome:latest
     python37-selenium:
         environment:
@@ -66,7 +66,7 @@ executors:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
             - image: circleci/postgres:11-alpine-ram
-            - image: circleci/redis:5
+            - image: cimg/redis:5.0
             - image: selenium/standalone-chrome:latest
     python36-selenium:
         environment:
@@ -77,7 +77,7 @@ executors:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
             - image: circleci/postgres:10-alpine-ram
-            - image: circleci/redis:4
+            - image: cimg/redis:5.0
             - image: selenium/standalone-chrome:latest
     python35-selenium:
         environment:
@@ -88,7 +88,7 @@ executors:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
             - image: circleci/postgres:10-alpine-ram
-            - image: circleci/redis:4
+            - image: cimg/redis:5.0
             - image: selenium/standalone-chrome:latest
 jobs:
     badass:
