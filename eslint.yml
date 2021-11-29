@@ -80,4 +80,8 @@ executors:
             LANG: en_US.UTF-8
         docker:
             - image: cimg/node:14.18
-
+    v16:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:16.13
