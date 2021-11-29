@@ -65,6 +65,16 @@ jobs:
                   remote_file: $CIRCLE_BRANCH.$CIRCLE_JOB.svg
                   host: docs
 executors:
+    lts:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:lts
+    current:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:current
     v10:
         environment:
             LANG: en_US.UTF-8
