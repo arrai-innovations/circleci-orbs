@@ -51,6 +51,10 @@ jobs:
                     - run:
                           name: Install additional OS packages
                           command: sudo apt-get install rsync
+            additional_packages:
+                description: "Allows installing additional packages or requirements.txt files."
+                type: string
+                default: ""
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
@@ -59,6 +63,7 @@ jobs:
             - steps: <<parameters.setup>>
             - setup_flake8:
                   wd: <<parameters.wd>>
+                  additional_packages: <<parameters.additional_packages>>
             - flake8_errors:
                   wd: <<parameters.wd>>
             - utils/make_status_shield:
@@ -125,6 +130,8 @@ commands:
         parameters:
             wd:
                 type: string
+            additional_packages:
+                type: string
         steps:
             - run:
                   name: "Set up python virtual environment."
@@ -134,9 +141,9 @@ commands:
                       . ~/.venv/bin/activate
                       echo "source ${HOME}/.venv/bin/activate" >> $BASH_ENV
                       if [ -f flake8_requirements.txt ]; then
-                          pip install -r flake8_requirements.txt | cat; test ${PIPESTATUS[0]} -eq 0
+                          pip install -r flake8_requirements.txt <<parameters.additional_packages>> | cat; test ${PIPESTATUS[0]} -eq 0
                       else
-                          pip install flake8 | cat; test ${PIPESTATUS[0]} -eq 0
+                          pip install flake8 <<parameters.additional_packages>> | cat; test ${PIPESTATUS[0]} -eq 0
                       fi
     flake8_errors:
         description: "Run flake8, checking for errors only."
