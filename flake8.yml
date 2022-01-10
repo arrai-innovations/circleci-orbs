@@ -66,14 +66,6 @@ jobs:
                   status: errors
                   color: red
                   logo: python
-            - flake8_warnings:
-                  wd: <<parameters.wd>>
-            - utils/make_status_shield:
-                  when: always
-                  status: warnings
-                  color: orange
-                  logo: python
-                  preserve: true
             - utils/make_status_shield:
                   when: on_success
                   status: passed
@@ -117,14 +109,6 @@ jobs:
                   status: errors
                   color: red
                   logo: python
-            - flake8_warnings_pipenv:
-                  wd: <<parameters.wd>>
-            - utils/make_status_shield:
-                  when: always
-                  status: warnings
-                  color: orange
-                  logo: python
-                  preserve: true
             - utils/make_status_shield:
                   when: on_success
                   status: passed
@@ -164,27 +148,7 @@ commands:
                   name: "Check for errors."
                   command: |
                       cd <<parameters.wd>>
-                      if [ -f .flake8errors ]; then
-                          flake8 --append-config=.flake8errors
-                      else
-                          flake8 --extend-ignore="$FLAKE8_WARNINGS"
-                      fi
-    flake8_warnings:
-        description: "Run flake8, checking for warnings only."
-        parameters:
-            wd:
-                type: string
-        steps:
-            - run:
-                  name: "Check for warnings."
-                  command: |
-                      cd <<parameters.wd>>
-                      if [ -f .flake8warnings ]; then
-                          flake8 --append-config=.flake8warnings
-                      else
-                          flake8 --extend-ignore="$FLAKE8_ERRORS"
-                      fi
-                  when: always
+                      flake8
     setup_flake8_pipenv:
         description: "Set up a python virtual environment to run flake8"
         parameters:
@@ -215,16 +179,4 @@ commands:
                   name: "Check for errors."
                   command: |
                       cd <<parameters.wd>>
-                      pipenv run flake8 --append-config=.flake8errors
-    flake8_warnings_pipenv:
-        description: "Run flake8, checking for warnings only."
-        parameters:
-            wd:
-                type: string
-        steps:
-            - run:
-                  name: "Check for warnings."
-                  command: |
-                      cd <<parameters.wd>>
-                      pipenv run flake8 --append-config=.flake8warnings
-                  when: always
+                      pipenv run flake8

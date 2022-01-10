@@ -41,7 +41,7 @@ Runs the [DeepCode CLI](https://github.com/DeepCodeAI/cli) on project code. Note
 
 ### flake8
 
-Provides functionality for running flake8 on project code. Errors and warnings are reported in separate steps. Note that warnings are treated as job failures. For a description of the Orb, available steps, parameters, etc, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/flake8).
+Provides functionality for running flake8 on project code. Everything is treated as an error. For a description of the Orb, available steps, parameters, etc, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/flake8).
 
 ### prettier
 
