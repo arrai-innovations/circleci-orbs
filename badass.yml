@@ -117,7 +117,7 @@ jobs:
                 type: executor
                 default: python36
             parallel:
-                description: "The level of test parallelism."
+                description: "The level of test parallelism via processes."
                 type: integer
                 default: 4
             badge_label:
@@ -128,7 +128,12 @@ jobs:
                 description: "The test script to run (e.g., manage.py test)."
                 type: string
                 default: manage.py test
+            parallelism:
+                description: "The level of test parallelism via circleci splitting."
+                type: integer
+                default: 1
         executor: <<parameters.executor>>
+        parallelism: <<parameters.parallelism>>
         working_directory: ~/repo
         steps:
             - checkout
@@ -156,6 +161,7 @@ jobs:
                   wd: <<parameters.wd>>
                   parallel: <<parameters.parallel>>
                   test_script: <<parameters.test_script>>
+                  parallelism: <<parameters.parallelism>>
             - coverage_combine_and_html:
                   venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
@@ -241,21 +247,42 @@ commands:
                 description: "Where tests should be run in the repo (no trailing slash)."
                 type: string
             parallel:
-                description: "The level of test parallelism."
+                description: "The level of test parallelism via processes."
                 type: integer
             test_script:
                 description: "The test script to run (e.g., manage.py test)."
                 type: string
+            parallelism:
+                description: "The level of test parallelism via circleci splitting."
+                type: integer
         steps:
             - run:
                   name: Run test suite
                   command: |
                       cd <<parameters.wd>>
-                      if [ "<<parameters.parallel>>" -eq "0" ]; then
-                          coverage run -p <<parameters.test_script>>
+                      if [ "<<parameters.parallelism>>" -eq "1" ]; then
+                            TESTFILES=""
                       else
-                          coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>>
+                            # https://discuss.circleci.com/t/python-django-tests-not-being-split-correctly/36624
+                            # https://support.circleci.com/hc/en-us/articles/360048786831-Use-test-splitting-with-Python-Django-tests
+                            TESTFILES=$(circleci tests glob "**/test/**/test_*.py")
+                            # reformat to remove duplicates, reformat back
+                            echo $TESTFILES | tr ' ' '\n' | sort | uniq > circleci_test_files.txt
+                            cat circleci_test_files.txt
+                            TESTFILES=$(circleci tests split --split-by=timings circleci_test_files.txt)
+                            # massage filepaths into format manage.py test accepts
+                            TESTFILES=$(echo $TESTFILES | tr "/" "." | sed 's/.py//g')
                       fi
+                      if [ "<<parameters.parallel>>" -eq "0" ]; then
+                          coverage run -p <<parameters.test_script>> $TESTFILES
+                      else
+                          coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>> $TESTFILES
+                      fi
+            - store_test_results:
+                  path: test-results
+            - store_artifacts:
+                  path: test-results
+                  destination: tr1
     coverage_combine_and_html:
         description: "Combine coverage and generate reports."
         parameters:
