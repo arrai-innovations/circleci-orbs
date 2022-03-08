@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.6.0
+    utils: arrai/utils@dev:425
 executors:
     python38:
         environment:
@@ -197,6 +197,238 @@ jobs:
                   file: ~/status.svg
                   remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
                   host: docs
+    badass_test_spread:
+        parameters:
+            venv:
+                description: "Location of the Python virtual environment (no trailing slash)."
+                type: string
+                default: ${HOME}/.venv
+            wd:
+                description: "Where tests should be run in the repo (no trailing slash)."
+                type: string
+                default: ${CIRCLE_PROJECT_REPONAME}
+            setup:
+                description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
+                type: steps
+                default: []
+            dash_r_files:
+                description: "space seperated paths to requirements files."
+                type: string
+                default: "${CIRCLE_PROJECT_REPONAME}/requirements.txt ${CIRCLE_PROJECT_REPONAME}/test_requirements.txt"
+            extra_pip_args:
+                description: "Any additional arguments to pip install."
+                type: string
+                default: ""
+            config:
+                description: "Any additional BMS configuration steps."
+                type: steps
+                default: []
+            executor:
+                description: "Execution environment for the test job."
+                type: executor
+                default: python36
+            parallel:
+                description: "The level of test parallelism."
+                type: integer
+                default: 4
+            badge_label:
+                description: "The label to use for the badge."
+                type: string
+                default: tests
+            meta_job_name:
+                description: "The filename to use for the badge."
+                type: string
+                default: badass
+            test_script:
+                description: "The test script to run (e.g., manage.py test)."
+                type: string
+                default: manage.py test
+            parallelism:
+                description: "The level of test parallelism via circleci splitting."
+                type: integer
+                default: 4
+        executor: <<parameters.executor>>
+        parallelism: <<parameters.parallelism>>
+        working_directory: ~/repo
+        steps:
+            - checkout
+            - utils/add_maxmind_config
+            - utils/add_ssh_config
+            - utils/make_status_shield:
+                  status: running
+                  color: lightblue
+                  file: ~/status.svg
+                  label: <<parameters.badge_label>>
+            - utils/rsync_file:
+                  file: ~/status.svg
+                  remote_file: ${CIRCLE_BRANCH}.<<parameters.meta_job_name>>.svg
+                  host: docs
+            - steps: <<parameters.setup>>
+            - generate-hash:
+                  in-files: <<parameters.dash_r_files>>
+                  out-file: /tmp/requirements-checksum
+                  wd: <<parameters.wd>>
+            - restore_cache:
+                  keys:
+                      - pip-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                      - pip-{{ .Branch }}-
+                      - pip-
+            - setup_python_env_cached:
+                  venv: <<parameters.venv>>
+                  dash_r_files: <<parameters.dash_r_files>>
+                  extra_pip_args: <<parameters.extra_pip_args>>
+                  wd: <<parameters.wd>>
+            - save_cache:
+                  paths:
+                      - ~/.venv
+                  key: pip-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+            - setup_badass_config:
+                  venv: <<parameters.venv>>
+                  wd: <<parameters.wd>>
+            - steps: <<parameters.config>>
+            - pip_freeze:
+                  venv: <<parameters.venv>>
+                  file: ~/repo/<<parameters.wd>>/pip.freeze
+            - run_tests_spread:
+                  venv: <<parameters.venv>>
+                  wd: <<parameters.wd>>
+                  parallel: <<parameters.parallel>>
+                  test_script: <<parameters.test_script>>
+                  parallelism: <<parameters.parallelism>>
+            - run:
+                  name: Success flag
+                  when: on_success
+                  command: |
+                      # use zero for success based on exit codes
+                      echo '0' > ~/repo/<<parameters.wd>>/${CIRCLE_NODE_INDEX}.status
+            - run:
+                  name: Fail flag
+                  when: on_fail
+                  command: |
+                      # use 1 for failure based on exit codes
+                      echo '1' > ~/repo/<<parameters.wd>>/${CIRCLE_NODE_INDEX}.status
+            - run:
+                  name: Move to workspace folder
+                  when: always
+                  command: |
+                      mkdir ~/workspace
+                      cp ~/repo/<<parameters.wd>>/*.status ~/workspace/
+                      cp ~/repo/<<parameters.wd>>/.coverage* ~/workspace/
+                      cp ~/repo/<<parameters.wd>>/pip.freeze ~/workspace/
+            - persist_to_workspace:
+                  root: ~/
+                  paths:
+                      - workspace
+    badass_test_combine:
+        parameters:
+            venv:
+                description: "Location of the Python virtual environment (no trailing slash)."
+                type: string
+                default: ${HOME}/.venv
+            wd:
+                description: "Where tests should be run in the repo (no trailing slash)."
+                type: string
+                default: ${CIRCLE_PROJECT_REPONAME}
+            setup:
+                description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
+                type: steps
+                default: []
+            dash_r_files:
+                description: "space seperated paths to requirements files."
+                type: string
+                default: "${CIRCLE_PROJECT_REPONAME}/requirements.txt ${CIRCLE_PROJECT_REPONAME}/test_requirements.txt"
+            extra_pip_args:
+                description: "Any additional arguments to pip install."
+                type: string
+                default: ""
+            config:
+                description: "Any additional BMS configuration steps."
+                type: steps
+                default: []
+            badge_label:
+                description: "The label to use for the badge."
+                type: string
+                default: tests
+            meta_job_name:
+                description: "The filename to use for the badge."
+                type: string
+                default: badass
+            executor:
+                description: "Execution environment for the test job."
+                type: executor
+                default: python36
+        executor: <<parameters.executor>>
+        working_directory: ~/repo
+        steps:
+            - checkout
+            - steps: <<parameters.setup>>
+            - generate-hash:
+                  in-files: <<parameters.dash_r_files>>
+                  out-file: /tmp/requirements-checksum
+                  wd: <<parameters.wd>>
+            - restore_cache:
+                  keys:
+                      - pip-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                      - pip-{{ .Branch }}-
+                      - pip-
+            - setup_python_env_cached:
+                  venv: <<parameters.venv>>
+                  dash_r_files: <<parameters.dash_r_files>>
+                  extra_pip_args: <<parameters.extra_pip_args>>
+                  wd: <<parameters.wd>>
+            - save_cache:
+                  paths:
+                      - ~/.venv
+                  key: pip-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+            - setup_badass_config:
+                  venv: <<parameters.venv>>
+                  wd: <<parameters.wd>>
+            - steps: <<parameters.config>>
+            - attach_workspace:
+                  at: ~/
+            - run:
+                  name: Restore workspace files
+                  command: |
+                      shopt -s dotglob
+                      cp ~/workspace/* ~/repo/<<parameters.wd>>/
+            - run:
+                  name: Combine status
+                  command: |
+                      if [ $(diff -q --from-file repo/<<parameters.wd>>/*.status) ] && [ $(cat repo/<<parameters.wd>>/0.status) -eq "0" ]; then
+                          touch /tmp/passed
+                      fi
+            - utils/make_status_shield:
+                  status: $([ -f /tmp/passed ] && echo "passed" || echo "failed")
+                  color: $([ -f /tmp/passed ] && echo "brightgreen" || echo "red")
+                  file: /tmp/status.svg
+                  label: <<parameters.badge_label>>
+            - utils/rsync_file:
+                  when: always
+                  file: /tmp/status.svg
+                  remote_file: ${CIRCLE_BRANCH}.${meta_job_name}.svg
+                  host: docs
+            - utils/rsync_file:
+                  when: always
+                  file: ~/repo/<<parameters.wd>>/pip.freeze
+                  remote_file: ${CIRCLE_BRANCH}.${meta_job_name}.freeze
+                  host: docs
+            - coverage_combine_and_html:
+                  venv: <<parameters.venv>>
+                  wd: <<parameters.wd>>
+            - utils/rsync_folder:
+                  when: always
+                  folder: ~/repo/<<parameters.wd>>/htmlcov/
+                  remote_folder: htmlcov_${CIRCLE_BRANCH}_${meta_job_name}
+                  host: docs
+            - utils/make_coverage_shield:
+                  when: always
+                  file: /tmp/coverage.svg
+                  link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/htmlcov_${CIRCLE_BRANCH}_${meta_job_name}/
+            - utils/rsync_file:
+                  when: always
+                  file: /tmp/coverage.svg
+                  remote_file: ${CIRCLE_BRANCH}.${meta_job_name}.coverage.svg
+                  host: docs
 commands:
     setup_python_env:
         description: "Set up the Python virtual environment for the test suite."
@@ -214,6 +446,33 @@ commands:
                       mkdir -p ./logs/${CIRCLE_PROJECT_REPONAME}
                       pip install <<parameters.pip_install_args>> | cat; test ${PIPESTATUS[0]} -eq 0
                       echo "import coverage; coverage.process_startup()" > `python -c "import sys; print([x for x in sys.path if x.find('<<parameters.venv>>') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
+    setup_python_env_cached:
+        description: "Set up the Python virtual environment for the test suite, using circleci caching."
+        parameters:
+            venv:
+                description: "Location of the Python virtual environment (no trailing slash)."
+                type: string
+                default: ~/.venv
+            dash_r_files:
+                description: "space seperated paths to requirements files."
+                type: string
+            extra_pip_args:
+                description: "Any additional arguments to pip install."
+                type: string
+                default: ""
+            wd:
+                description: "Where requirements files are referenced relative to."
+                type: string
+        steps:
+            - run:
+                  name: Setup Python environment
+                  command: |
+                      cd ~/repo/<<parameters.wd>>
+                      mkdir -p ~/repo/logs/${CIRCLE_PROJECT_REPONAME}
+                      DASH_R_FILES_ARRAY=(<<parameters.dash_r_files>>)
+                      DASH_R_FILES=${DASH_R_FILES_ARRAY[@]/#/-r }
+                      pip install $DASH_R_FILES <<parameters.extra_pip_args>> | cat; test ${PIPESTATUS[0]} -eq 0
+                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; print([x for x in sys.path if x.find('<<parameters.venv>>') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
     setup_badass_config:
         parameters:
             venv:
@@ -226,7 +485,7 @@ commands:
             - run:
                   name: Setup badass config
                   command: |
-                      cd <<parameters.wd>>
+                      cd ~/repo/<<parameters.wd>>
                       export DJANGO_SECRET_KEY=$(openssl rand -base64 33)
                       jq '.DJANGO_SECRET_KEY = env.DJANGO_SECRET_KEY' ci_config.json | sponge ci_config.json
                       cp ci_config.json test_config.json
@@ -250,12 +509,58 @@ commands:
             - run:
                   name: Run test suite
                   command: |
-                      cd <<parameters.wd>>
+                      cd ~/repo/<<parameters.wd>>
                       if [ "<<parameters.parallel>>" -eq "0" ]; then
                           coverage run -p <<parameters.test_script>>
                       else
                           coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>>
                       fi
+    run_tests_spread:
+        description: "Run the test suite, split by amount of circleci parallelism."
+        parameters:
+            venv:
+                description: "Location of the Python virtual environment (no trailing slash)."
+                type: string
+            wd:
+                description: "Where tests should be run in the repo (no trailing slash)."
+                type: string
+            parallel:
+                description: "The level of test parallelism."
+                type: integer
+            test_script:
+                description: "The test script to run (e.g., manage.py test)."
+                type: string
+            parallelism:
+                description: "The level of test parallelism via circleci splitting."
+                type: integer
+        steps:
+            - run:
+                  name: Run test suite, split by amount of circleci parallelism.
+                  command: |
+                      cd ~/repo/<<parameters.wd>>
+                      if [ "<<parameters.parallelism>>" -eq "1" ]; then
+                          TESTFILES=""
+                      else
+                          # https://discuss.circleci.com/t/python-django-tests-not-being-split-correctly/36624
+                          # https://support.circleci.com/hc/en-us/articles/360048786831-Use-test-splitting-with-Python-Django-tests
+                          TESTFILES=$(circleci tests glob "**/tests/**/test_*.py")
+                          # reformat to remove duplicates, reformat back
+                          echo $TESTFILES | tr ' ' '\n' | sort | uniq > circleci_test_files.txt
+                          cat circleci_test_files.txt
+                          TESTFILES=$(circleci tests split --split-by=timings circleci_test_files.txt)
+                          # massage filepaths into format manage.py test accepts
+                          TESTFILES=$(echo $TESTFILES | tr "/" "." | sed 's/.py//g')
+                      fi
+                      if [ "<<parameters.parallel>>" -eq "0" ]; then
+                          coverage run -p <<parameters.test_script>> $TESTFILES
+                      else
+                          coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>> $TESTFILES
+                      fi
+            - store_test_results:
+                  path: test-results
+            - store_artifacts:
+                  path: test-results
+                  destination: tr1
     coverage_combine_and_html:
         description: "Combine coverage and generate reports."
         parameters:
@@ -265,14 +570,18 @@ commands:
             wd:
                 description: "Where tests should be run in the repo (no trailing slash)."
                 type: string
+            coveragep:
+                description: "coverage percent output file name."
+                type: string
+                default: "/tmp/.coveragep"
         steps:
             - run:
                   name: Combine coverage and build reports
                   command: |
-                      cd <<parameters.wd>>
+                      cd ~/repo/<<parameters.wd>>
                       coverage combine
                       coverage html
-                      coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> ~/.coveragep
+                      coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> <<parameters.coveragep>>
                   when: always
     pip_freeze:
         description: "Create pip freeze file."
@@ -285,5 +594,25 @@ commands:
                 type: string
         steps:
             - run:
-                  command: pip freeze > <<parameters.file>>
+                  command: |
+                      pip freeze > <<parameters.file>>
                   when: always
+    generate-hash:
+        description: Generate a file with hashes from all informed files
+        parameters:
+            in-files:
+                description: space delimeted string with filenames to get hash from
+                type: string
+            out-file:
+                description: the path to file to store in-files hashes
+                type: string
+                default: /tmp/infiles_checksums
+            wd:
+                description: "Where tests should be run in the repo (no trailing slash)."
+                type: string
+        steps:
+            - run:
+                  name: Creates cache checksum
+                  command: |
+                      cd ~/repo/<<parameters.wd>>
+                      sha256sum <<parameters.in-files>> > <<parameters.out-file>>
