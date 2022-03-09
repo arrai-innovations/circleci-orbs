@@ -361,6 +361,7 @@ jobs:
         working_directory: ~/repo
         steps:
             - checkout
+            - utils/add_ssh_config
             - steps: <<parameters.setup>>
             - generate-hash:
                   in-files: <<parameters.dash_r_files>>
@@ -405,12 +406,12 @@ jobs:
             - utils/rsync_file:
                   when: always
                   file: /tmp/status.svg
-                  remote_file: ${CIRCLE_BRANCH}.${meta_job_name}.svg
+                  remote_file: ${CIRCLE_BRANCH}.<<parameters.meta_job_name>>.svg
                   host: docs
             - utils/rsync_file:
                   when: always
                   file: ~/repo/<<parameters.wd>>/pip.freeze
-                  remote_file: ${CIRCLE_BRANCH}.${meta_job_name}.freeze
+                  remote_file: ${CIRCLE_BRANCH}.<<parameters.meta_job_name>>.freeze
                   host: docs
             - coverage_combine_and_html:
                   venv: <<parameters.venv>>
@@ -418,16 +419,16 @@ jobs:
             - utils/rsync_folder:
                   when: always
                   folder: ~/repo/<<parameters.wd>>/htmlcov/
-                  remote_folder: htmlcov_${CIRCLE_BRANCH}_${meta_job_name}
+                  remote_folder: htmlcov_${CIRCLE_BRANCH}_<<parameters.meta_job_name>>
                   host: docs
             - utils/make_coverage_shield:
                   when: always
                   file: /tmp/coverage.svg
-                  link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/htmlcov_${CIRCLE_BRANCH}_${meta_job_name}/
+                  link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/htmlcov_${CIRCLE_BRANCH}_<<parameters.meta_job_name>>/
             - utils/rsync_file:
                   when: always
                   file: /tmp/coverage.svg
-                  remote_file: ${CIRCLE_BRANCH}.${meta_job_name}.coverage.svg
+                  remote_file: ${CIRCLE_BRANCH}.<<parameters.meta_job_name>>.coverage.svg
                   host: docs
 commands:
     setup_python_env:
