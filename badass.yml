@@ -543,7 +543,10 @@ commands:
                       else
                           # https://discuss.circleci.com/t/python-django-tests-not-being-split-correctly/36624
                           # https://support.circleci.com/hc/en-us/articles/360048786831-Use-test-splitting-with-Python-Django-tests
-                          TESTFILES=$(circleci tests glob "**/tests/**/test_*.py")
+                          # > Test discovery is based on the unittest module’s built-in test discovery.
+                          # > By default, this will discover tests in any file named “test*.py” under
+                          # > the current working directory.
+                          TESTFILES=$(circleci tests glob "**/test*.py")
                           # reformat to remove duplicates, reformat back
                           echo $TESTFILES | tr ' ' '\n' | sort | uniq > circleci_test_files.txt
                           cat circleci_test_files.txt
