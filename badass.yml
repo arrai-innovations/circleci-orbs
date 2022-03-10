@@ -96,11 +96,15 @@ jobs:
             venv:
                 description: "Location of the Python virtual environment (no trailing slash)."
                 type: string
-                default: ${HOME}/.venv
-            wd:
-                description: "Where tests should be run in the repo (no trailing slash)."
+                default: ~/.venv
+            repodir:
+                description: "Location of the git repo (no trailing slash)."
                 type: string
-                default: ./${CIRCLE_PROJECT_REPONAME}
+                default: ~/repo
+            wd:
+                description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
+                type: string
+                default: ${CIRCLE_PROJECT_REPONAME}
             setup:
                 description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
                 type: steps
@@ -129,7 +133,7 @@ jobs:
                 type: string
                 default: manage.py test
         executor: <<parameters.executor>>
-        working_directory: ~/repo
+        working_directory: <<parameters.repodir>>
         steps:
             - checkout
             - utils/add_maxmind_config
@@ -202,9 +206,13 @@ jobs:
             venv:
                 description: "Location of the Python virtual environment (no trailing slash)."
                 type: string
-                default: ${HOME}/.venv
+                default: ~/.venv
+            repodir:
+                description: "Location of the git repo (no trailing slash)."
+                type: string
+                default: ~/repo
             wd:
-                description: "Where tests should be run in the repo (no trailing slash)."
+                description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
                 type: string
                 default: ${CIRCLE_PROJECT_REPONAME}
             setup:
@@ -249,7 +257,7 @@ jobs:
                 default: 4
         executor: <<parameters.executor>>
         parallelism: <<parameters.parallelism>>
-        working_directory: ~/repo
+        working_directory: <<parameters.repodir>>
         steps:
             - checkout
             - utils/add_maxmind_config
@@ -270,25 +278,25 @@ jobs:
                   wd: <<parameters.wd>>
             - restore_cache:
                   keys:
-                      - pip-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
-                      - pip-{{ .Branch }}-
-                      - pip-
-            - setup_python_env_cached:
+                      - pip-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                      - pip-<<parameters.meta_job_name>>-{{ .Branch }}-
+                      - pip-<<parameters.meta_job_name>>
+            - setup_python_env_dashed:
                   venv: <<parameters.venv>>
                   dash_r_files: <<parameters.dash_r_files>>
                   extra_pip_args: <<parameters.extra_pip_args>>
                   wd: <<parameters.wd>>
             - save_cache:
                   paths:
-                      - ~/.venv
-                  key: pip-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                      - <<parameters.venv>>
+                  key: pip-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
             - setup_badass_config:
                   venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
             - steps: <<parameters.config>>
             - pip_freeze:
                   venv: <<parameters.venv>>
-                  file: ~/repo/<<parameters.wd>>/pip.freeze
+                  file: <<parameters.wd>>/pip.freeze
             - run_tests_spread:
                   venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
@@ -300,21 +308,21 @@ jobs:
                   when: on_success
                   command: |
                       # use zero for success based on exit codes
-                      echo '0' > ~/repo/<<parameters.wd>>/${CIRCLE_NODE_INDEX}.status
+                      echo '0' > <<parameters.wd>>/${CIRCLE_NODE_INDEX}.status
             - run:
                   name: Fail flag
                   when: on_fail
                   command: |
                       # use 1 for failure based on exit codes
-                      echo '1' > ~/repo/<<parameters.wd>>/${CIRCLE_NODE_INDEX}.status
+                      echo '1' > <<parameters.wd>>/${CIRCLE_NODE_INDEX}.status
             - run:
                   name: Move to workspace folder
                   when: always
                   command: |
                       mkdir ~/workspace
-                      cp ~/repo/<<parameters.wd>>/*.status ~/workspace/
-                      cp ~/repo/<<parameters.wd>>/.coverage* ~/workspace/
-                      cp ~/repo/<<parameters.wd>>/pip.freeze ~/workspace/
+                      cp <<parameters.wd>>/*.status ~/workspace/
+                      cp <<parameters.wd>>/.coverage* ~/workspace/
+                      cp <<parameters.wd>>/pip.freeze ~/workspace/
             - persist_to_workspace:
                   root: ~/
                   paths:
@@ -324,9 +332,13 @@ jobs:
             venv:
                 description: "Location of the Python virtual environment (no trailing slash)."
                 type: string
-                default: ${HOME}/.venv
+                default: ~/.venv
+            repodir:
+                description: "Location of the git repo (no trailing slash)."
+                type: string
+                default: ~/repo
             wd:
-                description: "Where tests should be run in the repo (no trailing slash)."
+                description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
                 type: string
                 default: ${CIRCLE_PROJECT_REPONAME}
             setup:
@@ -358,7 +370,7 @@ jobs:
                 type: executor
                 default: python36
         executor: <<parameters.executor>>
-        working_directory: ~/repo
+        working_directory: <<parameters.repodir>>
         steps:
             - checkout
             - utils/add_ssh_config
@@ -369,18 +381,18 @@ jobs:
                   wd: <<parameters.wd>>
             - restore_cache:
                   keys:
-                      - pip-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
-                      - pip-{{ .Branch }}-
-                      - pip-
-            - setup_python_env_cached:
+                      - pip-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                      - pip-<<parameters.meta_job_name>>-{{ .Branch }}-
+                      - pip-<<parameters.meta_job_name>>
+            - setup_python_env_dashed:
                   venv: <<parameters.venv>>
                   dash_r_files: <<parameters.dash_r_files>>
                   extra_pip_args: <<parameters.extra_pip_args>>
                   wd: <<parameters.wd>>
             - save_cache:
                   paths:
-                      - ~/.venv
-                  key: pip-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                      - <<parameters.venv>>
+                  key: pip-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
             - setup_badass_config:
                   venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
@@ -391,7 +403,7 @@ jobs:
                   name: Restore workspace files
                   command: |
                       shopt -s dotglob
-                      cp ~/workspace/* ~/repo/<<parameters.wd>>/
+                      cp ~/workspace/* <<parameters.wd>>/
             - run:
                   name: Combine status
                   command: |
@@ -410,7 +422,7 @@ jobs:
                   host: docs
             - utils/rsync_file:
                   when: always
-                  file: ~/repo/<<parameters.wd>>/pip.freeze
+                  file: <<parameters.wd>>/pip.freeze
                   remote_file: ${CIRCLE_BRANCH}.<<parameters.meta_job_name>>.freeze
                   host: docs
             - coverage_combine_and_html:
@@ -418,7 +430,7 @@ jobs:
                   wd: <<parameters.wd>>
             - utils/rsync_folder:
                   when: always
-                  folder: ~/repo/<<parameters.wd>>/htmlcov/
+                  folder: <<parameters.wd>>/htmlcov/
                   remote_folder: htmlcov_${CIRCLE_BRANCH}_<<parameters.meta_job_name>>
                   host: docs
             - utils/make_coverage_shield:
@@ -446,14 +458,13 @@ commands:
                   command: |
                       mkdir -p ./logs/${CIRCLE_PROJECT_REPONAME}
                       pip install <<parameters.pip_install_args>> | cat; test ${PIPESTATUS[0]} -eq 0
-                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; print([x for x in sys.path if x.find('<<parameters.venv>>') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
-    setup_python_env_cached:
-        description: "Set up the Python virtual environment for the test suite, using circleci caching."
+                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; import os; print([x for x in sys.path if x.find(os.path.expanduser('<<parameters.venv>>')) != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
+    setup_python_env_dashed:
+        description: "Set up the Python virtual environment for the test suite."
         parameters:
             venv:
                 description: "Location of the Python virtual environment (no trailing slash)."
                 type: string
-                default: ~/.venv
             dash_r_files:
                 description: "space seperated paths to requirements files."
                 type: string
@@ -462,18 +473,18 @@ commands:
                 type: string
                 default: ""
             wd:
-                description: "Where requirements files are referenced relative to."
+                description: "Where requirements files are referenced relative to (no trailing slash)."
                 type: string
         steps:
             - run:
                   name: Setup Python environment
                   command: |
-                      cd ~/repo/<<parameters.wd>>
-                      mkdir -p ~/repo/logs/${CIRCLE_PROJECT_REPONAME}
+                      mkdir -p logs/${CIRCLE_PROJECT_REPONAME}
+                      cd <<parameters.wd>>
                       DASH_R_FILES_ARRAY=(<<parameters.dash_r_files>>)
                       DASH_R_FILES=${DASH_R_FILES_ARRAY[@]/#/-r }
                       pip install $DASH_R_FILES <<parameters.extra_pip_args>> | cat; test ${PIPESTATUS[0]} -eq 0
-                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; print([x for x in sys.path if x.find('<<parameters.venv>>') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
+                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; import os; print([x for x in sys.path if x.find(os.path.expanduser('<<parameters.venv>>')) != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
     setup_badass_config:
         parameters:
             venv:
@@ -486,10 +497,12 @@ commands:
             - run:
                   name: Setup badass config
                   command: |
-                      cd ~/repo/<<parameters.wd>>
+                      cd <<parameters.wd>>
+                      if [ -f "ci_config.json" ]; then
+                          cp ci_config.json test_config.json
+                      fi
                       export DJANGO_SECRET_KEY=$(openssl rand -base64 33)
-                      jq '.DJANGO_SECRET_KEY = env.DJANGO_SECRET_KEY' ci_config.json | sponge ci_config.json
-                      cp ci_config.json test_config.json
+                      jq '.DJANGO_SECRET_KEY = env.DJANGO_SECRET_KEY' test_config.json | sponge test_config.json
                       echo '{}' > config.json
     run_tests:
         description: "Run the test suite."
@@ -510,7 +523,7 @@ commands:
             - run:
                   name: Run test suite
                   command: |
-                      cd ~/repo/<<parameters.wd>>
+                      cd <<parameters.wd>>
                       if [ "<<parameters.parallel>>" -eq "0" ]; then
                           coverage run -p <<parameters.test_script>>
                       else
@@ -538,7 +551,7 @@ commands:
             - run:
                   name: Run test suite, split by amount of circleci parallelism.
                   command: |
-                      cd ~/repo/<<parameters.wd>>
+                      cd <<parameters.wd>>
                       if [ "<<parameters.parallelism>>" -eq "1" ]; then
                           TESTFILES=""
                       else
@@ -572,7 +585,7 @@ commands:
                 description: "Location of the Python virtual environment (no trailing slash)."
                 type: string
             wd:
-                description: "Where tests should be run in the repo (no trailing slash)."
+                description: "Where tests were run in the repo (no trailing slash)."
                 type: string
             coveragep:
                 description: "coverage percent output file name."
@@ -582,7 +595,7 @@ commands:
             - run:
                   name: Combine coverage and build reports
                   command: |
-                      cd ~/repo/<<parameters.wd>>
+                      cd <<parameters.wd>>
                       coverage combine
                       coverage html
                       coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> <<parameters.coveragep>>
@@ -612,11 +625,11 @@ commands:
                 type: string
                 default: /tmp/infiles_checksums
             wd:
-                description: "Where tests should be run in the repo (no trailing slash)."
+                description: "Where in the repo in-files is relative to (no trailing slash)."
                 type: string
         steps:
             - run:
                   name: Creates cache checksum
                   command: |
-                      cd ~/repo/<<parameters.wd>>
+                      cd <<parameters.wd>>
                       sha256sum <<parameters.in-files>> > <<parameters.out-file>>

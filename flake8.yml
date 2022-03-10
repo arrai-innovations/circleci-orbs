@@ -50,7 +50,9 @@ jobs:
                 default:
                     - run:
                           name: Install additional OS packages
-                          command: sudo apt-get install rsync
+                          command: |
+                              sudo apt-get update
+                              sudo apt-get install rsync
             additional_packages:
                 description: "Allows installing additional packages or requirements.txt files."
                 type: string

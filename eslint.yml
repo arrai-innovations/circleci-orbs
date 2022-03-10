@@ -12,14 +12,16 @@ jobs:
                 default: lib/**
             executor:
                 type: executor
-                default: v12
+                default: v16
             setup:
                 description: "Any additional setup steps."
                 type: steps
                 default:
                     - run:
                           name: Install additional OS packages
-                          command: sudo apt-get install rsync
+                          command: |
+                              sudo apt-get update
+                              sudo apt-get install rsync
             config:
                 description: "Any additional configuration steps."
                 type: steps
