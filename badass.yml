@@ -407,8 +407,8 @@ jobs:
             - run:
                   name: Combine status
                   command: |
-                      if [ $(diff -q --from-file <<parameters.wd>>/*.status) ] && [ $(cat <<parameters.wd>>/0.status) -eq "0" ]; then
-                          touch /tmp/passed
+                      if [ $(cat <<parameters.wd>>/0.status) -eq "0" ]; then
+                          diff -q --from-file <<parameters.wd>>/*.status && touch /tmp/passed
                       fi
             - utils/make_status_shield:
                   status: $([ -f /tmp/passed ] && echo "passed" || echo "failed")
