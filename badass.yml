@@ -395,7 +395,7 @@ jobs:
             - run:
                   name: Combine status
                   command: |
-                      if [ $(diff -q --from-file repo/<<parameters.wd>>/*.status) ] && [ $(cat repo/<<parameters.wd>>/0.status) -eq "0" ]; then
+                      if [ $(diff -q --from-file <<parameters.wd>>/*.status) ] && [ $(cat <<parameters.wd>>/0.status) -eq "0" ]; then
                           touch /tmp/passed
                       fi
             - utils/make_status_shield:
