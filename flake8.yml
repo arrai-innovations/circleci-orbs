@@ -35,6 +35,9 @@ executors:
 jobs:
     flake8:
         parameters:
+            flake8_cmd:
+                type: string
+                default: "flake8"
             wd:
                 type: string
                 default: ./${CIRCLE_PROJECT_REPONAME}
@@ -67,6 +70,7 @@ jobs:
                   wd: <<parameters.wd>>
                   additional_packages: <<parameters.additional_packages>>
             - flake8_errors:
+                  flake8_cmd: <<parameters.flake8_cmd>>
                   wd: <<parameters.wd>>
             - utils/make_status_shield:
                   when: on_fail
@@ -85,6 +89,9 @@ jobs:
                   host: docs
     flake8_pipenv:
         parameters:
+            flake8_cmd:
+                type: string
+                default: "flake8"
             wd:
                 type: string
                 default: .
@@ -110,6 +117,7 @@ jobs:
             - setup_flake8_pipenv:
                   wd: <<parameters.wd>>
             - flake8_errors_pipenv:
+                  flake8_cmd: <<parameters.flake8_cmd>>
                   wd: <<parameters.wd>>
             - utils/make_status_shield:
                   when: on_fail
@@ -150,6 +158,9 @@ commands:
     flake8_errors:
         description: "Run flake8, checking for errors only."
         parameters:
+            flake8_cmd:
+                type: string
+                default: "flake8"
             wd:
                 type: string
         steps:
@@ -157,7 +168,7 @@ commands:
                   name: "Check for errors."
                   command: |
                       cd <<parameters.wd>>
-                      flake8
+                      <<parameters.flake8_cmd>>
     setup_flake8_pipenv:
         description: "Set up a python virtual environment to run flake8"
         parameters:
@@ -181,6 +192,9 @@ commands:
     flake8_errors_pipenv:
         description: "Run flake8, checking for errors only."
         parameters:
+            flake8_cmd:
+                type: string
+                default: "flake8"
             wd:
                 type: string
         steps:
@@ -188,4 +202,4 @@ commands:
                   name: "Check for errors."
                   command: |
                       cd <<parameters.wd>>
-                      pipenv run flake8
+                      pipenv run <<parameters.flake8_cmd>>
