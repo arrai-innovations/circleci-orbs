@@ -21,6 +21,9 @@ jobs:
             resource_class:
                 type: string
                 default: medium
+            version:
+                type: string
+                default: ""
             setup:
                 description: "Any additional setup steps."
                 type: steps
@@ -39,7 +42,7 @@ jobs:
             - run:
                   name: Install prettier
                   command: |
-                      sudo npm install -g prettier
+                      sudo npm install -g "prettier$([ ! -z <<parameters.version>> ] && echo "==<<parameters.version>>")"
             - run:
                   name: Check prettier
                   command: |
