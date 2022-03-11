@@ -1,6 +1,13 @@
 version: 2.1
 orbs:
     utils: arrai/utils@1.5.0
+executors:
+    node14:
+        environment:
+            LANG: C.UTF-8
+        docker:
+            - image: cimg/node:14.18-browsers
+        resource_class: small
 jobs:
     code_style:
         parameters:
@@ -10,6 +17,7 @@ jobs:
             executor:
                 description: "Execution environment for the test job."
                 type: executor
+                default: node14
             resource_class:
                 type: string
                 default: medium
