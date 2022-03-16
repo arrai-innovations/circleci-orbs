@@ -56,7 +56,7 @@ jobs:
             repodir:
                 description: "Location of the git repo (no trailing slash)."
                 type: string
-                default: ~/repo
+                default: ~/project
             wd:
                 description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
                 type: string
@@ -166,7 +166,7 @@ jobs:
             repodir:
                 description: "Location of the git repo (no trailing slash)."
                 type: string
-                default: ~/repo
+                default: ~/project
             wd:
                 description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
                 type: string
@@ -292,7 +292,7 @@ jobs:
             repodir:
                 description: "Location of the git repo (no trailing slash)."
                 type: string
-                default: ~/repo
+                default: ~/project
             wd:
                 description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
                 type: string
