@@ -7,7 +7,7 @@ executors:
             LANG: C.UTF-8
             LC_ALL: C.UTF-8
         docker:
-            - image: arrai/python:38-fedora
+            - image: arrai/python:38-el8
               auth:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
@@ -17,7 +17,7 @@ executors:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: arrai/python:36-centos
+            - image: arrai/python:36-el7
               auth:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
@@ -28,7 +28,7 @@ executors:
             LANG: C.UTF-8
             LC_ALL: C.UTF-8
         docker:
-            - image: arrai/python:38-fedora
+            - image: arrai/python:38-el8
               auth:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
@@ -39,7 +39,7 @@ executors:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: arrai/python:36-centos
+            - image: arrai/python:36-el7
               auth:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
