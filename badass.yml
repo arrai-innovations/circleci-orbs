@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.7.0
+    utils: arrai/utils@dev:800
 executors:
     python38:
         environment:
