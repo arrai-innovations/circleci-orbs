@@ -13,32 +13,11 @@ executors:
                   password: $DOCKERHUB_PASSWORD
             - image: cimg/postgres:11.13
             - image: cimg/redis:5.0
-    python37:
-        environment:
-            LANG: C.UTF-8
-            LC_ALL: C.UTF-8
-        docker:
-            - image: arrai/python:37-fedora
-              auth:
-                  username: $DOCKERHUB_USERNAME
-                  password: $DOCKERHUB_PASSWORD
-            - image: cimg/postgres:11.13
-            - image: cimg/redis:5.0
     python36:
         environment:
             LANG: en_US.UTF-8
         docker:
             - image: arrai/python:36-centos
-              auth:
-                  username: $DOCKERHUB_USERNAME
-                  password: $DOCKERHUB_PASSWORD
-            - image: cimg/postgres:10.18
-            - image: cimg/redis:5.0
-    python35:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: arrai/python:35-centos
               auth:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
@@ -56,34 +35,11 @@ executors:
             - image: cimg/postgres:11.13
             - image: cimg/redis:5.0
             - image: selenium/standalone-chrome:latest
-    python37-selenium:
-        environment:
-            LANG: C.UTF-8
-            LC_ALL: C.UTF-8
-        docker:
-            - image: arrai/python:37-fedora
-              auth:
-                  username: $DOCKERHUB_USERNAME
-                  password: $DOCKERHUB_PASSWORD
-            - image: cimg/postgres:11.13
-            - image: cimg/redis:5.0
-            - image: selenium/standalone-chrome:latest
     python36-selenium:
         environment:
             LANG: en_US.UTF-8
         docker:
             - image: arrai/python:36-centos
-              auth:
-                  username: $DOCKERHUB_USERNAME
-                  password: $DOCKERHUB_PASSWORD
-            - image: cimg/postgres:10.18
-            - image: cimg/redis:5.0
-            - image: selenium/standalone-chrome:latest
-    python35-selenium:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: arrai/python:35-centos
               auth:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
