@@ -234,9 +234,9 @@ jobs:
                   wd: <<parameters.wd>>
             - restore_cache:
                   keys:
-                      - pip-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
-                      - pip-<<parameters.meta_job_name>>-{{ .Branch }}-
-                      - pip-<<parameters.meta_job_name>>
+                      - pip-<<parameters.executor>>-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                      - pip-<<parameters.executor>>-<<parameters.meta_job_name>>-{{ .Branch }}-
+                      - pip-<<parameters.executor>>-<<parameters.meta_job_name>>
             - setup_python_env_dashed:
                   venv: <<parameters.venv>>
                   dash_r_files: <<parameters.dash_r_files>>
@@ -245,7 +245,7 @@ jobs:
             - save_cache:
                   paths:
                       - <<parameters.venv>>
-                  key: pip-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                  key: pip-<<parameters.executor>>-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
             - setup_badass_config:
                   venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
@@ -337,9 +337,9 @@ jobs:
                   wd: <<parameters.wd>>
             - restore_cache:
                   keys:
-                      - pip-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
-                      - pip-<<parameters.meta_job_name>>-{{ .Branch }}-
-                      - pip-<<parameters.meta_job_name>>
+                      - pip-<<parameters.executor>>-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                      - pip-<<parameters.executor>>-<<parameters.meta_job_name>>-{{ .Branch }}-
+                      - pip-<<parameters.executor>>-<<parameters.meta_job_name>>
             - setup_python_env_dashed:
                   venv: <<parameters.venv>>
                   dash_r_files: <<parameters.dash_r_files>>
@@ -348,7 +348,7 @@ jobs:
             - save_cache:
                   paths:
                       - <<parameters.venv>>
-                  key: pip-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                  key: pip-<<parameters.executor>>-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
             - setup_badass_config:
                   venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
