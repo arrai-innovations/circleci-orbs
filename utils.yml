@@ -55,10 +55,10 @@ commands:
                   name: "Configure GeoIP"
                   command: |
                       if [ -e /etc/GeoIP.conf ]; then
-                          sed -i -e "s/^AccountID.*/AccountID $MAXMIND_ID/" -e "s/^LicenseKey.*/LicenseKey $MAXMIND_KEY/" /etc/GeoIP.conf
+                          sudo sed -i -e "s/^AccountID.*/AccountID $MAXMIND_ID/" -e "s/^LicenseKey.*/LicenseKey $MAXMIND_KEY/" /etc/GeoIP.conf
                       fi
                       if [ -e /usr/local/etc/GeoIP.conf ]; then
-                          sed -i -e "s/^AccountID.*/AccountID $MAXMIND_ID/" -e "s/^LicenseKey.*/LicenseKey $MAXMIND_KEY/" /usr/local/etc/GeoIP.conf
+                          sudo sed -i -e "s/^AccountID.*/AccountID $MAXMIND_ID/" -e "s/^LicenseKey.*/LicenseKey $MAXMIND_KEY/" /usr/local/etc/GeoIP.conf
                       fi
     add_ssh_config:
         description: "Fetch host keys from a SSH server and generate ~/.ssh/config and ~/.ssh/known_hosts."
