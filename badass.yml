@@ -236,7 +236,7 @@ jobs:
                   keys:
                       - pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
                       - pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-
-                      - pip-{{ arch }}-<<parameters.executor>>-<<parameters.meta_job_name>>
+                      - pip-{{ arch }}-<<parameters.meta_job_name>>
             - setup_python_env_dashed:
                   venv: <<parameters.venv>>
                   dash_r_files: <<parameters.dash_r_files>>
