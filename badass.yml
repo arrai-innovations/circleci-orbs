@@ -1,24 +1,13 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.7.0
+    utils: arrai/utils@1.8.0
 executors:
     python38:
         environment:
             LANG: C.UTF-8
             LC_ALL: C.UTF-8
         docker:
-            - image: arrai/python:38-fedora
-              auth:
-                  username: $DOCKERHUB_USERNAME
-                  password: $DOCKERHUB_PASSWORD
-            - image: cimg/postgres:11.13
-            - image: cimg/redis:5.0
-    python37:
-        environment:
-            LANG: C.UTF-8
-            LC_ALL: C.UTF-8
-        docker:
-            - image: arrai/python:37-fedora
+            - image: arrai/python:38-el8
               auth:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
@@ -28,17 +17,7 @@ executors:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: arrai/python:36-centos
-              auth:
-                  username: $DOCKERHUB_USERNAME
-                  password: $DOCKERHUB_PASSWORD
-            - image: cimg/postgres:10.18
-            - image: cimg/redis:5.0
-    python35:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: arrai/python:35-centos
+            - image: arrai/python:36-el7
               auth:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
@@ -49,19 +28,7 @@ executors:
             LANG: C.UTF-8
             LC_ALL: C.UTF-8
         docker:
-            - image: arrai/python:38-fedora
-              auth:
-                  username: $DOCKERHUB_USERNAME
-                  password: $DOCKERHUB_PASSWORD
-            - image: cimg/postgres:11.13
-            - image: cimg/redis:5.0
-            - image: selenium/standalone-chrome:latest
-    python37-selenium:
-        environment:
-            LANG: C.UTF-8
-            LC_ALL: C.UTF-8
-        docker:
-            - image: arrai/python:37-fedora
+            - image: arrai/python:38-el8
               auth:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
@@ -72,18 +39,7 @@ executors:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: arrai/python:36-centos
-              auth:
-                  username: $DOCKERHUB_USERNAME
-                  password: $DOCKERHUB_PASSWORD
-            - image: cimg/postgres:10.18
-            - image: cimg/redis:5.0
-            - image: selenium/standalone-chrome:latest
-    python35-selenium:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: arrai/python:35-centos
+            - image: arrai/python:36-el7
               auth:
                   username: $DOCKERHUB_USERNAME
                   password: $DOCKERHUB_PASSWORD
@@ -100,7 +56,7 @@ jobs:
             repodir:
                 description: "Location of the git repo (no trailing slash)."
                 type: string
-                default: ~/repo
+                default: ~/project
             wd:
                 description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
                 type: string
@@ -210,7 +166,7 @@ jobs:
             repodir:
                 description: "Location of the git repo (no trailing slash)."
                 type: string
-                default: ~/repo
+                default: ~/project
             wd:
                 description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
                 type: string
@@ -278,9 +234,9 @@ jobs:
                   wd: <<parameters.wd>>
             - restore_cache:
                   keys:
-                      - pip-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
-                      - pip-<<parameters.meta_job_name>>-{{ .Branch }}-
-                      - pip-<<parameters.meta_job_name>>
+                      - pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                      - pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-
+                      - pip-{{ arch }}-<<parameters.meta_job_name>>
             - setup_python_env_dashed:
                   venv: <<parameters.venv>>
                   dash_r_files: <<parameters.dash_r_files>>
@@ -289,7 +245,7 @@ jobs:
             - save_cache:
                   paths:
                       - <<parameters.venv>>
-                  key: pip-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                  key: pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
             - setup_badass_config:
                   venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
@@ -336,7 +292,7 @@ jobs:
             repodir:
                 description: "Location of the git repo (no trailing slash)."
                 type: string
-                default: ~/repo
+                default: ~/project
             wd:
                 description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
                 type: string
@@ -381,9 +337,9 @@ jobs:
                   wd: <<parameters.wd>>
             - restore_cache:
                   keys:
-                      - pip-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
-                      - pip-<<parameters.meta_job_name>>-{{ .Branch }}-
-                      - pip-<<parameters.meta_job_name>>
+                      - pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                      - pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-
+                      - pip-{{ arch }}-<<parameters.meta_job_name>>
             - setup_python_env_dashed:
                   venv: <<parameters.venv>>
                   dash_r_files: <<parameters.dash_r_files>>
@@ -392,7 +348,7 @@ jobs:
             - save_cache:
                   paths:
                       - <<parameters.venv>>
-                  key: pip-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                  key: pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
             - setup_badass_config:
                   venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
