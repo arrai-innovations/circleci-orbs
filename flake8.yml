@@ -85,7 +85,7 @@ jobs:
             - utils/rsync_file:
                   when: always
                   file: ~/status.svg
-                  remote_file: $CIRCLE_BRANCH.$CIRCLE_JOB.svg
+                  remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
                   host: docs
     flake8_pipenv:
         parameters:
@@ -132,7 +132,7 @@ jobs:
             - utils/rsync_file:
                   when: always
                   file: ~/status.svg
-                  remote_file: $CIRCLE_BRANCH.$CIRCLE_JOB.svg
+                  remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
                   host: docs
 commands:
     setup_flake8:
