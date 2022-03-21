@@ -64,7 +64,7 @@ jobs:
             - utils/rsync_file:
                   when: always
                   file: ~/status.svg
-                  remote_file: $CIRCLE_BRANCH.$CIRCLE_JOB.svg
+                  remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
                   host: docs
 executors:
     lts:
