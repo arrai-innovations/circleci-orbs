@@ -202,7 +202,6 @@ jobs:
             meta_job_name:
                 description: "The filename to use for the badge."
                 type: string
-                default: badass
             test_script:
                 description: "The test script to run (e.g., manage.py test)."
                 type: string
@@ -320,7 +319,6 @@ jobs:
             meta_job_name:
                 description: "The filename to use for the badge."
                 type: string
-                default: badass
             executor:
                 description: "Execution environment for the test job."
                 type: executor
