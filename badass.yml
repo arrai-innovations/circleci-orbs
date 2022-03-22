@@ -83,7 +83,10 @@ jobs:
             badge_label:
                 description: "The label to use for the badge."
                 type: string
-                default: ${CIRCLE_JOB}
+                default: tests
+            meta_job_name:
+                description: "The filename to use for the badge."
+                type: string
             test_script:
                 description: "The test script to run (e.g., manage.py test)."
                 type: string
@@ -101,7 +104,7 @@ jobs:
                   label: <<parameters.badge_label>>
             - utils/rsync_file:
                   file: ~/status.svg
-                  remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.svg
+                  remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
                   host: docs
             - steps: <<parameters.setup>>
             - setup_python_env:
@@ -122,15 +125,15 @@ jobs:
             - utils/rsync_folder:
                   when: always
                   folder: <<parameters.wd>>/htmlcov/
-                  remote_folder: ${CIRCLE_BRANCH}/htmlcov_${CIRCLE_JOB}
+                  remote_folder: ${CIRCLE_BRANCH}/htmlcov_<<parameters.meta_job_name>>
                   host: docs
             - utils/make_coverage_shield:
                   when: always
-                  link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH}/htmlcov_${CIRCLE_JOB}/
+                  link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH}/htmlcov_<<parameters.meta_job_name>>/
             - utils/rsync_file:
                   when: always
                   file: ~/coverage.svg
-                  remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.coverage.svg
+                  remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.coverage.svg
                   host: docs
             - pip_freeze:
                   venv: <<parameters.venv>>
@@ -138,7 +141,7 @@ jobs:
             - utils/rsync_file:
                   when: always
                   file: ~/pip.freeze
-                  remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.freeze
+                  remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.freeze
                   host: docs
             - utils/make_status_shield:
                   when: on_success
@@ -155,7 +158,7 @@ jobs:
             - utils/rsync_file:
                   when: always
                   file: ~/status.svg
-                  remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.svg
+                  remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
                   host: docs
     badass_test_spread:
         parameters:
