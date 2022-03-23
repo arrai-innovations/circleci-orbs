@@ -71,7 +71,7 @@ jobs:
                       cd <<parameters.wd>>
                       pipenv run coverage combine && exit 0
                       pipenv run coverage html
-                      pipenv run coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> ~/.coveragep
+                      pipenv run coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> /tmp/.coveragep
                   when: always
             - utils/rsync_folder:
                   when: always
