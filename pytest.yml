@@ -46,9 +46,9 @@ jobs:
                   host: docs
             - restore_cache: # ensure this step occurs *before* installing dependencies
                   keys:
-                      - pipenv-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-                      - pipenv-{{ .Branch }}-
-                      - pipenv-
+                      - pipenv-{{ arch }}-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                      - pipenv-{{ arch }}-{{ .Branch }}-
+                      - pipenv-{{ arch }}-
             - run:
                   name: Setup pipenv environment.
                   command: |
@@ -58,7 +58,7 @@ jobs:
             - save_cache:
                   paths:
                       - ~/.local/share/virtualenvs/
-                  key: pipenv-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                  key: pipenv-{{ arch }}-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
             - steps: <<parameters.config>>
             - run:
                   name: Run tests
