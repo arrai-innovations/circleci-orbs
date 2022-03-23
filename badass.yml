@@ -132,7 +132,7 @@ jobs:
                   link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH}/htmlcov_<<parameters.meta_job_name>>/
             - utils/rsync_file:
                   when: always
-                  file: ~/coverage.svg
+                  file: /tmp/coverage.svg
                   remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.coverage.svg
                   host: docs
             - pip_freeze:
