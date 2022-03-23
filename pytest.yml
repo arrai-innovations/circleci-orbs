@@ -42,7 +42,7 @@ jobs:
                   color: lightblue
             - utils/rsync_file:
                   file: ~/status.svg
-                  remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
+                  remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.svg
                   host: docs
             - restore_cache: # ensure this step occurs *before* installing dependencies
                   keys:
@@ -76,15 +76,15 @@ jobs:
             - utils/rsync_folder:
                   when: always
                   folder: htmlcov/
-                  remote_folder: htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}
+                  remote_folder: ${CIRCLE_BRANCH}/htmlcov_${CIRCLE_JOB}
                   host: docs
             - utils/make_coverage_shield:
                   when: always
-                  link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/htmlcov_${CIRCLE_BRANCH}_${CIRCLE_JOB}/
+                  link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH/htmlcov_${CIRCLE_JOB}/
             - utils/rsync_file:
                   when: always
                   file: ~/coverage.svg
-                  remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.coverage.svg
+                  remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.coverage.svg
                   host: docs
             - utils/make_status_shield:
                   when: on_success
@@ -99,5 +99,5 @@ jobs:
             - utils/rsync_file:
                   when: always
                   file: ~/status.svg
-                  remote_file: ${CIRCLE_BRANCH}.${CIRCLE_JOB}.svg
+                  remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.svg
                   host: docs
