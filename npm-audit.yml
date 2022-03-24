@@ -66,7 +66,7 @@ jobs:
             - utils/rsync_file:
                   when: always
                   file: ~/status.svg
-                  remote_file: $CIRCLE_BRANCH.npm-audit.svg
+                  remote_file: $CIRCLE_BRANCH/npm-audit.svg
                   host: docs
 executors:
     lts:
