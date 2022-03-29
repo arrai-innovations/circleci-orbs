@@ -194,6 +194,9 @@ jobs:
                 description: "Execution environment for the test job."
                 type: executor
                 default: python36
+            resource_class:
+                type: string
+                default: medium
             parallel:
                 description: "The level of test parallelism."
                 type: integer
@@ -214,6 +217,7 @@ jobs:
                 type: integer
                 default: 4
         executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
         parallelism: <<parameters.parallelism>>
         working_directory: <<parameters.repodir>>
         steps:
@@ -326,8 +330,12 @@ jobs:
                 description: "Execution environment for the test job."
                 type: executor
                 default: python36
+            resource_class:
+                type: string
+                default: small
         executor: <<parameters.executor>>
         working_directory: <<parameters.repodir>>
+        resource_class: <<parameters.resource_class>>
         steps:
             - checkout
             - utils/add_ssh_config
