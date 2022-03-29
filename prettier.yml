@@ -34,7 +34,7 @@ jobs:
                               sudo apt-get update
                               sudo apt-get install rsync
         executor: <<parameters.executor>>
-        resource_class: small
+        resource_class: <<parameters.resource_class>>
         steps:
             - checkout
             - utils/add_ssh_config
