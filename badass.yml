@@ -8,9 +8,6 @@ executors:
             LC_ALL: C.UTF-8
         docker:
             - image: arrai/python:38-el8
-              auth:
-                  username: $DOCKERHUB_USERNAME
-                  password: $DOCKERHUB_PASSWORD
             - image: cimg/postgres:11.13
             - image: cimg/redis:5.0
     python36:
@@ -18,9 +15,6 @@ executors:
             LANG: en_US.UTF-8
         docker:
             - image: arrai/python:36-el7
-              auth:
-                  username: $DOCKERHUB_USERNAME
-                  password: $DOCKERHUB_PASSWORD
             - image: cimg/postgres:10.18
             - image: cimg/redis:5.0
     python38-selenium:
@@ -29,9 +23,6 @@ executors:
             LC_ALL: C.UTF-8
         docker:
             - image: arrai/python:38-el8
-              auth:
-                  username: $DOCKERHUB_USERNAME
-                  password: $DOCKERHUB_PASSWORD
             - image: cimg/postgres:11.13
             - image: cimg/redis:5.0
             - image: selenium/standalone-chrome:latest
@@ -40,9 +31,6 @@ executors:
             LANG: en_US.UTF-8
         docker:
             - image: arrai/python:36-el7
-              auth:
-                  username: $DOCKERHUB_USERNAME
-                  password: $DOCKERHUB_PASSWORD
             - image: cimg/postgres:10.18
             - image: cimg/redis:5.0
             - image: selenium/standalone-chrome:latest
