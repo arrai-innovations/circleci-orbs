@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.6.0
+    utils: arrai/utils@1.8.0
 jobs:
     npm-audit:
         parameters:
@@ -10,6 +10,10 @@ jobs:
             executor:
                 type: executor
                 default: lts
+            resource_class:
+                description: "Amount of CPU and RAM allocated to the container."
+                type: string
+                default: small
             setup:
                 description: "Any additional setup steps."
                 type: steps
@@ -23,7 +27,7 @@ jobs:
                 description: "E-mail address to send npm audit failure report to."
                 type: string
         executor: <<parameters.executor>>
-        resource_class: small
+        resource_class: <<parameters.resource_class>>
         steps:
             - checkout
             - utils/add_ssh_config
@@ -66,7 +70,7 @@ jobs:
             - utils/rsync_file:
                   when: always
                   file: ~/status.svg
-                  remote_file: $CIRCLE_BRANCH.npm-audit.svg
+                  remote_file: $CIRCLE_BRANCH/npm-audit.svg
                   host: docs
 executors:
     lts:

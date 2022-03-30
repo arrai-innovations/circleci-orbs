@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.5.0
+    utils: arrai/utils@1.8.0
 executors:
     node14:
         environment:
@@ -34,7 +34,7 @@ jobs:
                               sudo apt-get update
                               sudo apt-get install rsync
         executor: <<parameters.executor>>
-        resource_class: small
+        resource_class: <<parameters.resource_class>>
         steps:
             - checkout
             - utils/add_ssh_config

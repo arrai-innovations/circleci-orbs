@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.6.0
+    utils: arrai/utils@1.8.0
 jobs:
     eslint:
         parameters:
@@ -13,6 +13,10 @@ jobs:
             executor:
                 type: executor
                 default: v16
+            resource_class:
+                description: "Amount of CPU and RAM allocated to the container."
+                type: string
+                default: small
             setup:
                 description: "Any additional setup steps."
                 type: steps
@@ -27,7 +31,7 @@ jobs:
                 type: steps
                 default: []
         executor: <<parameters.executor>>
-        resource_class: small
+        resource_class: <<parameters.resource_class>>
         steps:
             - checkout
             - utils/add_ssh_config

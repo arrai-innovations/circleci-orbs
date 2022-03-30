@@ -76,6 +76,10 @@ jobs:
                 description: "Execution environment for the test job."
                 type: executor
                 default: python36
+            resource_class:
+                description: "Amount of CPU and RAM allocated to the container."
+                type: string
+                default: medium
             parallel:
                 description: "The level of test parallelism."
                 type: integer
@@ -92,6 +96,7 @@ jobs:
                 type: string
                 default: manage.py test
         executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
         working_directory: <<parameters.repodir>>
         steps:
             - checkout
@@ -194,6 +199,10 @@ jobs:
                 description: "Execution environment for the test job."
                 type: executor
                 default: python36
+            resource_class:
+                description: "Amount of CPU and RAM allocated to the container."
+                type: string
+                default: medium
             parallel:
                 description: "The level of test parallelism."
                 type: integer
@@ -214,6 +223,7 @@ jobs:
                 type: integer
                 default: 4
         executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
         parallelism: <<parameters.parallelism>>
         working_directory: <<parameters.repodir>>
         steps:
@@ -326,7 +336,12 @@ jobs:
                 description: "Execution environment for the test job."
                 type: executor
                 default: python36
+            resource_class:
+                description: "Amount of CPU and RAM allocated to the container."
+                type: string
+                default: small
         executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
         working_directory: <<parameters.repodir>>
         steps:
             - checkout
