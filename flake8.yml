@@ -97,7 +97,9 @@ jobs:
                 default:
                     - run:
                           name: Install additional OS packages
-                          command: sudo apt-get install rsync pipenv
+                          command: |
+                              sudo apt-get update
+                              sudo apt-get install rsync pipenv
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
