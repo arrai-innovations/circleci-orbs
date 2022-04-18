@@ -26,6 +26,10 @@ jobs:
             report_to:
                 description: "E-mail address to send npm audit failure report to."
                 type: string
+            skip_dev:
+                description: "Don't check development dependencies."
+                type: boolean
+                default: true
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
@@ -39,7 +43,7 @@ jobs:
                   name: Run npm audit
                   command: |
                       cd <<parameters.wd>>
-                      npx -y better-npm-audit audit --production |& tee ~/audit.log
+                      npx -y better-npm-audit audit <<# parameters.skip_dev >> -p <</ parameters.skip_dev >> |& tee ~/audit.log
             - run:
                   name: Generate HTML audit report
                   when: on_fail
