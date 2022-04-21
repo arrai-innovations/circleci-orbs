@@ -62,7 +62,7 @@ Provides functionality to generate npm audit reports and e-mail failure reports.
 
 ### sentry
 
-Publish releases to [Sentry](https://sentry.io/). Note that the `create_release` jobs uses the following defaults when creating releases:
+Publish releases to [Sentry](https://sentry.io/). Note that the `create_release` job uses the following defaults when creating releases:
 
 -   The Sentry organisation slug is assumed to be identical to the CI organisation.
 -   The project slug is assumed to be the same as the repository name.
