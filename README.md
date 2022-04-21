@@ -19,6 +19,7 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [pytest](#pytest)
   - [utils](#utils)
   - [npm-audit](#npm-audit)
+  - [sentry](#sentry)
 - [Developing Orbs](#developing-orbs)
 - [Publishing Orbs](#publishing-orbs)
 
@@ -58,6 +59,10 @@ This orb provides utility functions such as status badging, file uploads, and ss
 ### npm-audit
 
 Provides functionality to generate npm audit reports and e-mail failure reports. For information on configuration parameters, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/npm-audit).
+
+### sentry
+
+Publish releases to Sentry. For information on configuration parameters, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/sentry).
 
 ## Developing Orbs
 
