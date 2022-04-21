@@ -1,0 +1,88 @@
+version: 2.1
+orbs:
+    utils: arrai/utils@1.8.0
+executors:
+    base:
+        docker:
+            - image: cimg/base:current
+jobs:
+    create_release:
+        parameters:
+            executor:
+                description: "The executor to use for the job."
+                type: executor
+                default: base
+            resource_class:
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+            sentry_org:
+                description: "The Sentry organization slug."
+                type: string
+                default: ${SENTRY_ORG}
+            sentry_project:
+                description: "The Sentry project slug."
+                type: string
+                default: ${CIRCLE_PROJECT_REPONAME}
+            sentry_release:
+                description: "The version for the Sentry release."
+                type: string
+                default: ${CIRCLE_TAG}
+            sentry_commit_integration:
+                description: "From where to pull commit information."
+                type: enum
+                enum: [auto, local]
+                default: auto
+            setup:
+                description: "Any additional setup steps."
+                type: steps
+                default:
+                    - run:
+                          name: Install Sentry CLI Tools
+                          command: |
+                              curl -sL https://sentry.io/get-cli/ | bash
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        steps:
+            - checkout
+            - steps: <<parameters.setup>>
+            - create_release:
+                  sentry_org: <<parameters.sentry_org>>
+                  sentry_project: <<parameters.sentry_project>>
+                  sentry_release: <<parameters.sentry_release>>
+                  sentry_commit_integration: <<parameters.sentry_commit_integration>>
+commands:
+    create_release:
+        description: "Create release on Sentry."
+        parameters:
+            sentry_org:
+                description: "The Sentry organization slug."
+                type: string
+                default: ${SENTRY_ORG}
+            sentry_project:
+                description: "The Sentry project slug."
+                type: string
+                default: ${CIRCLE_PROJECT_REPONAME}
+            sentry_release:
+                description: "The version for the Sentry release."
+                type: string
+                default: ${CIRCLE_TAG}
+            sentry_commit_integration:
+                description: "From where to pull commit information."
+                type: enum
+                enum: ["auto", "local"]
+                default: auto
+        steps:
+            - run:
+                  command: |
+                      export SENTRY_ORG="<<parameters.sentry_org>>"
+                      export SENTRY_PROJECT="<<parameters.sentry_project>>"
+                      export SENTRY_RELEASE="<<parameters.sentry_release>>"
+                      sentry-cli releases new ${SENTRY_RELEASE}
+                      if [ "${<<parameters.sentry_commit_integration>>}" = "local" ]; then
+                          sentry-cli releases set-commits ${SENTRY_RELEASE} --local --initial-depth 9223372036854775807
+                      else
+                          sentry-cli releases set-commits ${SENTRY_RELEASE} --auto
+                      fi
+                      sentry-cli releases finalize ${SENTRY_RELEASE}

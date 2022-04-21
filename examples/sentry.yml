@@ -1,0 +1,33 @@
+version: 2.1
+orbs:
+    sentry: arrai/sentry@1.0.0
+executors:
+    base:
+        docker:
+            - image: cimg/base:latest
+jobs:
+    test:
+        executor: base
+        steps:
+            - checkout
+workflows:
+    test_and_release:
+        jobs:
+            - test:
+                  name: tests
+                  context: arrai-global
+                  filters:
+                      branches:
+                          only: /.*/
+                      tags:
+                          only: /.*/
+            - sentry/create_release:
+                  name: release
+                  context: arrai-global
+                  requires:
+                      - tests
+                  filters:
+                      tags:
+                          only: /.*/
+                      branches:
+                          ignore: /.*/

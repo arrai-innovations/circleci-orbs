@@ -19,6 +19,7 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [pytest](#pytest)
   - [utils](#utils)
   - [npm-audit](#npm-audit)
+  - [sentry](#sentry)
 - [Developing Orbs](#developing-orbs)
 - [Publishing Orbs](#publishing-orbs)
 
@@ -58,6 +59,16 @@ This orb provides utility functions such as status badging, file uploads, and ss
 ### npm-audit
 
 Provides functionality to generate npm audit reports and e-mail failure reports. For information on configuration parameters, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/npm-audit).
+
+### sentry
+
+Publish releases to [Sentry](https://sentry.io/). Note that the `create_release` job uses the following defaults when creating releases:
+
+-   The project slug is assumed to be the same as the repository name.
+-   The release version is taken from the tag name.
+-   It is assumed that repositories have been configured within the Sentry organisation so that commits can be associated with the release. Refer to the [Sentry documentation on this matter](https://docs.sentry.io/product/cli/releases/#sentry-cli-commit-integration).
+
+For information on how to override these defaults, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/sentry). An [example configuration](/examples/sentry.yml) is provided in the [examples folder](/examples/).
 
 ## Developing Orbs
 
