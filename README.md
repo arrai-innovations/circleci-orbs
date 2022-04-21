@@ -62,7 +62,14 @@ Provides functionality to generate npm audit reports and e-mail failure reports.
 
 ### sentry
 
-Publish releases to Sentry. For information on configuration parameters, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/sentry).
+Publish releases to [Sentry](https://sentry.io/). Note that the `create_release` jobs uses the following defaults when creating releases:
+
+-   The Sentry organisation slug is assumed to be identical to the CI organisation.
+-   The project slug is assumed to be the same as the repository name.
+-   The release version is taken from the tag name.
+-   It is assumed that repositories have been configured within the Sentry organization so that commits can be associated with the release. Refer to the [Sentry documentation on this matter](https://docs.sentry.io/product/cli/releases/#sentry-cli-commit-integration).
+
+For information on how to override these defaults, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/sentry). An [example configuration](/examples/sentry.yml) is provided in the [examples folder](/examples/).
 
 ## Developing Orbs
 
