@@ -47,35 +47,10 @@ jobs:
             - steps: <<parameters.setup>>
             - attach_workspace:
                   at: ./
-            - check
-            - upload:
-                  twine_username: <<parameters.twine_username>>
-                  twine_password: <<parameters.twine_password>>
-                  twine_repository_url: <<parameters.twine_repository_url>>
-commands:
-    check:
-        description: "Checks whether the long description will render correctly on PyPI."
-        steps:
             - run:
                   name: "Check that the long description renders correctly."
                   command: |
                       twine check --strict ./dist/*
-    upload:
-        description: "Upload packages to the repository."
-        parameters:
-            twine_username:
-                description: "The username to use for authentication to the repository."
-                type: string
-                default: ${TWINE_USERNAME}
-            twine_password:
-                description: "The password to use for authentication to the repository."
-                type: string
-                default: ${TWINE_PASSWORD}
-            twine_repository_url:
-                description: "The URL of the repository to upload to."
-                type: string
-                default: ${TWINE_REPOSITORY_URL}
-        steps:
             - run:
                   name: "Upload packages to the repository."
                   command: |
