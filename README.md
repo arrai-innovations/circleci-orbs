@@ -20,6 +20,7 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [utils](#utils)
   - [npm-audit](#npm-audit)
   - [sentry](#sentry)
+  - [pypi](#pypi)
 - [Developing Orbs](#developing-orbs)
 - [Publishing Orbs](#publishing-orbs)
 
@@ -69,6 +70,12 @@ Publish releases to [Sentry](https://sentry.io/). Note that the `create_release`
 -   It is assumed that repositories have been configured within the Sentry organisation so that commits can be associated with the release. Refer to the [Sentry documentation on this matter](https://docs.sentry.io/product/cli/releases/#sentry-cli-commit-integration).
 
 For information on how to override these defaults, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/sentry). An [example configuration](/examples/sentry.yml) is provided in the [examples folder](/examples/).
+
+### pypi
+
+Publishes python packages to a PyPI (or compatible) server. It does not include the build step. It is assumed that some other job builds the packages and persists the dist folder to the workspace. Refer to the [example configuration](/examples/pypi.yml) on how this might look.
+
+For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pypi).
 
 ## Developing Orbs
 
