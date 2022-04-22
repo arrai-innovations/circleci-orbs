@@ -6,6 +6,53 @@ executors:
         docker:
             - image: cimg/base:current
 jobs:
+    deploy_release:
+        parameters:
+            executor:
+                description: "The executor to use for the job."
+                type: executor
+                default: base
+            resource_class:
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+            sentry_org:
+                description: "The Sentry organization slug."
+                type: string
+                default: ${SENTRY_ORG}
+            sentry_project:
+                description: "The Sentry project slug."
+                type: string
+                default: ${CIRCLE_PROJECT_REPONAME}
+            sentry_release:
+                description: "The version for the Sentry release."
+                type: string
+                default: ${CIRCLE_TAG}
+            deployment_url:
+                description: "The URL of the deployment."
+                type: string
+            deployment_environment:
+                description: "The deployment environment (e.g. development, production)"
+                type: string
+            setup:
+                description: "Any additional setup steps."
+                type: steps
+                default:
+                    - run:
+                          name: Install Sentry CLI Tools
+                          command: |
+                              curl -sL https://sentry.io/get-cli/ | bash
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        steps:
+            - steps: <<parameters.setup>>
+            - run:
+                  command: |
+                      sentry-cli deploys new -o "<<parameters.sentry_org>>"             \
+                                             -r "<<parameters.sentry_release>>"         \
+                                             -u "<<parameters.deployment_url>>"         \
+                                             -e "<<parameters.deployment_environment>>"
     create_release:
         parameters:
             executor:
@@ -47,33 +94,6 @@ jobs:
         steps:
             - checkout
             - steps: <<parameters.setup>>
-            - create_release:
-                  sentry_org: <<parameters.sentry_org>>
-                  sentry_project: <<parameters.sentry_project>>
-                  sentry_release: <<parameters.sentry_release>>
-                  sentry_commit_integration: <<parameters.sentry_commit_integration>>
-commands:
-    create_release:
-        description: "Create release on Sentry."
-        parameters:
-            sentry_org:
-                description: "The Sentry organization slug."
-                type: string
-                default: ${SENTRY_ORG}
-            sentry_project:
-                description: "The Sentry project slug."
-                type: string
-                default: ${CIRCLE_PROJECT_REPONAME}
-            sentry_release:
-                description: "The version for the Sentry release."
-                type: string
-                default: ${CIRCLE_TAG}
-            sentry_commit_integration:
-                description: "From where to pull commit information."
-                type: enum
-                enum: ["auto", "local"]
-                default: auto
-        steps:
             - run:
                   command: |
                       export SENTRY_ORG="<<parameters.sentry_org>>"
