@@ -1,0 +1,55 @@
+version: 2.1
+orbs:
+    pypi: arrai/pypi@1.0.0
+executors:
+    python310:
+        docker:
+            - image: cimg/python:3.10
+jobs:
+    test:
+        executor: python310
+        resource_class: small
+        steps:
+            - checkout
+    build:
+        executor: python310
+        resource_class: small
+        steps:
+            - checkout
+            - run:
+                  name: Build Package
+                  command: |
+                      python setup.py sdist bdist_wheel
+            - persist_to_workspace:
+                  root: ./
+                  paths:
+                      - dist
+workflows:
+    test_and_release:
+        jobs:
+            - test:
+                  name: tests
+                  filters:
+                      branches:
+                          only: /.*/
+                      tags:
+                          only: /.*/
+            - build:
+                  name: build
+                  requires:
+                      - tests
+                  filters:
+                      tags:
+                          only: /.*/
+                      branches:
+                          ignore: /.*/
+            - pypi/upload_release:
+                  name: release
+                  context: arrai-private-package-publishing
+                  requires:
+                      - build
+                  filters:
+                      tags:
+                          only: /.*/
+                      branches:
+                          ignore: /.*/
