@@ -1,0 +1,60 @@
+version: 2.1
+description: Helper for uploading python packages to repositories.
+orbs:
+    utils: arrai/utils@1.8.0
+executors:
+    python310:
+        docker:
+            - image: cimg/python:3.10
+        environment:
+            TWINE_NON_INTERACTIVE: 1
+jobs:
+    upload_release:
+        parameters:
+            executor:
+                description: "The executor to use for the job."
+                type: executor
+                default: python310
+            resource_class:
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+            twine_username:
+                description: "The username to use for authentication to the repository."
+                type: string
+                default: ${TWINE_USERNAME}
+            twine_password:
+                description: "The password to use for authentication to the repository."
+                type: string
+                default: ${TWINE_PASSWORD}
+            twine_repository_url:
+                description: "The URL of the repository to upload to."
+                type: string
+                default: ${TWINE_REPOSITORY_URL}
+            setup:
+                description: "Any additional setup steps."
+                type: steps
+                default:
+                    - run:
+                          name: Install Twine
+                          command: |
+                              pip install twine
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        steps:
+            - checkout
+            - steps: <<parameters.setup>>
+            - attach_workspace:
+                  at: ./
+            - run:
+                  name: "Check that the long description renders correctly."
+                  command: |
+                      twine check --strict ./dist/*
+            - run:
+                  name: "Upload packages to the repository."
+                  command: |
+                      export TWINE_USERNAME="<<parameters.twine_username>>"
+                      export TWINE_PASSWORD="<<parameters.twine_password>>"
+                      export TWINE_REPOSITORY_URL="<<parameters.twine_repository_url>>"
+                      twine upload ./dist/*
