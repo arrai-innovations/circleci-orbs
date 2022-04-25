@@ -1,0 +1,77 @@
+version: 2.1
+executors:
+    base:
+        docker:
+            - image: cimg/base:current
+jobs:
+    create_release:
+        parameters:
+            executor:
+                description: "The executor to use for the job."
+                type: executor
+                default: base
+            resource_class:
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+            draft:
+                description: "Save the release as a draft instead of publishing it."
+                type: boolean
+                default: false
+            generate_notes:
+                description: "Automatically generate title and notes for the release."
+                type: boolean
+                default: true
+            notes_file:
+                description: "Read release notes from file."
+                type: string
+                default: ""
+            prerelease:
+                description: "Mark the release as a prerelease."
+                type: boolean
+                default: false
+            target:
+                description: "Target branch or full commit SHA."
+                type: string
+                default: ${CIRCLE_TAG}
+            title:
+                description: "Release title."
+                type: string
+                default: ${CIRCLE_TAG}
+            token:
+                description: "GitHub Token"
+                type: string
+                default: ${GITHUB_TOKEN}
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        steps:
+            - checkout
+            - run:
+                  name: Install GitHub CLI Tools
+                  command: |
+                      curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+                      echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+                      sudo apt update
+                      sudo apt install gh
+            - run:
+                  name: Create Release
+                  shell: /bin/bash
+                  command: |
+                      export GH_TOKEN="<<parameters.token>>"
+                      if [ "<<parameters.draft>>" = "true" ]; then
+                          set -- "$@" --draft
+                      fi
+                      if [ "<<parameters.prerelease>>" = "true" ]; then
+                          set -- "$@" --prerelease
+                      fi
+                      if [ -n "<<parameters.notes_file>>" ] && [ -f "<<parameters.notes_file>>" ] && [ "<<parameters.generate_notes>>" = "false" ]; then
+                          set -- "$@" --notes-file "<<parameters.notes_file>>"
+                      fi
+                      if [ "<<parameters.generate_notes>>" == "true" ]; then
+                          set -- "$@" --generate-notes
+                      fi
+                      if [ -n "<<parameters.title>>" ]; then
+                          set -- "$@" --title "<<parameters.title>>"
+                      fi
+                      gh release create "<<parameters.target>>" "$@"
