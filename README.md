@@ -21,6 +21,7 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [npm-audit](#npm-audit)
   - [sentry](#sentry)
   - [pypi](#pypi)
+  - [github](#github)
 - [Developing Orbs](#developing-orbs)
 - [Publishing Orbs](#publishing-orbs)
 
@@ -76,6 +77,10 @@ For information on how to override these defaults, refer to the generated [docum
 Publishes python packages to a PyPI (or compatible) server. It does not include the build step. It is assumed that some other job builds the packages and persists the dist folder to the workspace. Refer to the [example configuration](/examples/pypi.yml) on how this might look.
 
 For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pypi).
+
+### github
+
+Creates a release on GitHub. For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/github).
 
 ## Developing Orbs
 
