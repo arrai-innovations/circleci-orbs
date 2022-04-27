@@ -7,21 +7,24 @@ executors:
             LANG: C.UTF-8
         docker:
             - image: cimg/node:14.19-browsers
-        resource_class: small
 jobs:
     code_style:
         parameters:
             wd:
+                description: "The working directory for the job."
                 type: string
                 default: ~/project
             executor:
-                description: "Execution environment for the test job."
+                description: "The executor to use for the job."
                 type: executor
                 default: node14
             resource_class:
-                type: string
-                default: medium
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
             version:
+                description: "The version of prettier to use."
                 type: string
                 default: ""
             setup:
