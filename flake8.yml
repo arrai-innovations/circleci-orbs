@@ -26,16 +26,21 @@ jobs:
     flake8:
         parameters:
             flake8_cmd:
+                description: "The flake8 command to use; allows for alternatives (e.g. pflake)."
                 type: string
                 default: "flake8"
             wd:
+                description: "The working directory for the job."
                 type: string
                 default: ./${CIRCLE_PROJECT_REPONAME}
             executor:
+                description: "The executor to use for the job."
                 type: executor
                 default: python36
             resource_class:
-                type: string
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
                 default: small
             setup:
                 description: "Any additional setup steps."
@@ -80,16 +85,21 @@ jobs:
     flake8_pipenv:
         parameters:
             flake8_cmd:
+                description: "The flake8 command to use; allows for alternatives (e.g. pflake)."
                 type: string
                 default: "flake8"
             wd:
+                description: "The working directory for the job."
                 type: string
                 default: .
             executor:
+                description: "The executor to use for the job."
                 type: executor
                 default: python38
             resource_class:
-                type: string
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
                 default: small
             setup:
                 description: "Any additional setup steps."
@@ -99,7 +109,7 @@ jobs:
                           name: Install additional OS packages
                           command: |
                               sudo apt-get update
-                              sudo apt-get install rsync pipenv
+                              sudo apt-get install rsync
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
