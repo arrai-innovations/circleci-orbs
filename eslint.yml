@@ -5,17 +5,21 @@ jobs:
     eslint:
         parameters:
             wd:
+                description: "The working directory for this job."
                 type: string
                 default: ~/project
             files:
+                description: "Files/Directories to lint."
                 type: string
                 default: lib/**
             executor:
+                description: "The executor to use for the job."
                 type: executor
                 default: v16
             resource_class:
-                description: "Amount of CPU and RAM allocated to the container."
-                type: string
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
                 default: small
             setup:
                 description: "Any additional setup steps."
