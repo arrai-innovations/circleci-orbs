@@ -26,35 +26,41 @@ jobs:
     flake8:
         parameters:
             flake8_cmd:
+                description: "The flake8 command to use; allows for alternatives (e.g. pflake)."
                 type: string
                 default: "flake8"
             wd:
+                description: "The working directory for the job."
                 type: string
                 default: ./${CIRCLE_PROJECT_REPONAME}
             executor:
+                description: "The executor to use for the job."
                 type: executor
                 default: python36
             resource_class:
-                type: string
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
                 default: small
             setup:
                 description: "Any additional setup steps."
                 type: steps
-                default:
-                    - run:
-                          name: Install additional OS packages
-                          command: |
-                              sudo apt-get update
-                              sudo apt-get install rsync
+                default: []
             additional_packages:
                 description: "Allows installing additional packages or requirements.txt files."
                 type: string
                 default: ""
+            badge_branch:
+                description: "Limit badge creation to this branch."
+                type: string
+                default: ""
+            current_branch:
+                description: "The current branch."
+                type: string
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
             - checkout
-            - utils/add_ssh_config
             - steps: <<parameters.setup>>
             - setup_flake8:
                   wd: <<parameters.wd>>
@@ -62,70 +68,108 @@ jobs:
             - flake8_errors:
                   flake8_cmd: <<parameters.flake8_cmd>>
                   wd: <<parameters.wd>>
-            - utils/make_status_shield:
-                  when: on_fail
-                  status: errors
-                  color: red
-                  logo: python
-            - utils/make_status_shield:
-                  when: on_success
-                  status: passed
-                  color: brightgreen
-                  logo: python
-            - utils/rsync_file:
-                  when: always
-                  file: ~/status.svg
-                  remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
-                  host: docs
+            - when:
+                  condition:
+                      or:
+                          - not: <<parameters.badge_branch>>
+                          - equal:
+                                [
+                                    <<parameters.badge_branch>>,
+                                    <<parameters.current_branch>>,
+                                ]
+                  steps:
+                      - utils/add_ssh_config
+                      - run:
+                            name: Install additional OS packages
+                            command: |
+                                sudo apt-get update
+                                sudo apt-get install rsync
+                      - utils/make_status_shield:
+                            when: on_fail
+                            status: errors
+                            color: red
+                            logo: python
+                      - utils/make_status_shield:
+                            when: on_success
+                            status: passed
+                            color: brightgreen
+                            logo: python
+                      - utils/rsync_file:
+                            when: always
+                            file: ~/status.svg
+                            remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
+                            host: docs
     flake8_pipenv:
         parameters:
             flake8_cmd:
+                description: "The flake8 command to use; allows for alternatives (e.g. pflake)."
                 type: string
                 default: "flake8"
             wd:
+                description: "The working directory for the job."
                 type: string
                 default: .
             executor:
+                description: "The executor to use for the job."
                 type: executor
                 default: python38
             resource_class:
-                type: string
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
                 default: small
             setup:
                 description: "Any additional setup steps."
                 type: steps
-                default:
-                    - run:
-                          name: Install additional OS packages
-                          command: |
-                              sudo apt-get update
-                              sudo apt-get install rsync pipenv
+                default: []
+            badge_branch:
+                description: "Limit badge creation to this branch."
+                type: string
+                default: ""
+            current_branch:
+                description: "The current branch."
+                type: string
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
             - checkout
-            - utils/add_ssh_config
             - steps: <<parameters.setup>>
             - setup_flake8_pipenv:
                   wd: <<parameters.wd>>
             - flake8_errors_pipenv:
                   flake8_cmd: <<parameters.flake8_cmd>>
                   wd: <<parameters.wd>>
-            - utils/make_status_shield:
-                  when: on_fail
-                  status: errors
-                  color: red
-                  logo: python
-            - utils/make_status_shield:
-                  when: on_success
-                  status: passed
-                  color: brightgreen
-                  logo: python
-            - utils/rsync_file:
-                  when: always
-                  file: ~/status.svg
-                  remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
-                  host: docs
+            - when:
+                  condition:
+                      or:
+                          - not: <<parameters.badge_branch>>
+                          - equal:
+                                [
+                                    <<parameters.badge_branch>>,
+                                    <<parameters.current_branch>>,
+                                ]
+                  steps:
+                      - utils/add_ssh_config
+                      - run:
+                            name: Install additional OS packages
+                            command: |
+                                sudo apt-get update
+                                sudo apt-get install rsync
+                      - utils/make_status_shield:
+                            when: on_fail
+                            status: errors
+                            color: red
+                            logo: python
+                      - utils/make_status_shield:
+                            when: on_success
+                            status: passed
+                            color: brightgreen
+                            logo: python
+                      - utils/rsync_file:
+                            when: always
+                            file: ~/status.svg
+                            remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
+                            host: docs
 commands:
     setup_flake8:
         description: "Set up a python virtual environment to run flake8"
