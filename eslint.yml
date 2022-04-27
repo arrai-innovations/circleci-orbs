@@ -101,3 +101,8 @@ executors:
             LANG: en_US.UTF-8
         docker:
             - image: cimg/node:16.14
+    v18:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:18.0
