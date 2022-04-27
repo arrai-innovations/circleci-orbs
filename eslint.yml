@@ -20,21 +20,22 @@ jobs:
             setup:
                 description: "Any additional setup steps."
                 type: steps
-                default:
-                    - run:
-                          name: Install additional OS packages
-                          command: |
-                              sudo apt-get update
-                              sudo apt-get install rsync
+                default: []
             config:
                 description: "Any additional configuration steps."
                 type: steps
                 default: []
+            badge_branch:
+                description: "Limit badge creation to this branch."
+                type: string
+                default: ""
+            current_branch:
+                description: "The current branch."
+                type: string
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
             - checkout
-            - utils/add_ssh_config
             - steps: <<parameters.setup>>
             - run:
                   name: Install the latest eslint
@@ -45,31 +46,57 @@ jobs:
                   command: |
                       cd <<parameters.wd>>
                       eslint --color <<parameters.files>> | tee ~/lint
-            - utils/make_status_shield:
-                  when: on_fail
-                  status: errors
-                  color: red
-                  logo: eslint
+            - when:
+                  condition:
+                      or:
+                          - not: <<parameters.badge_branch>>
+                          - equal:
+                                [
+                                    <<parameters.badge_branch>>,
+                                    <<parameters.current_branch>>,
+                                ]
+                  steps:
+                      - run:
+                            name: Install additional OS packages
+                            command: |
+                                sudo apt-get update
+                                sudo apt-get install rsync
+                      - utils/add_ssh_config
+                      - utils/make_status_shield:
+                            when: on_fail
+                            status: errors
+                            color: red
+                            logo: eslint
             - run:
                   name: Check if we had any warnings
                   when: always
                   command: test ! -s ~/lint
-            - utils/make_status_shield:
-                  when: always
-                  status: warnings
-                  color: orange
-                  logo: eslint
-                  preserve: true
-            - utils/make_status_shield:
-                  when: on_success
-                  status: passed
-                  color: brightgreen
-                  logo: eslint
-            - utils/rsync_file:
-                  when: always
-                  file: ~/status.svg
-                  remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
-                  host: docs
+            - when:
+                  condition:
+                      or:
+                          - not: <<parameters.badge_branch>>
+                          - equal:
+                                [
+                                    <<parameters.badge_branch>>,
+                                    <<parameters.current_branch>>,
+                                ]
+                  steps:
+                      - utils/make_status_shield:
+                            when: always
+                            status: warnings
+                            color: orange
+                            logo: eslint
+                            preserve: true
+                      - utils/make_status_shield:
+                            when: on_success
+                            status: passed
+                            color: brightgreen
+                            logo: eslint
+                      - utils/rsync_file:
+                            when: always
+                            file: ~/status.svg
+                            remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
+                            host: docs
 executors:
     lts:
         environment:
