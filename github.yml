@@ -19,6 +19,10 @@ jobs:
                 description: "Save the release as a draft instead of publishing it."
                 type: boolean
                 default: false
+            files:
+                description: "Files to upload as part of the release (e.g. ./dist/*.zip)"
+                type: string
+                default: ""
             generate_notes:
                 description: "Automatically generate title and notes for the release."
                 type: boolean
@@ -47,6 +51,8 @@ jobs:
         resource_class: <<parameters.resource_class>>
         steps:
             - checkout
+            - attach_workspace:
+                  at: ./
             - run:
                   name: Install GitHub CLI Tools
                   command: |
@@ -73,5 +79,8 @@ jobs:
                       fi
                       if [ -n "<<parameters.title>>" ]; then
                           set -- "$@" --title "<<parameters.title>>"
+                      fi
+                      if [ -n "<<parameters.files>>" ]; then
+                          set -- "$@" <<parameters.files>>
                       fi
                       gh release create "<<parameters.target>>" "$@"
