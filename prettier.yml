@@ -31,13 +31,10 @@ jobs:
                 description: "Any additional setup steps."
                 type: steps
                 default: []
-            badge_branch:
-                description: "Limit badge creation to this branch."
-                type: string
-                default: ""
-            current_branch:
-                description: "The current branch."
-                type: string
+            create_badges:
+                description: "Generate badges."
+                type: boolean
+                default: true
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
@@ -53,14 +50,7 @@ jobs:
                       cd <<parameters.wd>>
                       npx prettier -c .
             - when:
-                  condition:
-                      or:
-                          - not: <<parameters.badge_branch>>
-                          - equal:
-                                [
-                                    <<parameters.badge_branch>>,
-                                    <<parameters.current_branch>>,
-                                ]
+                  condition: <<parameters.create_badges>>
                   steps:
                       - utils/add_ssh_config
                       - run:
