@@ -1,0 +1,87 @@
+version: 2.1
+orbs:
+    utils: arrai/utils@1.8.0
+executors:
+    python310:
+        docker:
+            - image: cimg/python:3.10
+    python39:
+        docker:
+            - image: cimg/python:3.9
+    python38:
+        docker:
+            - image: cimg/python:3.8
+    python36:
+        docker:
+            - image: cimg/python:3.6
+jobs:
+    safety:
+        parameters:
+            executor:
+                description: "The executor to use for the job."
+                type: executor
+                default: python310
+            resource_class:
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+            config:
+                description: "Any additional configuration steps."
+                type: steps
+                default: []
+            setup:
+                description: "Any additional setup steps."
+                type: steps
+                default: []
+            create_badges:
+                description: "Generate badges."
+                type: boolean
+                default: true
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        environment:
+            PIPENV_DONT_LOAD_ENV: 1
+        steps:
+            - checkout
+            - steps: <<parameters.setup>>
+            - restore_cache:
+                  keys:
+                      - pipenv-{{ arch }}-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+            - run:
+                  name: Set up python environment
+                  command: |
+                      pipenv install | cat; test ${PIPESTATUS[0]} -eq 0
+            - save_cache:
+                  paths:
+                      - ~/.local/share/virtualenvs/
+                  key: pipenv-{{ arch }}-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+            - steps: <<parameters.config>>
+            - run:
+                  name: Run safety
+                  command: |
+                      pipenv check
+            - when:
+                  condition: <<parameters.create_badges>>
+                  steps:
+                      - utils/add_ssh_config
+                      - run:
+                            name: Install additional OS packages
+                            command: |
+                                sudo apt update
+                                sudo apt install rsync
+                      - utils/make_status_shield:
+                            when: on_fail
+                            status: errors
+                            color: red
+                            logo: python
+                      - utils/make_status_shield:
+                            when: on_success
+                            status: passed
+                            color: brightgreen
+                            logo: python
+                      - utils/rsync_file:
+                            when: always
+                            file: ~/status.svg
+                            remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.svg
+                            host: docs
