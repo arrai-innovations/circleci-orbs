@@ -50,13 +50,10 @@ jobs:
                 description: "Allows installing additional packages or requirements.txt files."
                 type: string
                 default: ""
-            badge_branch:
-                description: "Limit badge creation to this branch."
-                type: string
-                default: ""
-            current_branch:
-                description: "The current branch."
-                type: string
+            create_badges:
+                description: "Generate badges."
+                type: boolean
+                default: true
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
@@ -69,14 +66,7 @@ jobs:
                   flake8_cmd: <<parameters.flake8_cmd>>
                   wd: <<parameters.wd>>
             - when:
-                  condition:
-                      or:
-                          - not: <<parameters.badge_branch>>
-                          - equal:
-                                [
-                                    <<parameters.badge_branch>>,
-                                    <<parameters.current_branch>>,
-                                ]
+                  condition: <<parameters.create_badges>>
                   steps:
                       - utils/add_ssh_config
                       - run:
@@ -122,13 +112,10 @@ jobs:
                 description: "Any additional setup steps."
                 type: steps
                 default: []
-            badge_branch:
-                description: "Limit badge creation to this branch."
-                type: string
-                default: ""
-            current_branch:
-                description: "The current branch."
-                type: string
+            create_badges:
+                description: "Generate badges."
+                type: boolean
+                default: true
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
@@ -140,14 +127,7 @@ jobs:
                   flake8_cmd: <<parameters.flake8_cmd>>
                   wd: <<parameters.wd>>
             - when:
-                  condition:
-                      or:
-                          - not: <<parameters.badge_branch>>
-                          - equal:
-                                [
-                                    <<parameters.badge_branch>>,
-                                    <<parameters.current_branch>>,
-                                ]
+                  condition: <<parameters.create_badges>>
                   steps:
                       - utils/add_ssh_config
                       - run:
