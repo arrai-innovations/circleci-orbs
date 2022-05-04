@@ -56,7 +56,7 @@ jobs:
                 type: steps
                 default:
                     - run:
-                          name: Install additional OS packages
+                          name: "Install additional OS packages"
                           command: |
                               sudo apt update
                               sudo apt install rsync colorized-logs jq
@@ -78,16 +78,16 @@ jobs:
             - utils/add_ssh_config
             - steps: <<parameters.setup>>
             - run:
-                  name: Install the latest npm
+                  name: "Install the latest npm"
                   command: |
                       npm install -g --upgrade npm
             - run:
-                  name: Run npm audit
+                  name: "Run npm audit"
                   command: |
                       cd <<parameters.wd>>
                       npx -y better-npm-audit audit <<# parameters.skip_dev >> -p <</ parameters.skip_dev >> |& tee ~/audit.log
             - run:
-                  name: Generate HTML audit report
+                  name: "Generate HTML audit report"
                   when: on_fail
                   command: cat ${HOME}/audit.log | ansi2html > ${HOME}/audit.html
             - utils/send_email:
@@ -99,7 +99,7 @@ jobs:
                   condition: <<parameters.create_badges>>
                   steps:
                       - run:
-                            name: Count vulnerabilities
+                            name: "Count vulnerabilities"
                             when: on_fail
                             command: |
                                 cd <<parameters.wd>>
@@ -139,7 +139,7 @@ jobs:
                 type: steps
                 default:
                     - run:
-                          name: Install additional OS packages
+                          name: "Install additional OS packages"
                           command: |
                               sudo apt update
                               sudo apt install rsync
@@ -192,7 +192,7 @@ jobs:
                             remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.svg
                             host: docs
                       - run:
-                            name: Create coverage report
+                            name: "Create coverage report"
                             when: always
                             command: |
                                 jq '((.total.branches.pct + .total.statements.pct) / 2) | floor' coverage/coverage-summary.json >> /tmp/.coveragep
