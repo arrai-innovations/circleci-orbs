@@ -37,6 +37,17 @@ executors:
             LANG: en_US.UTF-8
         docker:
             - image: cimg/node:18.0
+commands:
+    upgrade_npm:
+        steps:
+            - run:
+                  name: "Install the latest npm"
+                  command: |
+                      if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
+                          sudo npm install -g --upgrade npm
+                      else
+                          npm install -g --upgrade npm
+                      fi
 jobs:
     audit:
         parameters:
@@ -77,10 +88,7 @@ jobs:
             - checkout
             - utils/add_ssh_config
             - steps: <<parameters.setup>>
-            - run:
-                  name: "Install the latest npm"
-                  command: |
-                      npm install -g --upgrade npm
+            - upgrade_npm
             - run:
                   name: "Run npm audit"
                   command: |
@@ -158,10 +166,10 @@ jobs:
             - utils/add_ssh_config
             - checkout
             - steps: <<parameters.setup>>
+            - upgrade_npm
             - run:
                   name: "Install Packages"
                   command: |
-                      npm install -g --upgrade npm
                       npm ci
             - steps: <<parameters.config>>
             - run:
@@ -230,10 +238,7 @@ jobs:
         steps:
             - checkout
             - steps: <<parameters.setup>>
-            - run:
-                  name: "Upgrade npm"
-                  command: |
-                      npm install -g --upgrade npm
+            - upgrade_npm
             - steps: <<parameters.config>>
             - run:
                   name: "Publish to npm"
