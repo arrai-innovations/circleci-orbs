@@ -58,9 +58,9 @@ Provides generic test environment for pytest based tests that have dependencies 
 
 This orb provides utility functions such as status badging, file uploads, and ssh key import. This is required by the other orbs. For information on the available utility functions, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/utils).
 
-### npm-audit
+### npmt
 
-Provides functionality to generate npm audit reports and e-mail failure reports. For information on configuration parameters, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/npm-audit).
+Provides npm utility functions. For information on available functions and configuration parameters, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/npm).
 
 ### sentry
 
