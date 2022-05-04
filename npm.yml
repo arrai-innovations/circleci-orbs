@@ -204,3 +204,38 @@ jobs:
                             file: ~/coverage.svg
                             remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.coverage.svg
                             host: docs
+    publish:
+        parameters:
+            wd:
+                type: string
+                default: ~/project
+            executor:
+                type: executor
+                default: lts
+            resource_class:
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+            setup:
+                description: "Any additional setup steps."
+                type: steps
+                default: []
+            config:
+                description: "Any additional configuration steps."
+                type: steps
+                default: []
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        steps:
+            - checkout
+            - steps: <<parameters.setup>>
+            - run:
+                  name: "Upgrade npm"
+                  command: |
+                      npm install -g --upgrade npm
+            - steps: <<parameters.config>>
+            - run:
+                  name: "Publish to npm"
+                  command: |
+                      npm publish
