@@ -120,3 +120,86 @@ jobs:
                             file: ~/status.svg
                             remote_file: ${CIRCLE_BRANCH}/npm-audit.svg
                             host: docs
+    coverage:
+        parameters:
+            wd:
+                type: string
+                default: ~/project
+            executor:
+                type: executor
+                default: lts
+            resource_class:
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: medium
+            setup:
+                description: "Any additional setup steps."
+                type: steps
+                default:
+                    - run:
+                          name: Install additional OS packages
+                          command: |
+                              sudo apt update
+                              sudo apt install rsync
+            config:
+                description: "Any additional configuration steps."
+                type: steps
+                default: []
+            create_badges:
+                description: "Generate badges."
+                type: boolean
+                default: true
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        steps:
+            - checkout
+            - utils/add_ssh_config
+            - checkout
+            - steps: <<parameters.setup>>
+            - run:
+                  name: "Install Packages"
+                  command: |
+                      sudo npm install -g --upgrade npm
+                      npm ci
+            - steps: <<parameters.config>>
+            - run:
+                  name: "Run Tests"
+                  command: |
+                      npm run coverage
+            - utils/rsync_folder:
+                  when: always
+                  folder: ./coverage/
+                  remote_folder: ${CIRCLE_BRANCH}/coverage_${CIRCLE_JOB}
+                  host: docs
+            - when:
+                  condition: <<parameters.create_badges>>
+                  steps:
+                      - utils/make_status_shield:
+                            when: on_fail
+                            status: errors
+                            color: red
+                            logo: Node.js
+                      - utils/make_status_shield:
+                            when: on_success
+                            status: passed
+                            color: brightgreen
+                            logo: Node.js
+                      - utils/rsync_file:
+                            when: always
+                            file: ~/status.svg
+                            remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.svg
+                            host: docs
+                      - run:
+                            name: Create coverage report
+                            when: always
+                            command: |
+                                jq '((.total.branches.pct + .total.statements.pct) / 2) | floor' coverage/coverage-summary.json >> /tmp/.coveragep
+                      - utils/make_coverage_shield:
+                            when: always
+                            link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH}/coverage_${CIRCLE_JOB}/
+                      - utils/rsync_file:
+                            when: always
+                            file: ~/coverage.svg
+                            remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.coverage.svg
+                            host: docs
