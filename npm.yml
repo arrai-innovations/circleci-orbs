@@ -115,7 +115,7 @@ jobs:
                             status: "0"
                             label: vulnerabilities
                             color: brightgreen
-                            logo: eslint
+                            logo: npm
                       - utils/rsync_file:
                             when: always
                             file: ~/status.svg
