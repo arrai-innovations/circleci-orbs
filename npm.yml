@@ -2,7 +2,7 @@ version: 2.1
 orbs:
     utils: arrai/utils@1.8.0
 jobs:
-    npm-audit:
+    audit:
         parameters:
             wd:
                 type: string
