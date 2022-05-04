@@ -18,7 +18,7 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [prettier](#prettier)
   - [pytest](#pytest)
   - [utils](#utils)
-  - [npm-audit](#npm-audit)
+  - [npm](#npm)
   - [sentry](#sentry)
   - [pypi](#pypi)
   - [github](#github)
@@ -58,7 +58,7 @@ Provides generic test environment for pytest based tests that have dependencies 
 
 This orb provides utility functions such as status badging, file uploads, and ssh key import. This is required by the other orbs. For information on the available utility functions, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/utils).
 
-### npmt
+### npm
 
 Provides npm utility functions. For information on available functions and configuration parameters, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/npm).
 
