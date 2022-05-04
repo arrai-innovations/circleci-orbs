@@ -79,7 +79,8 @@ jobs:
             - steps: <<parameters.setup>>
             - run:
                   name: Install the latest npm
-                  command: sudo npm install -g --upgrade npm
+                  command: |
+                      npm install -g --upgrade npm
             - run:
                   name: Run npm audit
                   command: |
@@ -160,7 +161,7 @@ jobs:
             - run:
                   name: "Install Packages"
                   command: |
-                      sudo npm install -g --upgrade npm
+                      npm install -g --upgrade npm
                       npm ci
             - steps: <<parameters.config>>
             - run:
