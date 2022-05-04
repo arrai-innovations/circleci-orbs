@@ -32,6 +32,11 @@ executors:
             LANG: en_US.UTF-8
         docker:
             - image: cimg/node:17.9
+    v18:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:18.0
 jobs:
     audit:
         parameters:
