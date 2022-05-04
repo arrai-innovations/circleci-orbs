@@ -58,8 +58,8 @@ jobs:
                     - run:
                           name: Install additional OS packages
                           command: |
-                              sudo apt-get update
-                              sudo apt-get install rsync colorized-logs jq
+                              sudo apt update
+                              sudo apt install rsync colorized-logs jq
             report_to:
                 description: "E-mail address to send npm audit failure report to."
                 type: string
