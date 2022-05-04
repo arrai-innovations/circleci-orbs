@@ -11,8 +11,9 @@ jobs:
                 type: executor
                 default: lts
             resource_class:
-                description: "Amount of CPU and RAM allocated to the container."
-                type: string
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
                 default: small
             setup:
                 description: "Any additional setup steps."
