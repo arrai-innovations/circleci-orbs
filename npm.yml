@@ -1,6 +1,37 @@
 version: 2.1
 orbs:
     utils: arrai/utils@1.8.0
+executors:
+    lts:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:lts
+    current:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:current
+    v12:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:12.22
+    v14:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:14.18
+    v16:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:16.13
+    v17:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:17.1
 jobs:
     audit:
         parameters:
@@ -77,34 +108,3 @@ jobs:
                   file: ~/status.svg
                   remote_file: $CIRCLE_BRANCH/npm-audit.svg
                   host: docs
-executors:
-    lts:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:lts
-    current:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:current
-    v12:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:12.22
-    v14:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:14.18
-    v16:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:16.13
-    v17:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:17.1
