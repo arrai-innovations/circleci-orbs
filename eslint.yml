@@ -1,6 +1,17 @@
 version: 2.1
 orbs:
     utils: arrai/utils@1.9.0
+commands:
+    upgrade_npm:
+        steps:
+            - run:
+                  name: "Install the latest npm"
+                  command: |
+                      if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
+                          sudo npm install -g --upgrade npm
+                      else
+                          npm install -g --upgrade npm
+                      fi
 jobs:
     eslint:
         parameters:
@@ -38,9 +49,7 @@ jobs:
         steps:
             - checkout
             - steps: <<parameters.setup>>
-            - run:
-                  name: Install the latest eslint
-                  command: sudo npm install -g eslint
+            - upgrade_npm
             - steps: <<parameters.config>>
             - run:
                   name: Run eslint
