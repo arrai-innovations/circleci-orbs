@@ -110,8 +110,11 @@ jobs:
                             name: "Count vulnerabilities"
                             when: on_fail
                             command: |
-                                cd <<parameters.wd>>
-                                echo "export TOTAL_VULNERABILITIES=`tail -1 audit.log | grep -Po '^(\d+)' --color=never`" >> $BASH_ENV
+                                if [ -f ~/audit.log ]; then
+                                    echo "export TOTAL_VULNERABILITIES=`tail -1 ~/audit.log | grep -Po '^(\d+)' --color=never`" >> $BASH_ENV
+                                else
+                                    echo "export TOTAL_VULNERABILITIES=?" >> $BASH_ENV
+                                fi
                       - utils/make_status_shield:
                             when: on_fail
                             status: "${TOTAL_VULNERABILITIES}"
