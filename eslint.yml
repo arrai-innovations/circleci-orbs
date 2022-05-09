@@ -12,6 +12,17 @@ commands:
                       else
                           npm install -g --upgrade npm
                       fi
+
+    install_eslint:
+        steps:
+            - run:
+                  name: "Install the latest eslint"
+                  command: |
+                      if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
+                          sudo npm install -g eslint
+                      else
+                          npm install -g eslint
+                      fi
 jobs:
     eslint:
         parameters:
@@ -50,6 +61,7 @@ jobs:
             - checkout
             - steps: <<parameters.setup>>
             - upgrade_npm
+            - install_eslint
             - steps: <<parameters.config>>
             - run:
                   name: Run eslint
