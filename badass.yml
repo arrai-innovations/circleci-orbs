@@ -65,8 +65,9 @@ jobs:
                 type: executor
                 default: python36
             resource_class:
-                description: "Amount of CPU and RAM allocated to the container."
-                type: string
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
                 default: medium
             parallel:
                 description: "The level of test parallelism."
@@ -188,8 +189,9 @@ jobs:
                 type: executor
                 default: python36
             resource_class:
-                description: "Amount of CPU and RAM allocated to the container."
-                type: string
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
                 default: medium
             parallel:
                 description: "The level of test parallelism."
@@ -323,8 +325,9 @@ jobs:
                 type: executor
                 default: python36
             resource_class:
-                description: "Amount of CPU and RAM allocated to the container."
-                type: string
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
                 default: small
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>

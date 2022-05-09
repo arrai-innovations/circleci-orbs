@@ -14,7 +14,9 @@ jobs:
             executor:
                 type: executor
             resource_class:
-                type: string
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
                 default: medium
             presetup:
                 description: "Any additional pre-setup steps."
