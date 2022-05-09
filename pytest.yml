@@ -32,6 +32,8 @@ jobs:
                 default: []
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
+        environment:
+            PIPENV_DONT_LOAD_ENV: 1
         steps:
             - checkout
             - utils/add_ssh_config
