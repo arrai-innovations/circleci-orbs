@@ -19,7 +19,7 @@ commands:
             key:
                 description: "Your mailgun API key."
                 type: string
-                default: ${MAILGUN_API}
+                default: ${MAILGUN_API_KEY}
             domain:
                 description: "Your mailgun domain."
                 type: string
