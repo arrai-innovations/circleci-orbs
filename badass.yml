@@ -34,6 +34,12 @@ executors:
             - image: cimg/postgres:10.18
             - image: cimg/redis:5.0
             - image: selenium/standalone-chrome:latest
+    python36-simple:
+        docker:
+            - image: cimg/python:3.6
+    python38-simple:
+        docker:
+            - image: cimg/python:3.8
 jobs:
     badass:
         parameters:
@@ -297,10 +303,6 @@ jobs:
                 description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
                 type: string
                 default: ${CIRCLE_PROJECT_REPONAME}
-            setup:
-                description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
-                type: steps
-                default: []
             dash_r_files:
                 description: "space seperated paths to requirements files."
                 type: string
@@ -309,10 +311,6 @@ jobs:
                 description: "Any additional arguments to pip install."
                 type: string
                 default: ""
-            config:
-                description: "Any additional BMS configuration steps."
-                type: steps
-                default: []
             badge_label:
                 description: "The label to use for the badge."
                 type: string
@@ -323,7 +321,7 @@ jobs:
             executor:
                 description: "Execution environment for the test job."
                 type: executor
-                default: python36
+                default: python36-simple
             resource_class:
                 description: "The resource class to use for the job."
                 type: enum
@@ -335,27 +333,6 @@ jobs:
         steps:
             - checkout
             - utils/add_ssh_config
-            - steps: <<parameters.setup>>
-            - generate-hash:
-                  in-files: <<parameters.dash_r_files>>
-                  out-file: /tmp/requirements-checksum
-                  wd: <<parameters.wd>>
-            - restore_cache:
-                  keys:
-                      - pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
-            - setup_python_env_dashed:
-                  venv: <<parameters.venv>>
-                  dash_r_files: <<parameters.dash_r_files>>
-                  extra_pip_args: <<parameters.extra_pip_args>>
-                  wd: <<parameters.wd>>
-            - save_cache:
-                  paths:
-                      - <<parameters.venv>>
-                  key: pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
-            - setup_badass_config:
-                  venv: <<parameters.venv>>
-                  wd: <<parameters.wd>>
-            - steps: <<parameters.config>>
             - attach_workspace:
                   at: ~/
             - run:
@@ -363,6 +340,13 @@ jobs:
                   command: |
                       shopt -s dotglob
                       cp ~/workspace/* <<parameters.wd>>/
+            - run:
+                  name: Install requirements
+                  command: |
+                      cd <<parameters.wd>>
+                      DASH_R_FILES_ARRAY=(<<parameters.dash_r_files>>)
+                      DASH_R_FILES=${DASH_R_FILES_ARRAY[@]/#/-r }
+                      pip install $DASH_R_FILES <<parameters.extra_pip_args>> | cat; test ${PIPESTATUS[0]} -eq 0
             - run:
                   name: Combine status
                   command: |
