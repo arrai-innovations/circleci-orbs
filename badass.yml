@@ -243,6 +243,8 @@ jobs:
             - restore_cache:
                   keys:
                       - pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                      - pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}
+                      - pip-{{ arch }}-<<parameters.meta_job_name>>
             - setup_python_env_dashed:
                   venv: <<parameters.venv>>
                   dash_r_files: <<parameters.dash_r_files>>
@@ -340,6 +342,15 @@ jobs:
                   command: |
                       shopt -s dotglob
                       cp ~/workspace/* <<parameters.wd>>/
+            - generate-hash:
+                  in-files: <<parameters.dash_r_files>>
+                  out-file: /tmp/requirements-checksum
+                  wd: <<parameters.wd>>
+            - restore_cache:
+                  keys:
+                      - pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
+                      - pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}
+                      - pip-{{ arch }}-<<parameters.meta_job_name>>
             - run:
                   name: Install requirements
                   command: |
@@ -347,6 +358,10 @@ jobs:
                       DASH_R_FILES_ARRAY=(<<parameters.dash_r_files>>)
                       DASH_R_FILES=${DASH_R_FILES_ARRAY[@]/#/-r }
                       pip install $DASH_R_FILES <<parameters.extra_pip_args>> | cat; test ${PIPESTATUS[0]} -eq 0
+            - save_cache:
+                  paths:
+                      - /home/circleci/.pyenv/versions/
+                  key: pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
             - run:
                   name: Combine status
                   command: |
