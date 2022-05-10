@@ -8,14 +8,14 @@ executors:
             LC_ALL: C.UTF-8
         docker:
             - image: arrai/python:38-el8
-            - image: cimg/postgres:11.13
+            - image: cimg/postgres:11.15
             - image: cimg/redis:5.0
     python36:
         environment:
             LANG: en_US.UTF-8
         docker:
             - image: arrai/python:36-el7
-            - image: cimg/postgres:10.18
+            - image: cimg/postgres:10.20
             - image: cimg/redis:5.0
     python38-selenium:
         environment:
@@ -23,7 +23,7 @@ executors:
             LC_ALL: C.UTF-8
         docker:
             - image: arrai/python:38-el8
-            - image: cimg/postgres:11.13
+            - image: cimg/postgres:11.15
             - image: cimg/redis:5.0
             - image: selenium/standalone-chrome:latest
     python36-selenium:
@@ -31,7 +31,7 @@ executors:
             LANG: en_US.UTF-8
         docker:
             - image: arrai/python:36-el7
-            - image: cimg/postgres:10.18
+            - image: cimg/postgres:10.20
             - image: cimg/redis:5.0
             - image: selenium/standalone-chrome:latest
     python36-simple:
