@@ -51,6 +51,8 @@ jobs:
             - restore_cache: # ensure this step occurs *before* installing dependencies
                   keys:
                       - pipenv-{{ arch }}-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                      - pipenv-{{ arch }}-{{ .Branch }}
+                      - pipenv-{{ arch }}
             - run:
                   name: Setup pipenv environment.
                   command: |
