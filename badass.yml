@@ -283,8 +283,8 @@ jobs:
         parallelism: <<parameters.parallelism>>
         working_directory: <<parameters.repodir>>
         steps:
-            - steps: <<parameters.setup>>
             - utils/add_maxmind_config
+            - steps: <<parameters.setup>>
             - attach_workspace:
                   at: ~/
             - steps: <<parameters.config>>
