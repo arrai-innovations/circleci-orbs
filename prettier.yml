@@ -41,9 +41,21 @@ jobs:
             - checkout
             - steps: <<parameters.setup>>
             - run:
+                  name: Install the latest npm
+                  command: |
+                      if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
+                          sudo npm install -g --upgrade npm
+                      else
+                          npm install -g --upgrade npm
+                      fi
+            - run:
                   name: Install prettier
                   command: |
-                      sudo npm install -g "prettier$([ ! -z <<parameters.version>> ] && echo "@<<parameters.version>>")"
+                      if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
+                          sudo npm install -g "prettier$([ ! -z <<parameters.version>> ] && echo "@<<parameters.version>>")"
+                      else
+                          npm install -g "prettier$([ ! -z <<parameters.version>> ] && echo "@<<parameters.version>>")"
+                      fi
             - run:
                   name: Check prettier
                   command: |
@@ -56,8 +68,8 @@ jobs:
                       - run:
                             name: Install additional OS packages
                             command: |
-                                sudo apt-get update
-                                sudo apt-get install rsync
+                                sudo apt update
+                                sudo apt install rsync
                       - utils/make_status_shield:
                             when: on_fail
                             status: not_quite_prettier
