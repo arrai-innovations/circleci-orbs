@@ -271,13 +271,23 @@ jobs:
                 description: "The level of test parallelism via circleci splitting."
                 type: integer
                 default: 4
+            setup:
+                description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
+                type: steps
+                default: []
+            config:
+                description: "Any additional BMS configuration steps."
+                type: steps
+                default: []
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         parallelism: <<parameters.parallelism>>
         working_directory: <<parameters.repodir>>
         steps:
+            - steps: <<parameters.setup>>
             - attach_workspace:
                   at: ~/
+            - steps: <<parameters.config>>
             - run_tests_spread:
                   wd: <<parameters.wd>>
                   parallel: <<parameters.parallel>>
