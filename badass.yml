@@ -346,6 +346,11 @@ jobs:
         working_directory: <<parameters.repodir>>
         steps:
             - run:
+                  name: Install additional OS packages
+                  command: |
+                      sudo apt update
+                      sudo apt install rsync
+            - run:
                   name: Create ssh folder
                   command: |
                       mkdir -m 0700 ~/.ssh/
