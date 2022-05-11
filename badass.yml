@@ -4,8 +4,7 @@ orbs:
 executors:
     python38:
         environment:
-            LANG: C.UTF-8
-            LC_ALL: C.UTF-8
+            LANG: en_US.UTF-8
         docker:
             - image: arrai/python:38-el8
             - image: cimg/postgres:11.15
@@ -19,8 +18,7 @@ executors:
             - image: cimg/redis:5.0
     python38-selenium:
         environment:
-            LANG: C.UTF-8
-            LC_ALL: C.UTF-8
+            LANG: en_US.UTF-8
         docker:
             - image: arrai/python:38-el8
             - image: cimg/postgres:11.15
@@ -34,6 +32,16 @@ executors:
             - image: cimg/postgres:10.20
             - image: cimg/redis:5.0
             - image: selenium/standalone-chrome:latest
+    python36-arrai:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: arrai/python:36-el7
+    python38-arrai:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: arrai/python:38-el8
     python36-simple:
         docker:
             - image: cimg/python:3.6
@@ -43,10 +51,6 @@ executors:
 jobs:
     badass:
         parameters:
-            venv:
-                description: "Location of the Python virtual environment (no trailing slash)."
-                type: string
-                default: ~/.venv
             repodir:
                 description: "Location of the git repo (no trailing slash)."
                 type: string
@@ -69,7 +73,7 @@ jobs:
             executor:
                 description: "Execution environment for the test job."
                 type: executor
-                default: python36
+                default: python38
             resource_class:
                 description: "The resource class to use for the job."
                 type: enum
@@ -108,19 +112,15 @@ jobs:
                   host: docs
             - steps: <<parameters.setup>>
             - setup_python_env:
-                  venv: <<parameters.venv>>
                   pip_install_args: <<parameters.pip_install_args>>
             - setup_badass_config:
-                  venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
             - steps: <<parameters.config>>
             - run_tests:
-                  venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
                   parallel: <<parameters.parallel>>
                   test_script: <<parameters.test_script>>
             - coverage_combine_and_html:
-                  venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
             - utils/rsync_folder:
                   when: always
@@ -136,7 +136,6 @@ jobs:
                   remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.coverage.svg
                   host: docs
             - pip_freeze:
-                  venv: <<parameters.venv>>
                   file: ~/pip.freeze
             - utils/rsync_file:
                   when: always
@@ -160,16 +159,8 @@ jobs:
                   file: ~/status.svg
                   remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
                   host: docs
-    badass_test_spread:
+    badass_test_pre_spread:
         parameters:
-            venv:
-                description: "Location of the Python virtual environment (no trailing slash)."
-                type: string
-                default: ~/.venv
-            repodir:
-                description: "Location of the git repo (no trailing slash)."
-                type: string
-                default: ~/project
             wd:
                 description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
                 type: string
@@ -193,16 +184,12 @@ jobs:
             executor:
                 description: "Execution environment for the test job."
                 type: executor
-                default: python36
+                default: python38-arrai
             resource_class:
                 description: "The resource class to use for the job."
                 type: enum
                 enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
                 default: medium
-            parallel:
-                description: "The level of test parallelism."
-                type: integer
-                default: 4
             badge_label:
                 description: "The label to use for the badge."
                 type: string
@@ -210,18 +197,8 @@ jobs:
             meta_job_name:
                 description: "The filename to use for the badge."
                 type: string
-            test_script:
-                description: "The test script to run (e.g., manage.py test)."
-                type: string
-                default: manage.py test
-            parallelism:
-                description: "The level of test parallelism via circleci splitting."
-                type: integer
-                default: 4
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
-        parallelism: <<parameters.parallelism>>
-        working_directory: <<parameters.repodir>>
         steps:
             - checkout
             - utils/add_maxmind_config
@@ -246,23 +223,62 @@ jobs:
                       - pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}
                       - pip-{{ arch }}-<<parameters.meta_job_name>>
             - setup_python_env_dashed:
-                  venv: <<parameters.venv>>
                   dash_r_files: <<parameters.dash_r_files>>
                   extra_pip_args: <<parameters.extra_pip_args>>
                   wd: <<parameters.wd>>
             - save_cache:
                   paths:
-                      - <<parameters.venv>>
+                      - ~/.venv
                   key: pip-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/requirements-checksum" }}
             - setup_badass_config:
-                  venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
             - steps: <<parameters.config>>
             - pip_freeze:
-                  venv: <<parameters.venv>>
                   file: <<parameters.wd>>/pip.freeze
+            - persist_to_workspace:
+                  root: ~/
+                  paths:
+                      - project
+                      - .venv
+    badass_test_spread:
+        parameters:
+            repodir:
+                description: "Location of the git repo (no trailing slash)."
+                type: string
+                default: ~/project
+            wd:
+                description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
+                type: string
+                default: ${CIRCLE_PROJECT_REPONAME}
+            executor:
+                description: "Execution environment for the test job."
+                type: executor
+                default: python38
+            resource_class:
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: medium
+            parallel:
+                description: "The level of test parallelism."
+                type: integer
+                default: 4
+            test_script:
+                description: "The test script to run (e.g., manage.py test)."
+                type: string
+                default: manage.py test
+            parallelism:
+                description: "The level of test parallelism via circleci splitting."
+                type: integer
+                default: 4
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        parallelism: <<parameters.parallelism>>
+        working_directory: <<parameters.repodir>>
+        steps:
+            - attach_workspace:
+                  at: ~/
             - run_tests_spread:
-                  venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
                   parallel: <<parameters.parallel>>
                   test_script: <<parameters.test_script>>
@@ -293,10 +309,6 @@ jobs:
                       - workspace
     badass_test_combine:
         parameters:
-            venv:
-                description: "Location of the Python virtual environment (no trailing slash)."
-                type: string
-                default: ~/.venv
             repodir:
                 description: "Location of the git repo (no trailing slash)."
                 type: string
@@ -333,7 +345,10 @@ jobs:
         resource_class: <<parameters.resource_class>>
         working_directory: <<parameters.repodir>>
         steps:
-            - checkout
+            - run:
+                  name: Create ssh folder
+                  command: |
+                      mkdir -m 0700 ~/.ssh/
             - utils/add_ssh_config
             - attach_workspace:
                   at: ~/
@@ -384,7 +399,6 @@ jobs:
                   remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.freeze
                   host: docs
             - coverage_combine_and_html:
-                  venv: <<parameters.venv>>
                   wd: <<parameters.wd>>
             - utils/rsync_folder:
                   when: always
@@ -404,9 +418,6 @@ commands:
     setup_python_env:
         description: "Set up the Python virtual environment for the test suite."
         parameters:
-            venv:
-                description: "Location of the Python virtual environment (no trailing slash)."
-                type: string
             pip_install_args:
                 description: "Any additional arguments to pip install (e.g., -r ./requirements.txt)."
                 type: string
@@ -416,13 +427,10 @@ commands:
                   command: |
                       mkdir -p ./logs/${CIRCLE_PROJECT_REPONAME}
                       pip install <<parameters.pip_install_args>> | cat; test ${PIPESTATUS[0]} -eq 0
-                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; import os; print([x for x in sys.path if x.find(os.path.expanduser('<<parameters.venv>>')) != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
+                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; import os; print([x for x in sys.path if x.find(os.path.expanduser('~/.venv')) != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
     setup_python_env_dashed:
         description: "Set up the Python virtual environment for the test suite."
         parameters:
-            venv:
-                description: "Location of the Python virtual environment (no trailing slash)."
-                type: string
             dash_r_files:
                 description: "space seperated paths to requirements files."
                 type: string
@@ -442,12 +450,9 @@ commands:
                       DASH_R_FILES_ARRAY=(<<parameters.dash_r_files>>)
                       DASH_R_FILES=${DASH_R_FILES_ARRAY[@]/#/-r }
                       pip install $DASH_R_FILES <<parameters.extra_pip_args>> | cat; test ${PIPESTATUS[0]} -eq 0
-                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; import os; print([x for x in sys.path if x.find(os.path.expanduser('<<parameters.venv>>')) != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
+                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; import os; print([x for x in sys.path if x.find(os.path.expanduser('~/.venv')) != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
     setup_badass_config:
         parameters:
-            venv:
-                description: "Location of the Python virtual environment (no trailing slash)."
-                type: string
             wd:
                 description: "Where tests should be run in the repo (no trailing slash)."
                 type: string
@@ -465,9 +470,6 @@ commands:
     run_tests:
         description: "Run the test suite."
         parameters:
-            venv:
-                description: "Location of the Python virtual environment (no trailing slash)."
-                type: string
             wd:
                 description: "Where tests should be run in the repo (no trailing slash)."
                 type: string
@@ -490,9 +492,6 @@ commands:
     run_tests_spread:
         description: "Run the test suite, split by amount of circleci parallelism."
         parameters:
-            venv:
-                description: "Location of the Python virtual environment (no trailing slash)."
-                type: string
             wd:
                 description: "Where tests should be run in the repo (no trailing slash)."
                 type: string
@@ -538,9 +537,6 @@ commands:
     coverage_combine_and_html:
         description: "Combine coverage and generate reports."
         parameters:
-            venv:
-                description: "Location of the Python virtual environment (no trailing slash)."
-                type: string
             wd:
                 description: "Where tests were run in the repo (no trailing slash)."
                 type: string
@@ -560,9 +556,6 @@ commands:
     pip_freeze:
         description: "Create pip freeze file."
         parameters:
-            venv:
-                description: "Location of the Python virtual environment (no trailing slash)."
-                type: string
             file:
                 description: "Output location of the freeze file."
                 type: string
