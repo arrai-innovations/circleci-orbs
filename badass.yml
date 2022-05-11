@@ -201,7 +201,6 @@ jobs:
         resource_class: <<parameters.resource_class>>
         steps:
             - checkout
-            - utils/add_maxmind_config
             - utils/add_ssh_config
             - utils/make_status_shield:
                   status: running
@@ -285,6 +284,7 @@ jobs:
         working_directory: <<parameters.repodir>>
         steps:
             - steps: <<parameters.setup>>
+            - utils/add_maxmind_config
             - attach_workspace:
                   at: ~/
             - steps: <<parameters.config>>
