@@ -72,8 +72,8 @@ jobs:
                       - run:
                             name: Install additional OS packages
                             command: |
-                                sudo apt-get update
-                                sudo apt-get install rsync
+                                sudo apt update
+                                sudo apt install rsync
                       - utils/make_status_shield:
                             when: on_fail
                             status: errors
@@ -135,8 +135,8 @@ jobs:
                       - run:
                             name: Install additional OS packages
                             command: |
-                                sudo apt-get update
-                                sudo apt-get install rsync
+                                sudo apt update
+                                sudo apt install rsync
                       - utils/make_status_shield:
                             when: on_fail
                             status: errors
