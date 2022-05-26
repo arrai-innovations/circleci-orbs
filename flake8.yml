@@ -200,7 +200,7 @@ commands:
                   name: "Set up python virtual environment."
                   command: |
                       cd <<parameters.wd>>
-                      pipenv install --dev | cat; test ${PIPESTATUS[0]} -eq 0
+                      pipenv sync --dev | cat; test ${PIPESTATUS[0]} -eq 0
             - save_cache:
                   paths:
                       - ~/.local/share/virtualenvs/
