@@ -171,6 +171,10 @@ jobs:
             - steps: <<parameters.setup>>
             - upgrade_npm
             - run:
+                  name: "Inject NPM_TOKEN into config"
+                  command: |
+                      echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+            - run:
                   name: "Install Packages"
                   command: |
                       npm ci
