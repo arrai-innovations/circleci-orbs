@@ -90,6 +90,12 @@ jobs:
             - steps: <<parameters.setup>>
             - upgrade_npm
             - run:
+                  name: "Inject NPM_TOKEN into config"
+                  command: |
+                      if [ -n "${NPM_TOKEN}" ]; then
+                          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+                      fi
+            - run:
                   name: "Run npm audit"
                   command: |
                       cd <<parameters.wd>>
@@ -173,7 +179,9 @@ jobs:
             - run:
                   name: "Inject NPM_TOKEN into config"
                   command: |
-                      echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+                      if [ -n "${NPM_TOKEN}" ]; then
+                          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+                      fi
             - run:
                   name: "Install Packages"
                   command: |
@@ -249,7 +257,9 @@ jobs:
             - run:
                   name: "Inject NPM_TOKEN into config"
                   command: |
-                      echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+                      if [ -n "${NPM_TOKEN}" ]; then
+                          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+                      fi
             - run:
                   name: "Install Packages"
                   command: |

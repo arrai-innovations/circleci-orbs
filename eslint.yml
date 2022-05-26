@@ -62,6 +62,12 @@ jobs:
             - steps: <<parameters.setup>>
             - upgrade_npm
             - install_eslint
+            - run:
+                  name: "Inject NPM_TOKEN into config"
+                  command: |
+                      if [ -n "${NPM_TOKEN}" ]; then
+                          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
+                      fi
             - steps: <<parameters.config>>
             - run:
                   name: Run eslint
