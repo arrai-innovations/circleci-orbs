@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.9.0
+    utils: arrai/utils@1.10.0
 executors:
     lts:
         environment:
@@ -36,7 +36,7 @@ executors:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: cimg/node:18.0
+            - image: cimg/node:18.2
 commands:
     upgrade_npm:
         steps:
@@ -89,12 +89,7 @@ jobs:
             - utils/add_ssh_config
             - steps: <<parameters.setup>>
             - upgrade_npm
-            - run:
-                  name: "Inject NPM_TOKEN into config"
-                  command: |
-                      if [ -n "${NPM_TOKEN}" ]; then
-                          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-                      fi
+            - utils/add_npm_config
             - run:
                   name: "Run npm audit"
                   command: |
@@ -176,12 +171,7 @@ jobs:
             - checkout
             - steps: <<parameters.setup>>
             - upgrade_npm
-            - run:
-                  name: "Inject NPM_TOKEN into config"
-                  command: |
-                      if [ -n "${NPM_TOKEN}" ]; then
-                          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-                      fi
+            - utils/add_npm_config
             - run:
                   name: "Install Packages"
                   command: |
@@ -254,12 +244,7 @@ jobs:
             - checkout
             - steps: <<parameters.setup>>
             - upgrade_npm
-            - run:
-                  name: "Inject NPM_TOKEN into config"
-                  command: |
-                      if [ -n "${NPM_TOKEN}" ]; then
-                          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > ~/.npmrc
-                      fi
+            - utils/add_npm_config
             - run:
                   name: "Install Packages"
                   command: |
