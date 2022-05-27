@@ -250,3 +250,19 @@ commands:
                           fi
                       fi
                   when: <<parameters.when>>
+    add_npm_config:
+        description: "Add a ~/.npmrc with the appropriate authentication token."
+        parameters:
+            token:
+                description: "The authentication token."
+                type: string
+                default: ${NPM_TOKEN}
+            registry:
+                description: "The npm registry."
+                type: string
+                default: "registry.npmjs.org"
+        steps:
+            - run:
+                  name: "Inject NPM_TOKEN into config"
+                  command: |
+                      echo "//<<parameters.registry>>/:_authToken=<<parameters.token>>" > ~/.npmrc
