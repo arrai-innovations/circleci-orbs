@@ -3,7 +3,20 @@ description: |
     This job requires `pytest-cov` and `coverage` to be installed as `pipenv` `devDependences` and assumes
     you have a `.coveragerc` in the working directory.
 orbs:
-    utils: arrai/utils@1.9.0
+    utils: arrai/utils@1.10.0
+executors:
+    python310:
+        docker:
+            - image: cimg/python:3.10
+    python39:
+        docker:
+            - image: cimg/python:3.9
+    python38:
+        docker:
+            - image: cimg/python:3.8
+    python36:
+        docker:
+            - image: cimg/python:3.6
 jobs:
     pytest:
         parameters:
@@ -13,10 +26,7 @@ jobs:
                 default: .
             executor:
                 type: executor
-            pyversion:
-                description: "The python version in use; used for cache key generation"
-                type: enum
-                enum: [python36, python37, python38, python39, python310]
+                default: python39
             resource_class:
                 description: "The resource class to use for the job."
                 type: enum
@@ -52,11 +62,15 @@ jobs:
                   file: ~/status.svg
                   remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.svg
                   host: docs
+            - run:
+                  name: Keep track of the python version.
+                  command: |
+                      python --version > /tmp/python.version
             - restore_cache: # ensure this step occurs *before* installing dependencies
                   keys:
-                      - pipenv-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ arch }}-<<parameters.pyversion>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-                      - pipenv-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ arch }}-<<parameters.pyversion>>-{{ .Branch }}
-                      - pipenv-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ arch }}-<<parameters.pyversion>>-main
+                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-{{ .Branch }}
+                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-main
             - run:
                   name: Setup pipenv environment.
                   command: |
@@ -66,7 +80,7 @@ jobs:
             - save_cache:
                   paths:
                       - ~/.local/share/virtualenvs/
-                  key: pipenv-{{ .Environment.CIRCLE_PROJECT_REPONAME }}-{{ arch }}-<<parameters.pyversion>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                  key: pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
             - steps: <<parameters.config>>
             - run:
                   name: Run tests
