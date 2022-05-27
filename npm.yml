@@ -208,7 +208,7 @@ jobs:
                             name: "Create coverage report"
                             when: always
                             command: |
-                                jq '((.total.branches.pct + .total.statements.pct) / 2) | floor' coverage/coverage-summary.json >> /tmp/.coveragep
+                                jq 'if .total.branches.pct != "Unknown" and .total.statements.pct != "Unknown" then ((.total.branches.pct + .total.statements.pct) / 2) else 0 end | floor' coverage/coverage-summary.json >> /tmp/.coveragep
                       - utils/make_coverage_shield:
                             when: always
                             link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH}/coverage_${CIRCLE_JOB}/
