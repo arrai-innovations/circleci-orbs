@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.9.0
+    utils: arrai/utils@1.10.0
 executors:
     python310:
         docker:
@@ -45,9 +45,15 @@ jobs:
         steps:
             - checkout
             - steps: <<parameters.setup>>
-            - restore_cache:
+            - run:
+                  name: Keep track of the python version.
+                  command: |
+                      python --version > /tmp/python.version
+            - restore_cache: # ensure this step occurs *before* installing dependencies
                   keys:
-                      - pipenv-{{ arch }}-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-{{ .Branch }}
+                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-main
             - run:
                   name: Set up python environment
                   command: |
@@ -55,7 +61,7 @@ jobs:
             - save_cache:
                   paths:
                       - ~/.local/share/virtualenvs/
-                  key: pipenv-{{ arch }}-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                  key: pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
             - steps: <<parameters.config>>
             - run:
                   name: Run safety
