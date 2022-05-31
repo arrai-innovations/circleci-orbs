@@ -57,7 +57,7 @@ jobs:
             - run:
                   name: Set up python environment
                   command: |
-                      pipenv install | cat; test ${PIPESTATUS[0]} -eq 0
+                      pipenv sync | cat; test ${PIPESTATUS[0]} -eq 0
             - save_cache:
                   paths:
                       - ~/.local/share/virtualenvs/
