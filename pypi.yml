@@ -1,7 +1,5 @@
 version: 2.1
 description: Helper for uploading python packages to repositories.
-orbs:
-    utils: arrai/utils@1.8.0
 executors:
     python310:
         docker:
