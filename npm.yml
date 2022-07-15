@@ -163,6 +163,10 @@ jobs:
                 description: "Generate badges."
                 type: boolean
                 default: true
+            npm_run:
+                description: "The npm run script to run."
+                type: string
+                default: coverage
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
@@ -180,7 +184,7 @@ jobs:
             - run:
                   name: "Run Tests"
                   command: |
-                      npm run coverage
+                      npm run <<parameters.npm_run>>
             - utils/rsync_folder:
                   when: always
                   folder: ./coverage/
