@@ -21,12 +21,12 @@ executors:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: cimg/node:14.19
+            - image: cimg/node:14.20
     v16:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: cimg/node:16.15
+            - image: cimg/node:16.16
     v17:
         environment:
             LANG: en_US.UTF-8
@@ -36,7 +36,7 @@ executors:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: cimg/node:18.2
+            - image: cimg/node:18.7
 commands:
     upgrade_npm:
         steps:
