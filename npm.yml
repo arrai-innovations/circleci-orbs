@@ -87,6 +87,7 @@ jobs:
         resource_class: <<parameters.resource_class>>
         steps:
             - checkout
+            - utils/add_ssh_config
             - steps: <<parameters.setup>>
             - upgrade_npm
             - utils/add_npm_config
@@ -110,7 +111,6 @@ jobs:
             - when:
                   condition: <<parameters.create_badges>>
                   steps:
-                      - utils/add_ssh_config
                       - run:
                             name: "Count vulnerabilities"
                             when: on_fail
