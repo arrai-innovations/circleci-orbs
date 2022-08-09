@@ -74,6 +74,7 @@ jobs:
             report_to:
                 description: "E-mail address to send npm audit failure report to."
                 type: string
+                default: ""
             skip_dev:
                 description: "Don't check development dependencies."
                 type: boolean
@@ -99,11 +100,14 @@ jobs:
                   name: "Generate HTML audit report"
                   when: on_fail
                   command: cat ${HOME}/audit.log | ansi2html > ${HOME}/audit.html
-            - utils/send_email:
-                  when: on_fail
-                  to: <<parameters.report_to>>
-                  subject: "npm audit report for ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}"
-                  html: "<${HOME}/audit.html"
+            - when:
+                  condition: <<parameters.report_to>>
+                  steps:
+                      - utils/send_email:
+                            when: on_fail
+                            to: <<parameters.report_to>>
+                            subject: "npm audit report for ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}"
+                            html: "<${HOME}/audit.html"
             - when:
                   condition: <<parameters.create_badges>>
                   steps:
