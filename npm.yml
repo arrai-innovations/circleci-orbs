@@ -176,7 +176,6 @@ jobs:
         steps:
             - checkout
             - utils/add_ssh_config
-            - checkout
             - steps: <<parameters.setup>>
             - upgrade_npm
             - utils/add_npm_config
