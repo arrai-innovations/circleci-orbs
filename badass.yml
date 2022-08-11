@@ -378,12 +378,12 @@ commands:
                   name: Install pipenv packages
                   command: |
                       mkdir -p logs/${CIRCLE_PROJECT_REPONAME}
-                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; import os; print([x for x in sys.path if x.find(os.path.expanduser('$(pipenv --venv)')) != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
                       if [ "<<parameters.python_path>>" == "" ]; then
                           pipenv sync --dev
                       else
                           pipenv sync --dev --python <<parameters.python_path>>
                       fi
+                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; import os; print([x for x in sys.path if x.find(os.path.expanduser('$(pipenv --venv)')) != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
     setup_badass_config:
         parameters:
             wd:
