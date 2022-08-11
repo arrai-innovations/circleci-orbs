@@ -91,7 +91,7 @@ jobs:
                 description: "The test script to run (e.g., manage.py test)."
                 type: string
                 default: manage.py test
-            python-path:
+            python_path:
                 description: "The path of the python to create the pipenv environment from."
                 type: string
                 default: ""
@@ -113,7 +113,7 @@ jobs:
                   host: docs
             - steps: <<parameters.setup>>
             - setup_pipenv:
-                  python-path: <<parameters.python-path>>
+                  python_path: <<parameters.python_path>>
             - setup_badass_config:
                   wd: <<parameters.wd>>
             - steps: <<parameters.config>>
@@ -190,7 +190,7 @@ jobs:
             meta_job_name:
                 description: "The filename to use for the badge."
                 type: string
-            python-path:
+            python_path:
                 description: "The path of the python to create the pipenv environment from."
                 type: string
                 default: ""
@@ -218,7 +218,7 @@ jobs:
                       - pipenv-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}
                       - pipenv-{{ arch }}-<<parameters.meta_job_name>>
             - setup_pipenv:
-                  python-path: <<parameters.python-path>>
+                  python_path: <<parameters.python_path>>
             - save_cache:
                   paths:
                       - .local/share/virtualenvs
@@ -420,7 +420,7 @@ commands:
     setup_pipenv:
         description: "Setup pipenv."
         parameters:
-            python-path:
+            python_path:
                 description: "The path of the python to create the pipenv environment from."
                 type: string
                 default: ""
@@ -430,10 +430,10 @@ commands:
                   command: |
                       mkdir -p logs/${CIRCLE_PROJECT_REPONAME}
                       echo "import coverage; coverage.process_startup()" > `python -c "import sys; import os; print([x for x in sys.path if x.find(os.path.expanduser('$(pipenv --venv)')) != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
-                      if [ "<<parameters.python-path>>" == "" ]; then
+                      if [ "<<parameters.python_path>>" == "" ]; then
                           pipenv sync --dev
                       else
-                          pipenv sync --dev --python <<parameters.python-path>>
+                          pipenv sync --dev --python <<parameters.python_path>>
                       fi
     setup_badass_config:
         parameters:
