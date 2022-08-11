@@ -1,53 +1,6 @@
 version: 2.1
 orbs:
     utils: arrai/utils@1.9.0
-executors:
-    python38:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: arrai/python:38-el8
-            - image: cimg/postgres:11.15
-            - image: cimg/redis:5.0
-    python36:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: arrai/python:36-el7
-            - image: cimg/postgres:10.20
-            - image: cimg/redis:5.0
-    python38-selenium:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: arrai/python:38-el8
-            - image: cimg/postgres:11.15
-            - image: cimg/redis:5.0
-            - image: selenium/standalone-chrome:latest
-    python36-selenium:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: arrai/python:36-el7
-            - image: cimg/postgres:10.20
-            - image: cimg/redis:5.0
-            - image: selenium/standalone-chrome:latest
-    python36-arrai:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: arrai/python:36-el7
-    python38-arrai:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: arrai/python:38-el8
-    python36-simple:
-        docker:
-            - image: cimg/python:3.6
-    python38-simple:
-        docker:
-            - image: cimg/python:3.8
 jobs:
     badass:
         parameters:
@@ -70,7 +23,6 @@ jobs:
             executor:
                 description: "Execution environment for the test job."
                 type: executor
-                default: python38
             resource_class:
                 description: "The resource class to use for the job."
                 type: enum
@@ -177,7 +129,6 @@ jobs:
             executor:
                 description: "Execution environment for the test job."
                 type: executor
-                default: python38-arrai
             resource_class:
                 description: "The resource class to use for the job."
                 type: enum
@@ -246,7 +197,6 @@ jobs:
             executor:
                 description: "Execution environment for the test job."
                 type: executor
-                default: python38
             resource_class:
                 description: "The resource class to use for the job."
                 type: enum
@@ -331,7 +281,6 @@ jobs:
             executor:
                 description: "Execution environment for the test job."
                 type: executor
-                default: python36-simple
             resource_class:
                 description: "The resource class to use for the job."
                 type: enum
