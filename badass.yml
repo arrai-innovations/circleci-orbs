@@ -383,10 +383,10 @@ commands:
                       else
                           pipenv sync --dev --python <<parameters.python_path>>
                       fi
-                      export PIPENV_VENV="$(pipenv --venv)"
-                      echo "import sys; import os; print([x for x in sys.path if x.find(os.environ['PIPENV_VENV']) != -1 and x.find('site-packages') != -1][0])" > get_coverage_pth_path.py
-                      export COVERAGE_PTH_PATH="$(python get_coverage_pth_path.py)/coverage-all-the-things.pth"
-                      echo "import coverage; coverage.process_startup()" > "${COVERAGE_PTH_PATH}"
+                      export BADASS_PIPENV_VENV="$(pipenv --venv)"
+                      echo "import sys; import os; print([x for x in sys.path if x.find(os.environ['BADASS_PIPENV_VENV']) != -1 and x.find('site-packages') != -1][0])" > get_coverage_pth_path.py
+                      export BADASS_COVERAGE_PTH_PATH="$(pipenv run python get_coverage_pth_path.py)/coverage-all-the-things.pth"
+                      echo "import coverage; coverage.process_startup()" > "${BADASS_COVERAGE_PTH_PATH}"
                       rm get_coverage_pth_path.py
     setup_badass_config:
         parameters:
