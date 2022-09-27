@@ -38,6 +38,10 @@ jobs:
                 description: "Generate badges."
                 type: boolean
                 default: true
+            ignored_vulnerabilities:
+                description: "List of ignored vulnerabilities, e.g. '-i 123 -i 456'"
+                type: string
+                default: ""
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         environment:
@@ -66,7 +70,7 @@ jobs:
             - run:
                   name: Run safety
                   command: |
-                      pipenv check
+                      pipenv check <<parameters.ignored_vulnerabilities>>
             - when:
                   condition: <<parameters.create_badges>>
                   steps:
