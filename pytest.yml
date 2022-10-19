@@ -46,6 +46,10 @@ jobs:
                 description: "Any additional configuration steps (e.g., cp .env.circleci .env.local). It occurs after pipenv install. If you passed a wd, you need to cd to it if desired."
                 type: steps
                 default: []
+            pytest_args:
+                description: "Any additional arguments to pass to pytest."
+                type: string
+                default: "--cov --cov-config=pyproject.toml"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         environment:
@@ -86,7 +90,7 @@ jobs:
                   name: Run tests
                   command: |
                       cd <<parameters.wd>>
-                      pipenv run pytest --cov --cov-config=.coveragerc
+                      pipenv run pytest <<parameters.pytest_args>>
             - run:
                   name: Build coverage reports
                   command: |
