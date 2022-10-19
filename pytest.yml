@@ -1,7 +1,7 @@
 version: 2.1
 description: |
-    This job requires `pytest-cov` and `coverage` to be installed as `pipenv` `devDependences` and assumes
-    you have a `.coveragerc` in the working directory.
+    This job requires `pytest-cov` and `coverage` to be installed as `pipenv` `devDependences`.
+    Configure pytest and coverage via pyproject.toml.
 orbs:
     utils: arrai/utils@1.10.0
 executors:
@@ -49,7 +49,7 @@ jobs:
             pytest_args:
                 description: "Any additional arguments to pass to pytest."
                 type: string
-                default: "--cov --cov-config=pyproject.toml"
+                default: "--cov"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         environment:
