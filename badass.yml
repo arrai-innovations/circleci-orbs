@@ -43,10 +43,14 @@ jobs:
                 description: "The test script to run (e.g., manage.py test)."
                 type: string
                 default: manage.py test
-            python_path:
-                description: "The path of the python to create the pipenv environment from."
+            pipenv_python_arg:
+                description: "Location or version of the python interpreter to use for pipenv."
                 type: string
                 default: ""
+            pipenv_skip_lock:
+                description: "Skip use of the pipenv lock file."
+                type: boolean
+                default: false
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         working_directory: <<parameters.repodir>>
@@ -65,7 +69,8 @@ jobs:
                   host: docs
             - steps: <<parameters.setup>>
             - setup_pipenv:
-                  python_path: <<parameters.python_path>>
+                  pipenv_python_arg: <<parameters.pipenv_python_arg>>
+                  pipenv_skip_lock: <<parameters.pipenv_skip_lock>>
             - setup_badass_config:
                   wd: <<parameters.wd>>
             - steps: <<parameters.config>>
@@ -141,10 +146,14 @@ jobs:
             meta_job_name:
                 description: "The filename to use for the badge."
                 type: string
-            python_path:
-                description: "The path of the python to create the pipenv environment from."
+            pipenv_python_arg:
+                description: "Location or version of the python interpreter to use for pipenv."
                 type: string
                 default: ""
+            pipenv_skip_lock:
+                description: "Skip use of the pipenv lock file."
+                type: boolean
+                default: false
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
@@ -169,7 +178,8 @@ jobs:
                       - pipenv-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}
                       - pipenv-{{ arch }}-<<parameters.meta_job_name>>
             - setup_pipenv:
-                  python_path: <<parameters.python_path>>
+                  pipenv_python_arg: <<parameters.pipenv_python_arg>>
+                  pipenv_skip_lock: <<parameters.pipenv_skip_lock>>
             - save_cache:
                   paths:
                       - ~/.local/share/virtualenvs
@@ -353,19 +363,23 @@ commands:
     setup_pipenv:
         description: "Setup pipenv."
         parameters:
-            python_path:
-                description: "The path of the python to create the pipenv environment from."
+            pipenv_python_arg:
+                description: "Location or version of the python interpreter to use for pipenv."
                 type: string
                 default: ""
+            pipenv_skip_lock:
+                description: "Skip use of the pipenv lock file."
+                type: boolean
+                default: false
         steps:
             - run:
                   name: Install pipenv packages
                   command: |
                       mkdir -p logs/${CIRCLE_PROJECT_REPONAME}
-                      if [ "<<parameters.python_path>>" == "" ]; then
-                          pipenv sync --dev
+                      if [ "<<parameters.pipenv_python_arg>>" == "" ]; then
+                          pipenv install --dev <<# parameters.pipenv_skip_lock>>--skip-lock<</ parameters.pipenv_skip_lock>>
                       else
-                          pipenv sync --dev --python <<parameters.python_path>>
+                          pipenv install --dev --python <<parameters.pipenv_python_arg>> <<# parameters.pipenv_skip_lock>>--skip-lock<</ parameters.pipenv_skip_lock>>
                       fi
                       export BADASS_PIPENV_VENV="$(pipenv --venv)"
                       echo "import sys; import os; print([x for x in sys.path if x.find(os.environ['BADASS_PIPENV_VENV']) != -1 and x.find('site-packages') != -1][0])" > get_coverage_pth_path.py
