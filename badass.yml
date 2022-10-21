@@ -43,8 +43,8 @@ jobs:
                 description: "The test script to run (e.g., manage.py test)."
                 type: string
                 default: manage.py test
-            python_path:
-                description: "The path of the python to create the pipenv environment from."
+            pipenv_python_arg:
+                description: "Location or version of the python interpreter to use for pipenv."
                 type: string
                 default: ""
         executor: <<parameters.executor>>
@@ -65,7 +65,7 @@ jobs:
                   host: docs
             - steps: <<parameters.setup>>
             - setup_pipenv:
-                  python_path: <<parameters.python_path>>
+                  pipenv_python_arg: <<parameters.pipenv_python_arg>>
             - setup_badass_config:
                   wd: <<parameters.wd>>
             - steps: <<parameters.config>>
@@ -141,8 +141,8 @@ jobs:
             meta_job_name:
                 description: "The filename to use for the badge."
                 type: string
-            python_path:
-                description: "The path of the python to create the pipenv environment from."
+            pipenv_python_arg:
+                description: "Location or version of the python interpreter to use for pipenv."
                 type: string
                 default: ""
         executor: <<parameters.executor>>
@@ -169,7 +169,7 @@ jobs:
                       - pipenv-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}
                       - pipenv-{{ arch }}-<<parameters.meta_job_name>>
             - setup_pipenv:
-                  python_path: <<parameters.python_path>>
+                  pipenv_python_arg: <<parameters.pipenv_python_arg>>
             - save_cache:
                   paths:
                       - ~/.local/share/virtualenvs
@@ -353,8 +353,8 @@ commands:
     setup_pipenv:
         description: "Setup pipenv."
         parameters:
-            python_path:
-                description: "The path of the python to create the pipenv environment from."
+            pipenv_python_arg:
+                description: "Location or version of the python interpreter to use for pipenv."
                 type: string
                 default: ""
         steps:
@@ -362,10 +362,10 @@ commands:
                   name: Install pipenv packages
                   command: |
                       mkdir -p logs/${CIRCLE_PROJECT_REPONAME}
-                      if [ "<<parameters.python_path>>" == "" ]; then
+                      if [ "<<parameters.pipenv_python_arg>>" == "" ]; then
                           pipenv sync --dev
                       else
-                          pipenv sync --dev --python <<parameters.python_path>>
+                          pipenv sync --dev --python <<parameters.pipenv_python_arg>>
                       fi
                       export BADASS_PIPENV_VENV="$(pipenv --venv)"
                       echo "import sys; import os; print([x for x in sys.path if x.find(os.environ['BADASS_PIPENV_VENV']) != -1 and x.find('site-packages') != -1][0])" > get_coverage_pth_path.py
