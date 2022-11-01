@@ -173,21 +173,18 @@ jobs:
                   remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
                   host: docs
             - steps: <<parameters.setup>>
-            - generate-hash:
-                  in-files: Pipfile.lock
-                  out-file: /tmp/Pipfile-lock-checksum
             - restore_cache:
                   keys:
-                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "/tmp/Pipfile-lock-checksum" }}
+                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
                       - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}
-                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>
+                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-main
             - setup_pipenv:
                   pipenv_python_arg: <<parameters.pipenv_python_arg>>
                   pipenv_skip_lock: <<parameters.pipenv_skip_lock>>
             - save_cache:
                   paths:
                       - ~/.local/share/virtualenvs
-                  key: pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "/tmp/Pipfile-lock-checksum" }}
+                  key: pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
             - setup_badass_config:
                   wd: <<parameters.wd>>
             - steps: <<parameters.config>>
