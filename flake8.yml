@@ -112,6 +112,13 @@ jobs:
                 description: "Generate badges."
                 type: boolean
                 default: true
+            pipenv_meta_job_name:
+                description: "a test job's meta job name for sharing pipenv cache."
+                type: string
+            pipenv_cache_key_version:
+                description: "a string that can be changed to bust the pipenv cache."
+                type: string
+                default: "1"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         environment:
@@ -121,6 +128,8 @@ jobs:
             - steps: <<parameters.setup>>
             - setup_flake8_pipenv:
                   wd: <<parameters.wd>>
+                  pipenv_meta_job_name: <<parameters.pipenv_meta_job_name>>
+                  pipenv_cache_key_version: <<parameters.pipenv_cache_key_version>>
             - flake8_errors_pipenv:
                   flake8_cmd: <<parameters.flake8_cmd>>
                   wd: <<parameters.wd>>
@@ -192,16 +201,18 @@ commands:
         parameters:
             wd:
                 type: string
+            pipenv_meta_job_name:
+                description: "a test job's meta job name for sharing pipenv cache."
+                type: string
+            pipenv_cache_key_version:
+                description: "a string that can be changed to bust the pipenv cache."
+                type: string
         steps:
-            - run:
-                  name: Keep track of the python version.
-                  command: |
-                      python --version > /tmp/python.version
             - restore_cache: # ensure this step occurs *before* installing dependencies
                   keys:
-                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}
-                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-main
+                      - pipenv-{{ arch }}-<<parameters.pipenv_meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                      - pipenv-{{ arch }}-<<parameters.pipenv_meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}
+                      - pipenv-{{ arch }}-<<parameters.pipenv_meta_job_name>>-<<parameters.pipenv_cache_key_version>>-main
             - run:
                   name: "Set up python virtual environment."
                   command: |
@@ -210,7 +221,7 @@ commands:
             - save_cache:
                   paths:
                       - ~/.local/share/virtualenvs/
-                  key: pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                  key: pipenv-{{ arch }}-<<parameters.pipenv_meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
     flake8_errors_pipenv:
         description: "Run flake8, checking for errors only."
         parameters:
