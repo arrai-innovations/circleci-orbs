@@ -154,6 +154,10 @@ jobs:
                 description: "Skip use of the pipenv lock file."
                 type: boolean
                 default: false
+            pipenv_cache_key_version:
+                description: "a string that can be changed to bust the pipenv cache."
+                type: string
+                default: "1"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
@@ -174,16 +178,16 @@ jobs:
                   out-file: /tmp/Pipfile-lock-checksum
             - restore_cache:
                   keys:
-                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/Pipfile-lock-checksum" }}
-                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}
-                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>
+                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "/tmp/Pipfile-lock-checksum" }}
+                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}
+                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>
             - setup_pipenv:
                   pipenv_python_arg: <<parameters.pipenv_python_arg>>
                   pipenv_skip_lock: <<parameters.pipenv_skip_lock>>
             - save_cache:
                   paths:
                       - ~/.local/share/virtualenvs
-                  key: pipenv-{{ arch }}-<<parameters.meta_job_name>>-{{ .Branch }}-{{ checksum "/tmp/Pipfile-lock-checksum" }}
+                  key: pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "/tmp/Pipfile-lock-checksum" }}
             - setup_badass_config:
                   wd: <<parameters.wd>>
             - steps: <<parameters.config>>
