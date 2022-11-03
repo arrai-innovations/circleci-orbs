@@ -61,6 +61,7 @@ jobs:
             - run:
                   name: Set up python environment
                   command: |
+                      pip list --outdated --format=json | jq -r '.[]|.name' | xargs -r pip install -U
                       pipenv sync | cat; test ${PIPESTATUS[0]} -eq 0
             - save_cache:
                   paths:
