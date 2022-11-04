@@ -178,8 +178,6 @@ jobs:
                   paths:
                       - ~/.local/share/virtualenvs
                   key: pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-            - setup_badass_config:
-                  wd: <<parameters.wd>>
             - steps: <<parameters.config>>
             - persist_to_workspace:
                   root: ~/
@@ -234,6 +232,8 @@ jobs:
             - attach_workspace:
                   at: ~/
             - steps: <<parameters.config>>
+            - setup_badass_config:
+                  wd: <<parameters.wd>>
             - run_tests_spread:
                   wd: <<parameters.wd>>
                   parallel: <<parameters.parallel>>
