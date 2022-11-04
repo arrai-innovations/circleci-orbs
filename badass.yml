@@ -178,13 +178,10 @@ jobs:
                   paths:
                       - ~/.local/share/virtualenvs
                   key: pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-            - setup_badass_config:
-                  wd: <<parameters.wd>>
             - steps: <<parameters.config>>
             - persist_to_workspace:
                   root: ~/
                   paths:
-                      - project
                       - .local/share/virtualenvs
     badass_test_spread:
         parameters:
@@ -229,11 +226,14 @@ jobs:
         parallelism: <<parameters.parallelism>>
         working_directory: <<parameters.repodir>>
         steps:
+            - checkout
             - utils/add_maxmind_config
             - steps: <<parameters.setup>>
             - attach_workspace:
                   at: ~/
             - steps: <<parameters.config>>
+            - setup_badass_config:
+                  wd: <<parameters.wd>>
             - run_tests_spread:
                   wd: <<parameters.wd>>
                   parallel: <<parameters.parallel>>
@@ -300,11 +300,8 @@ jobs:
         resource_class: <<parameters.resource_class>>
         working_directory: <<parameters.repodir>>
         steps:
+            - checkout
             - steps: <<parameters.setup>>
-            - run:
-                  name: Create ssh folder
-                  command: |
-                      mkdir -m 0700 ~/.ssh/
             - utils/add_ssh_config
             - attach_workspace:
                   at: ~/
