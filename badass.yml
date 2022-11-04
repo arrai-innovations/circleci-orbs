@@ -93,13 +93,6 @@ jobs:
                   file: /tmp/coverage.svg
                   remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.coverage.svg
                   host: docs
-            - pip_freeze:
-                  file: ~/pip.freeze
-            - utils/rsync_file:
-                  when: always
-                  file: ~/pip.freeze
-                  remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.freeze
-                  host: docs
             - utils/make_status_shield:
                   when: on_success
                   status: passed
@@ -188,8 +181,6 @@ jobs:
             - setup_badass_config:
                   wd: <<parameters.wd>>
             - steps: <<parameters.config>>
-            - pip_freeze:
-                  file: <<parameters.wd>>/pip.freeze
             - persist_to_workspace:
                   root: ~/
                   paths:
@@ -267,7 +258,6 @@ jobs:
                       mkdir ~/workspace
                       cp <<parameters.wd>>/*.status ~/workspace/
                       cp <<parameters.wd>>/.coverage* ~/workspace/
-                      cp <<parameters.wd>>/pip.freeze ~/workspace/
             - persist_to_workspace:
                   root: ~/
                   paths:
@@ -338,11 +328,6 @@ jobs:
                   when: always
                   file: /tmp/status.svg
                   remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
-                  host: docs
-            - utils/rsync_file:
-                  when: always
-                  file: <<parameters.wd>>/pip.freeze
-                  remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.freeze
                   host: docs
             - coverage_combine_and_html:
                   wd: <<parameters.wd>>
@@ -488,17 +473,6 @@ commands:
                       pipenv run coverage combine
                       pipenv run coverage html
                       pipenv run coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> <<parameters.coveragep>>
-                  when: always
-    pip_freeze:
-        description: "Create pip freeze file."
-        parameters:
-            file:
-                description: "Output location of the freeze file."
-                type: string
-        steps:
-            - run:
-                  command: |
-                      pipenv run pip freeze > <<parameters.file>>
                   when: always
     generate-hash:
         description: Generate a file with hashes from all informed files
