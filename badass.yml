@@ -300,6 +300,7 @@ jobs:
         resource_class: <<parameters.resource_class>>
         working_directory: <<parameters.repodir>>
         steps:
+            - checkout
             - steps: <<parameters.setup>>
             - run:
                   name: Create ssh folder
