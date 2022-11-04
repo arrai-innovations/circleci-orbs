@@ -184,7 +184,6 @@ jobs:
             - persist_to_workspace:
                   root: ~/
                   paths:
-                      - project
                       - .local/share/virtualenvs
     badass_test_spread:
         parameters:
@@ -229,6 +228,7 @@ jobs:
         parallelism: <<parameters.parallelism>>
         working_directory: <<parameters.repodir>>
         steps:
+            - checkout
             - utils/add_maxmind_config
             - steps: <<parameters.setup>>
             - attach_workspace:
