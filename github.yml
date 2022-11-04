@@ -51,8 +51,9 @@ jobs:
         resource_class: <<parameters.resource_class>>
         steps:
             - checkout
-            - attach_workspace:
-                  at: ./
+            - restore_cache:
+                  keys:
+                      - build-{{ arch }}-{{ .BuildNum }}
             - run:
                   name: Install GitHub CLI Tools
                   command: |

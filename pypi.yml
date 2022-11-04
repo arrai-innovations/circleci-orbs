@@ -43,8 +43,9 @@ jobs:
         steps:
             - checkout
             - steps: <<parameters.setup>>
-            - attach_workspace:
-                  at: ./
+            - restore_cache:
+                  keys:
+                      - build-{{ arch }}-{{ .BuildNum }}
             - run:
                   name: "Check that the long description renders correctly."
                   command: |
