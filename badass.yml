@@ -302,10 +302,6 @@ jobs:
         steps:
             - checkout
             - steps: <<parameters.setup>>
-            - run:
-                  name: Create ssh folder
-                  command: |
-                      mkdir -m 0700 ~/.ssh/
             - utils/add_ssh_config
             - attach_workspace:
                   at: ~/
