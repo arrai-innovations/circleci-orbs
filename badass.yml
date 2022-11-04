@@ -296,10 +296,6 @@ jobs:
                           command: |
                               sudo apt update
                               sudo apt install rsync
-            pipenv_cache_key_version:
-                description: "a string that can be changed to bust the pipenv cache."
-                type: string
-                default: "1"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         working_directory: <<parameters.repodir>>
@@ -330,11 +326,6 @@ jobs:
                   file: /tmp/status.svg
                   remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
                   host: docs
-            - restore_cache:
-                  keys:
-                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}
-                      - pipenv-{{ arch }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-main
             - coverage_combine_and_html:
                   wd: <<parameters.wd>>
             - utils/rsync_folder:
