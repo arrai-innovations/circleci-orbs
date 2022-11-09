@@ -24,7 +24,6 @@
   },
   "dependencies": {
     "husky": "^8.0.2",
-    "is-ci": "^3.0.0",
     "prettier": "^2.4.1"
   }
 }
