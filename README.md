@@ -84,7 +84,7 @@ Creates a release on GitHub. For information on configuration parameters, refer 
 
 ## Developing Orbs
 
-This repository uses git hooks via the node module `husky`. These hooks keep the orb `.yml` formatted using `prettier`. They also enforce our commit message rules via `commitlint`. You can install these hooks by running the following command:
+This repository uses git hooks via the node module `husky`. These hooks keep the orb `.yml` formatted using `prettier`. They also enforce our commit message rules via `commitlint`. Orbs are validated using the [circleci cli tool](https://circleci.com/docs/local-cli/), which must be installed beforehand. You can install these hooks by running the following command:
 
 ```console
 $ npm install
