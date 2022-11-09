@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+RETVAL=0
+
+if ! [ -x "$(command -v circleci)" ]; then
+    echo "Missing circle cli tool."
+    echo "Refer to https://circleci.com/docs/local-cli/ for installation instructions."
+    exit 1
+fi
+
+for ORB in "$@"; do
+    circleci orb validate "${ORB}"
+    if  [ $? -ne 0 ]; then
+        RETVAL=1
+        echo "Validating ${ORB} failed." 1>&2
+    fi
+done
+
+exit $RETVAL

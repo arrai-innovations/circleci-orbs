@@ -4,5 +4,8 @@
     ],
     "**/*.{js,ts,jsx,tsx,less,scss,css,vue,markdown,json,md,yml,yaml}": [
         "npx --no-install prettier --write"
+    ],
+    "orbs/*.{yml,yaml}": [
+        "scripts/validate_orbs"
     ]
 }
