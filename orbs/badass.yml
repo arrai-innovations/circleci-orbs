@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.9.0
+    utils: arrai/utils@1.11.0
 jobs:
     badass:
         parameters:
@@ -290,12 +290,7 @@ jobs:
             setup:
                 description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
                 type: steps
-                default:
-                    - run:
-                          name: Install additional OS packages
-                          command: |
-                              sudo apt update
-                              sudo apt install rsync
+                default: []
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         working_directory: <<parameters.repodir>>
@@ -471,23 +466,3 @@ commands:
                       pipenv run coverage html
                       pipenv run coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> <<parameters.coveragep>>
                   when: always
-    generate-hash:
-        description: Generate a file with hashes from all informed files
-        parameters:
-            in-files:
-                description: space delimited string with filenames to get hash from
-                type: string
-            out-file:
-                description: the path to file to store in-files hashes
-                type: string
-                default: /tmp/infiles_checksums
-            wd:
-                description: "Where in the repo in-files is relative to (no trailing slash)."
-                type: string
-                default: .
-        steps:
-            - run:
-                  name: Creates cache checksum
-                  command: |
-                      cd <<parameters.wd>>
-                      sha256sum <<parameters.in-files>> > <<parameters.out-file>>
