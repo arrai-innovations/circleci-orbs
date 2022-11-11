@@ -466,23 +466,3 @@ commands:
                       pipenv run coverage html
                       pipenv run coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> <<parameters.coveragep>>
                   when: always
-    generate-hash:
-        description: Generate a file with hashes from all informed files
-        parameters:
-            in-files:
-                description: space delimited string with filenames to get hash from
-                type: string
-            out-file:
-                description: the path to file to store in-files hashes
-                type: string
-                default: /tmp/infiles_checksums
-            wd:
-                description: "Where in the repo in-files is relative to (no trailing slash)."
-                type: string
-                default: .
-        steps:
-            - run:
-                  name: Creates cache checksum
-                  command: |
-                      cd <<parameters.wd>>
-                      sha256sum <<parameters.in-files>> > <<parameters.out-file>>
