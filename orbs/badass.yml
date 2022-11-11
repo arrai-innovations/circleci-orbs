@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.9.0
+    utils: arrai/utils@dev:500
 jobs:
     badass:
         parameters:
@@ -290,12 +290,7 @@ jobs:
             setup:
                 description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
                 type: steps
-                default:
-                    - run:
-                          name: Install additional OS packages
-                          command: |
-                              sudo apt update
-                              sudo apt install rsync
+                default: []
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         working_directory: <<parameters.repodir>>

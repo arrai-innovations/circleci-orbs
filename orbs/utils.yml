@@ -202,6 +202,17 @@ commands:
                 default: on_success
         steps:
             - run:
+                  name: install rsync
+                  command: |
+                      if ! [ -x "$(command -v rsync)" ]; then
+                          if [ -f /usr/bin/yum ]; then
+                              yum -y install rsync
+                          elif [ -f /usr/bin/apt ]; then
+                              apt -y update
+                              apt -y install rsync
+                          fi
+                      fi
+            - run:
                   name: rsync file (<<parameters.file>> -> <<parameters.remote_file>>)
                   command: |
                       if [ -f <<parameters.file>> ] && [ -f ~/.ssh/config ]; then
@@ -236,6 +247,17 @@ commands:
                 enum: ["always", "on_success", "on_fail"]
                 default: on_success
         steps:
+            - run:
+                  name: install rsync
+                  command: |
+                      if ! [ -x "$(command -v rsync)" ]; then
+                          if [ -f /usr/bin/yum ]; then
+                              yum -y install rsync
+                          elif [ -f /usr/bin/apt ]; then
+                              apt -y update
+                              apt -y install rsync
+                          fi
+                      fi
             - run:
                   name: rsync folder (<<parameters.folder>> -> <<parameters.remote_folder>>)
                   command: |
