@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@dev:500
+    utils: arrai/utils@dev:501
 jobs:
     badass:
         parameters:
