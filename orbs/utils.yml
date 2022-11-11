@@ -206,10 +206,10 @@ commands:
                   command: |
                       if ! [ -x "$(command -v rsync)" ]; then
                           if [ -f /usr/bin/yum ]; then
-                              yum -y install rsync
+                              sudo yum -y install rsync
                           elif [ -f /usr/bin/apt ]; then
-                              apt -y update
-                              apt -y install rsync
+                              sudo apt -y update
+                              sudo apt -y install rsync
                           fi
                       fi
             - run:
@@ -252,10 +252,10 @@ commands:
                   command: |
                       if ! [ -x "$(command -v rsync)" ]; then
                           if [ -f /usr/bin/yum ]; then
-                              yum -y install rsync
+                              sudo yum -y install rsync
                           elif [ -f /usr/bin/apt ]; then
-                              apt -y update
-                              apt -y install rsync
+                              sudo apt -y update
+                              sudo apt -y install rsync
                           fi
                       fi
             - run:
