@@ -42,6 +42,10 @@ jobs:
                 description: "List of ignored vulnerabilities, e.g. '-i 123 -i 456'"
                 type: string
                 default: ""
+            pipenv_cache_key_version:
+                description: "a string that can be changed to bust the pipenv cache."
+                type: string
+                default: "1"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         environment:
@@ -55,9 +59,9 @@ jobs:
                       python --version > /tmp/python.version
             - restore_cache: # ensure this step occurs *before* installing dependencies
                   keys:
-                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-{{ .Branch }}
-                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-main
+                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}
+                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-main
             - run:
                   name: Set up python environment
                   command: |
@@ -66,7 +70,7 @@ jobs:
             - save_cache:
                   paths:
                       - ~/.local/share/virtualenvs/
-                  key: pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                  key: pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
             - steps: <<parameters.config>>
             - run:
                   name: Run safety
