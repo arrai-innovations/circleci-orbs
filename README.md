@@ -13,7 +13,6 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
 - [Available Orbs](#available-orbs)
   - [badass](#badass)
   - [eslint](#eslint)
-  - [deepcode](#deepcode)
   - [flake8](#flake8)
   - [prettier](#prettier)
   - [pytest](#pytest)
@@ -37,10 +36,6 @@ This Orb provides an environment for running our BMS/Django tests. Not likely to
 ### eslint
 
 Runs eslint on project code. Note that any warnings are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/eslint).
-
-### deepcode
-
-Runs the [DeepCode CLI](https://github.com/DeepCodeAI/cli) on project code. Note that suggestions of any severity (info, warning, or critical) are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/deepcode).
 
 ### flake8
 
