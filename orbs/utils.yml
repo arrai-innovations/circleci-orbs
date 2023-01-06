@@ -221,7 +221,8 @@ commands:
                           if [ "${MATCH}" -gt "0" ]; then
                               OLD_LANG="${LANG}"
                               LANG=en_US.UTF-8
-                              rsync -t -e "ssh" <<parameters.file>> "<<parameters.host>>:/<<parameters.remote_file>>"
+                              REMOTE_FILE=$(printf %q "<<parameters.remote_file>>")
+                              rsync -t -e "ssh" <<parameters.file>> "<<parameters.host>>:/${REMOTE_FILE}"
                               LANG="${OLD_LANG}"
                           fi
                       fi
@@ -267,7 +268,8 @@ commands:
                           if [ "${MATCH}" -gt "0" ]; then
                               OLD_LANG="${LANG}"
                               LANG=en_US.UTF-8
-                              rsync <<# parameters.delete>>--delete<</ parameters.delete>> -r -l -t -e "ssh" <<parameters.folder>> "<<parameters.host>>:/<<parameters.remote_folder>>"
+                              REMOTE_FOLDER=$(printf %q "<<parameters.remote_folder>>")
+                              rsync <<# parameters.delete>>--delete<</ parameters.delete>> -r -l -t -e "ssh" <<parameters.folder>> "<<parameters.host>>:/${REMOTE_FOLDER}"
                               LANG="${OLD_LANG}"
                           fi
                       fi
