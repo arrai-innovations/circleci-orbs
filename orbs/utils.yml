@@ -135,7 +135,8 @@ commands:
             - run:
                   name: Make status shield (<<parameters.status>>)
                   command: |
-                      <<# parameters.preserve>>[ ! -f <<parameters.file>> ] && <</ parameters.preserve>> curl -sS -o <<parameters.file>> "https://img.shields.io/badge/<<parameters.label>>-<<parameters.status>>-<<parameters.color>>.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>&link=${CIRCLE_BUILD_URL}" || :
+                      LABEL=$(echo -n "<<parameters.label>>" | sed -e 's/ /_/g' -e 's/-/--/g')
+                      <<# parameters.preserve>>[ ! -f <<parameters.file>> ] && <</ parameters.preserve>> curl -sS -o <<parameters.file>> "https://img.shields.io/badge/${LABEL}-<<parameters.status>>-<<parameters.color>>.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>&link=${CIRCLE_BUILD_URL}" || :
                   when: <<parameters.when>>
     make_coverage_shield:
         description: "Fetch coverage shield from shields.io."
