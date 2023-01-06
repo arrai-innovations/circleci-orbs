@@ -183,7 +183,7 @@ commands:
                       COLORS=(["95"]="brightgreen" ["90"]="green" ["75"]="yellowgreen" ["60"]="yellow" ["40"]="orange" ["0"]="red")
                       VALUES=("95" "90" "75" "60" "40" "0");
                       for KEY in "${VALUES[@]}"; do if [ "${COVERAGE_PERCENTAGE}" -ge "$KEY" ]; then COVERAGE_COLOR=${COLORS[$KEY]}; break; fi; done;
-                      curl -sS -o <<parameters.file>> "https://img.shields.io/badge/Coverage-${COVERAGE_PERCENTAGE}%25-${COVERAGE_COLOR}.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>&link=<<parameters.link>>"
+                      curl --get --data-urlencode "link=<<parameters.link>>" -sS -o <<parameters.file>> "https://img.shields.io/badge/Coverage-${COVERAGE_PERCENTAGE}%25-${COVERAGE_COLOR}.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>"
                   when: <<parameters.when>>
     rsync_file:
         description: "Copy a single file to a remote destination via rsync."
