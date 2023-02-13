@@ -359,6 +359,7 @@ commands:
                   name: Install pipenv packages
                   command: |
                       mkdir -p logs/${CIRCLE_PROJECT_REPONAME}
+                      pipenv clean
                       if [ "<<parameters.pipenv_python_arg>>" == "" ]; then
                           pipenv install --dev <<# parameters.pipenv_skip_lock>>--skip-lock<</ parameters.pipenv_skip_lock>>
                       else
