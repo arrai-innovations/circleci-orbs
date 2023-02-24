@@ -48,7 +48,7 @@ jobs:
                           if [ ! -z <<parameters.version>> ]; then
                               sudo npm install -g prettier@<<parameters.version>>
                           else
-                              sudo npm ci
+                              npm ci
                           fi
                       elif [ ! -z <<parameters.version>> ]; then
                           npm install -g prettier@<<parameters.version>>
