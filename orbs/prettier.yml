@@ -1,12 +1,12 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.9.0
+    utils: arrai/utils@1.12.0
 executors:
-    node14:
+    node16:
         environment:
             LANG: C.UTF-8
         docker:
-            - image: cimg/node:14.19-browsers
+            - image: cimg/node:16.19.1-browsers
 jobs:
     code_style:
         parameters:
@@ -17,7 +17,7 @@ jobs:
             executor:
                 description: "The executor to use for the job."
                 type: executor
-                default: node14
+                default: node16
             resource_class:
                 description: "The resource class to use for the job."
                 type: enum
@@ -40,21 +40,21 @@ jobs:
         steps:
             - checkout
             - steps: <<parameters.setup>>
-            - run:
-                  name: Install the latest npm
-                  command: |
-                      if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
-                          sudo npm install -g --upgrade npm
-                      else
-                          npm install -g --upgrade npm
-                      fi
+            - utils/add_npm_config
             - run:
                   name: Install prettier
                   command: |
+                      cd <<parameters.wd>>
                       if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
-                          sudo npm install -g "prettier$([ ! -z <<parameters.version>> ] && echo "@<<parameters.version>>")"
+                          if [ ! -z <<parameters.version>> ]; then
+                              sudo npm install -g prettier@<<parameters.version>>
+                          else
+                              npm ci
+                          fi
+                      elif [ ! -z <<parameters.version>> ]; then
+                          npm install -g prettier@<<parameters.version>>
                       else
-                          npm install -g "prettier$([ ! -z <<parameters.version>> ] && echo "@<<parameters.version>>")"
+                          npm ci
                       fi
             - run:
                   name: Check prettier
