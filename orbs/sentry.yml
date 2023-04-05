@@ -96,7 +96,7 @@ jobs:
                   command: |
                       export SENTRY_ORG="<<parameters.sentry_org>>"
                       export SENTRY_PROJECT="<<parameters.sentry_project>>"
-                      export SENTRY_RELEASE="<<parameters.sentry_release>>"
+                      export SENTRY_RELEASE="<<parameters.sentry_project>>-<<parameters.sentry_release>>"
                       sentry-cli releases new ${SENTRY_RELEASE}
                       if [ "${<<parameters.sentry_commit_integration>>}" = "local" ]; then
                           sentry-cli releases set-commits ${SENTRY_RELEASE} --local --initial-depth 9223372036854775807
