@@ -6,7 +6,7 @@ executors:
         environment:
             LANG: C.UTF-8
         docker:
-            - image: cimg/node:16.19.1-browsers
+            - image: cimg/node:16.20.0-browsers
 jobs:
     code_style:
         parameters:
