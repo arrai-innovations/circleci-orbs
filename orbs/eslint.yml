@@ -12,17 +12,6 @@ commands:
                       else
                           npm install -g --upgrade npm
                       fi
-
-    install_eslint:
-        steps:
-            - run:
-                  name: "Install the latest eslint"
-                  command: |
-                      if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
-                          sudo npm install -g eslint
-                      else
-                          npm install -g eslint
-                      fi
 jobs:
     eslint:
         parameters:
@@ -68,7 +57,7 @@ jobs:
                   name: Run eslint
                   command: |
                       cd <<parameters.wd>>
-                      eslint --color <<parameters.files>> | tee ~/lint
+                      npx -y eslint --color <<parameters.files>> | tee ~/lint
             - when:
                   condition: <<parameters.create_badges>>
                   steps:
