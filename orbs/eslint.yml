@@ -50,7 +50,6 @@ jobs:
             - checkout
             - steps: <<parameters.setup>>
             - upgrade_npm
-            - install_eslint
             - utils/add_npm_config
             - steps: <<parameters.config>>
             - run:
