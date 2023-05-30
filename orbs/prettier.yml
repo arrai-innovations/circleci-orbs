@@ -31,6 +31,10 @@ jobs:
                 description: "Any additional setup steps."
                 type: steps
                 default: []
+            config:
+                description: "Any additional configuration steps."
+                type: steps
+                default: []
             create_badges:
                 description: "Generate badges."
                 type: boolean
@@ -41,6 +45,7 @@ jobs:
             - checkout
             - steps: <<parameters.setup>>
             - utils/add_npm_config
+            - steps: <<parameters.config>>
             - run:
                   name: Install prettier
                   command: |
