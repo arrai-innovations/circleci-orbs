@@ -71,6 +71,10 @@ jobs:
                           command: |
                               sudo apt update
                               sudo apt install rsync colorized-logs jq
+            config:
+                description: "Any additional configuration steps."
+                type: steps
+                default: []
             report_to:
                 description: "E-mail address to send npm audit failure report to."
                 type: string
@@ -91,6 +95,7 @@ jobs:
             - steps: <<parameters.setup>>
             - upgrade_npm
             - utils/add_npm_config
+            - steps: <<parameters.config>>
             - run:
                   name: "Run npm audit"
                   command: |
