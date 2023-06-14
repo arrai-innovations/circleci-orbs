@@ -19,13 +19,14 @@ commands:
                 type: string
             description:
                 type: string
-                default: $GITHUB_STATUS_DESCRIPTION
             context:
                 type: string
-                default: $GITHUB_STATUS_CONTEXT
+            target_user:
+                type: string
+                default: $CIRCLE_PROJECT_USERNAME
             target_repo:
                 type: string
-                default: $CIRCLE_CI_PROJECT_USERNAME/$CIRCLE_CI_PROJECT_REPONAME
+                default: $CIRCLE_PROJECT_REPONAME
             target_commit_or_tag:
                 type: string
                 default: $CIRCLE_SHA1
@@ -37,30 +38,28 @@ commands:
                       set -euo pipefail
                       CONTEXT="<<parameters.context>>"
                       DESCRIPTION="<<parameters.description>>"
-                      [ -n "$CONTEXT" ] || CONTEXT="circleci/$CIRCLE_JOB"
-                      [ -n "$DESCRIPTION" ] || DESCRIPTION="$CONTEXT"
                       # Export the latest values for CONTEXT and DESCRIPTION so later calls
                       # do not need to set them explicitly again.
                       echo "export GITHUB_STATUS_CONTEXT='$CONTEXT'" >> $BASH_ENV
                       echo "export GITHUB_STATUS_DESCRIPTION='$DESCRIPTION'" >> $BASH_ENV
                       # Compose our URL and auth pieces.
                       API=https://api.github.com
-                      USER=arrai-innovations
+                      USER=<<parameters.target_user>>
                       REPO=<<parameters.target_repo>>
                       SHA=<<parameters.target_commit_or_tag>>
-                      AUTH=$GITHUB_STATUS_USER:$GITHUB_STATUS_TOKEN
+                      ACCEPT="Accept: application/vnd.github.v3+json"
+                      AUTH="Authorization: Bearer $GITHUB_TOKEN"
+                      VERSION="X-GitHub-Api-Version: 2022-11-28"
                       URL=$API/repos/$USER/$REPO/statuses/$SHA
                       # Compose the body.
-                      BODY='
-                          {
-                              "state": "<<parameters.state>>",
-                              "target_url": "$CIRCLE_BUILD_URL",
-                              "description": "<<parameters.state>>: '"$DESCRIPTION"'",
-                              "context": "'"$CONTEXT"'"
-                          }
-                      '
+                      BODY='{
+                          "state": "<<parameters.state>>",
+                          "target_url": "$CIRCLE_BUILD_URL",
+                          "description": "<<parameters.state>>: '"$DESCRIPTION"'",
+                          "context": "'"$CONTEXT"'"
+                      }'
                       # Post the status (use echo-pipe not \<<< for greater shell compat).
-                      echo $BODY | curl -u $AUTH -XPOST -d@- $URL
+                      echo $BODY | curl -H $ACCEPT -H $AUTH -H $VERSION -XPOST -d@- $URL
     pending:
         description: post pending status to github
         # samsalisbury/github-status - github-status/pending
@@ -68,13 +67,14 @@ commands:
         parameters:
             description:
                 type: string
-                default: $GITHUB_STATUS_DESCRIPTION
             context:
                 type: string
-                default: $GITHUB_STATUS_CONTEXT
+            target_user:
+                type: string
+                default: $CIRCLE_PROJECT_USERNAME
             target_repo:
                 type: string
-                default: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+                default: $CIRCLE_PROJECT_REPONAME
             target_commit_or_tag:
                 type: string
                 default: $CIRCLE_SHA1
@@ -84,6 +84,7 @@ commands:
                   state: pending
                   description: <<parameters.description>>
                   context: <<parameters.context>>
+                  target_user: << parameters.target_user >>
                   target_repo: << parameters.target_repo >>
                   target_commit_or_tag: << parameters.target_commit_or_tag >>
     success_or_fail:
@@ -93,13 +94,14 @@ commands:
         parameters:
             description:
                 type: string
-                default: $GITHUB_STATUS_DESCRIPTION
             context:
                 type: string
-                default: $GITHUB_STATUS_CONTEXT
+            target_user:
+                type: string
+                default: $CIRCLE_PROJECT_USERNAME
             target_repo:
                 type: string
-                default: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+                default: $CIRCLE_PROJECT_REPONAME
             target_commit_or_tag:
                 type: string
                 default: $CIRCLE_SHA1
@@ -109,6 +111,7 @@ commands:
                   state: success
                   description: <<parameters.description>>
                   context: <<parameters.context>>
+                  target_user: << parameters.target_user >>
                   target_repo: << parameters.target_repo >>
                   target_commit_or_tag: << parameters.target_commit_or_tag >>
             - post-status:
@@ -116,6 +119,7 @@ commands:
                   state: failure
                   description: <<parameters.description>>
                   context: <<parameters.context>>
+                  target_user: << parameters.target_user >>
                   target_repo: << parameters.target_repo >>
                   target_commit_or_tag: << parameters.target_commit_or_tag >>
 jobs:
