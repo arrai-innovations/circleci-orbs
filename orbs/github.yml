@@ -17,9 +17,9 @@ commands:
                     - on_fail
             state:
                 type: string
-            description:
+            gh_description:
                 type: string
-            context:
+            gh_context:
                 type: string
             target_user:
                 type: string
@@ -36,13 +36,8 @@ commands:
                   name: "GitHub Status: <<parameters.state>>"
                   command: |
                       set -euo pipefail
-                      CONTEXT="<<parameters.context>>"
-                      DESCRIPTION="<<parameters.description>>"
-                      # Export the latest values for CONTEXT and DESCRIPTION so later calls
-                      # do not need to set them explicitly again.
-                      echo "export GITHUB_STATUS_CONTEXT='$CONTEXT'" >> $BASH_ENV
-                      echo "export GITHUB_STATUS_DESCRIPTION='$DESCRIPTION'" >> $BASH_ENV
-                      # Compose our URL and auth pieces.
+                      CONTEXT="<<parameters.gh_context>>"
+                      DESCRIPTION="<<parameters.gh_description>>"
                       API=https://api.github.com
                       USER=<<parameters.target_user>>
                       REPO=<<parameters.target_repo>>
@@ -51,7 +46,6 @@ commands:
                       AUTH="Authorization: Bearer $GITHUB_TOKEN"
                       VERSION="X-GitHub-Api-Version: 2022-11-28"
                       URL=$API/repos/$USER/$REPO/statuses/$SHA
-                      # Compose the body.
                       BODY='{
                           "state": "<<parameters.state>>",
                           "target_url": "$CIRCLE_BUILD_URL",
@@ -63,11 +57,11 @@ commands:
     pending:
         description: post pending status to github
         # samsalisbury/github-status - github-status/pending
-        # customized to use customized post-status
+        # customized to have a configurable repo and commit
         parameters:
-            description:
+            gh_description:
                 type: string
-            context:
+            gh_context:
                 type: string
             target_user:
                 type: string
@@ -82,19 +76,19 @@ commands:
             - post-status:
                   when: on_success
                   state: pending
-                  description: <<parameters.description>>
-                  context: <<parameters.context>>
+                  gh_description: <<parameters.gh_description>>
+                  gh_context: <<parameters.gh_context>>
                   target_user: << parameters.target_user >>
                   target_repo: << parameters.target_repo >>
                   target_commit_or_tag: << parameters.target_commit_or_tag >>
     success_or_fail:
         description: post success or error status to github
         # samsalisbury/github-status - github-status/report
-        # customized to use customized post-status and we don't need a report_failed_only
+        # customized to have a configurable repo and commit
         parameters:
-            description:
+            gh_description:
                 type: string
-            context:
+            gh_context:
                 type: string
             target_user:
                 type: string
@@ -109,16 +103,16 @@ commands:
             - post-status:
                   when: on_success
                   state: success
-                  description: <<parameters.description>>
-                  context: <<parameters.context>>
+                  gh_description: <<parameters.gh_description>>
+                  gh_context: <<parameters.gh_context>>
                   target_user: << parameters.target_user >>
                   target_repo: << parameters.target_repo >>
                   target_commit_or_tag: << parameters.target_commit_or_tag >>
             - post-status:
                   when: on_fail
                   state: failure
-                  description: <<parameters.description>>
-                  context: <<parameters.context>>
+                  gh_description: <<parameters.gh_description>>
+                  gh_context: <<parameters.gh_context>>
                   target_user: << parameters.target_user >>
                   target_repo: << parameters.target_repo >>
                   target_commit_or_tag: << parameters.target_commit_or_tag >>
