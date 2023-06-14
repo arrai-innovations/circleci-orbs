@@ -10,7 +10,7 @@ commands:
         # customized to have a configurable repo and commit
         parameters:
             when:
-                type: string
+                type: enum
                 enum:
                     - always
                     - on_success
