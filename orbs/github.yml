@@ -53,7 +53,7 @@ commands:
                       URL=$API/repos/$USER/$REPO/statuses/$SHA
                       BODY='{
                           "state": "<<parameters.state>>",
-                          "target_url": "$CIRCLE_BUILD_URL",
+                          "target_url": "'"$CIRCLE_BUILD_URL"'",
                           "description": "<<parameters.state>>: '"$DESCRIPTION"'",
                           "context": "'"$CONTEXT"'"
                       }'
