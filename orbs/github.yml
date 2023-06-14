@@ -17,6 +17,11 @@ commands:
                     - on_fail
             state:
                 type: string
+                enum:
+                    - pending
+                    - success
+                    - error
+                    - failure
             gh_description:
                 type: string
             gh_context:
@@ -53,7 +58,7 @@ commands:
                           "context": "'"$CONTEXT"'"
                       }'
                       # Post the status (use echo-pipe not \<<< for greater shell compat).
-                      echo $BODY | curl -H $ACCEPT -H $AUTH -H $VERSION -XPOST -d@- $URL
+                      echo $BODY | curl -H "$ACCEPT" -H "$AUTH" -H "$VERSION" -XPOST -d@- "$URL"
     pending:
         description: post pending status to github
         # samsalisbury/github-status - github-status/pending
