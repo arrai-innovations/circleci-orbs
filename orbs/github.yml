@@ -3,6 +3,121 @@ executors:
     base:
         docker:
             - image: cimg/base:current
+commands:
+    post-status:
+        description: post status to github
+        # samsalisbury/github-status - github-status/post-status
+        # customized to have a configurable repo and commit
+        parameters:
+            when:
+                type: string
+                enum:
+                    - always
+                    - on_success
+                    - on_fail
+            state:
+                type: string
+            description:
+                type: string
+                default: $GITHUB_STATUS_DESCRIPTION
+            context:
+                type: string
+                default: $GITHUB_STATUS_CONTEXT
+            target_repo:
+                type: string
+                default: $CIRCLE_CI_PROJECT_USERNAME/$CIRCLE_CI_PROJECT_REPONAME
+            target_commit_or_tag:
+                type: string
+                default: $CIRCLE_SHA1
+        steps:
+            - run:
+                  when: <<parameters.when>>
+                  name: "GitHub Status: <<parameters.state>>"
+                  command: |
+                      set -euo pipefail
+                      CONTEXT="<<parameters.context>>"
+                      DESCRIPTION="<<parameters.description>>"
+                      [ -n "$CONTEXT" ] || CONTEXT="circleci/$CIRCLE_JOB"
+                      [ -n "$DESCRIPTION" ] || DESCRIPTION="$CONTEXT"
+                      # Export the latest values for CONTEXT and DESCRIPTION so later calls
+                      # do not need to set them explicitly again.
+                      echo "export GITHUB_STATUS_CONTEXT='$CONTEXT'" >> $BASH_ENV
+                      echo "export GITHUB_STATUS_DESCRIPTION='$DESCRIPTION'" >> $BASH_ENV
+                      # Compose our URL and auth pieces.
+                      API=https://api.github.com
+                      USER=arrai-innovations
+                      REPO=<<parameters.target_repo>>
+                      SHA=<<parameters.target_commit_or_tag>>
+                      AUTH=$GITHUB_STATUS_USER:$GITHUB_STATUS_TOKEN
+                      URL=$API/repos/$USER/$REPO/statuses/$SHA
+                      # Compose the body.
+                      BODY='
+                          {
+                              "state": "<<parameters.state>>",
+                              "target_url": "$CIRCLE_BUILD_URL",
+                              "description": "<<parameters.state>>: '"$DESCRIPTION"'",
+                              "context": "'"$CONTEXT"'"
+                          }
+                      '
+                      # Post the status (use echo-pipe not \<<< for greater shell compat).
+                      echo $BODY | curl -u $AUTH -XPOST -d@- $URL
+    pending:
+        description: post pending status to github
+        # samsalisbury/github-status - github-status/pending
+        # customized to use customized post-status
+        parameters:
+            description:
+                type: string
+                default: $GITHUB_STATUS_DESCRIPTION
+            context:
+                type: string
+                default: $GITHUB_STATUS_CONTEXT
+            target_repo:
+                type: string
+                default: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+            target_commit_or_tag:
+                type: string
+                default: $CIRCLE_SHA1
+        steps:
+            - post-status:
+                  when: on_success
+                  state: pending
+                  description: <<parameters.description>>
+                  context: <<parameters.context>>
+                  target_repo: << parameters.target_repo >>
+                  target_commit_or_tag: << parameters.target_commit_or_tag >>
+    success_or_fail:
+        description: post success or error status to github
+        # samsalisbury/github-status - github-status/report
+        # customized to use customized post-status and we don't need a report_failed_only
+        parameters:
+            description:
+                type: string
+                default: $GITHUB_STATUS_DESCRIPTION
+            context:
+                type: string
+                default: $GITHUB_STATUS_CONTEXT
+            target_repo:
+                type: string
+                default: $CIRCLE_PROJECT_USERNAME/$CIRCLE_PROJECT_REPONAME
+            target_commit_or_tag:
+                type: string
+                default: $CIRCLE_SHA1
+        steps:
+            - post-status:
+                  when: on_success
+                  state: success
+                  description: <<parameters.description>>
+                  context: <<parameters.context>>
+                  target_repo: << parameters.target_repo >>
+                  target_commit_or_tag: << parameters.target_commit_or_tag >>
+            - post-status:
+                  when: on_fail
+                  state: failure
+                  description: <<parameters.description>>
+                  context: <<parameters.context>>
+                  target_repo: << parameters.target_repo >>
+                  target_commit_or_tag: << parameters.target_commit_or_tag >>
 jobs:
     create_release:
         parameters:
