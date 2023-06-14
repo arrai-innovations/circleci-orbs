@@ -37,11 +37,6 @@ commands:
                 default: $CIRCLE_SHA1
         steps:
             - run:
-                  name: "Debug"
-                  when: always
-                  command: |
-                      echo "when: <<parameters.when>>"
-            - run:
                   when: <<parameters.when>>
                   name: "GitHub Status: <<parameters.state>>"
                   command: |
