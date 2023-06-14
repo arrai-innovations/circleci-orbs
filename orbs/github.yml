@@ -16,7 +16,7 @@ commands:
                     - on_success
                     - on_fail
             state:
-                type: string
+                type: enum
                 enum:
                     - pending
                     - success
