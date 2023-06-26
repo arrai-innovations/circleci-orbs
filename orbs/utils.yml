@@ -185,6 +185,32 @@ commands:
                       for KEY in "${VALUES[@]}"; do if [ "${COVERAGE_PERCENTAGE}" -ge "$KEY" ]; then COVERAGE_COLOR=${COLORS[$KEY]}; break; fi; done;
                       curl --get --data-urlencode "link=<<parameters.link>>" -sS -o <<parameters.file>> "https://img.shields.io/badge/Coverage-${COVERAGE_PERCENTAGE}%25-${COVERAGE_COLOR}.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>"
                   when: <<parameters.when>>
+    rsync_install:
+        description: "Install rsync on the host."
+        parameters:
+            requires_sudo:
+                type: boolean
+                default: true
+        steps:
+            - run:
+                  name: install rsync
+                  command: |
+                      if ! [ -x "$(command -v rsync)" ]; then
+                          if [ -f /usr/bin/yum ]; then
+                              if [ <<parameters.requires_sudo>> = true ]; then
+                                  sudo yum -y install rsync
+                              else
+                                  yum -y install rsync
+                              fi
+                          elif [ -f /usr/bin/apt-get ]; then
+                              if [ <<parameters.requires_sudo>> = true ]; then
+                                  sudo apt-get -y install rsync
+                              else
+                                  apt-get -y install rsync
+                              fi
+                          fi
+                      fi
+
     rsync_file:
         description: "Copy a single file to a remote destination via rsync."
         parameters:
@@ -201,18 +227,12 @@ commands:
                 type: enum
                 enum: ["always", "on_success", "on_fail"]
                 default: on_success
+            requires_sudo:
+                type: boolean
+                default: true
         steps:
-            - run:
-                  name: install rsync
-                  command: |
-                      if ! [ -x "$(command -v rsync)" ]; then
-                          if [ -f /usr/bin/yum ]; then
-                              sudo yum -y install rsync
-                          elif [ -f /usr/bin/apt ]; then
-                              sudo apt -y update
-                              sudo apt -y install rsync
-                          fi
-                      fi
+            - rsync_install:
+                  requires_sudo: <<parameters.requires_sudo>>
             - run:
                   name: rsync file (<<parameters.file>> -> <<parameters.remote_file>>)
                   command: |
@@ -248,18 +268,12 @@ commands:
                 type: enum
                 enum: ["always", "on_success", "on_fail"]
                 default: on_success
+            requires_sudo:
+                type: boolean
+                default: true
         steps:
-            - run:
-                  name: install rsync
-                  command: |
-                      if ! [ -x "$(command -v rsync)" ]; then
-                          if [ -f /usr/bin/yum ]; then
-                              sudo yum -y install rsync
-                          elif [ -f /usr/bin/apt ]; then
-                              sudo apt -y update
-                              sudo apt -y install rsync
-                          fi
-                      fi
+            - rsync_install:
+                  requires_sudo: <<parameters.requires_sudo>>
             - run:
                   name: rsync folder (<<parameters.folder>> -> <<parameters.remote_folder>>)
                   command: |
