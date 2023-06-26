@@ -204,8 +204,10 @@ commands:
                               fi
                           elif [ -f /usr/bin/apt-get ]; then
                               if [ <<parameters.requires_sudo>> = true ]; then
+                                  sudo apt-get -y update
                                   sudo apt-get -y install rsync
                               else
+                                  apt-get -y update
                                   apt-get -y install rsync
                               fi
                           fi
