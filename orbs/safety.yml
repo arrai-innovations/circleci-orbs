@@ -59,9 +59,9 @@ jobs:
                       python --version > /tmp/python.version
             - restore_cache: # ensure this step occurs *before* installing dependencies
                   keys:
-                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}
-                      - pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-main
+                      - pipenv-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                      - pipenv-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}
+                      - pipenv-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-main
             - run:
                   name: Set up python environment
                   command: |
@@ -70,7 +70,7 @@ jobs:
             - save_cache:
                   paths:
                       - ~/.local/share/virtualenvs/
-                  key: pipenv-{{ arch }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                  key: pipenv-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
             - steps: <<parameters.config>>
             - run:
                   name: Run safety
