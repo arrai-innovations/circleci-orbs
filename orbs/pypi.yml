@@ -45,7 +45,7 @@ jobs:
             - steps: <<parameters.setup>>
             - restore_cache:
                   keys:
-                      - build-{{ arch }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+                      - build-{{ checksum "/etc/os-release" }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
             - run:
                   name: "Check that the long description renders correctly."
                   command: |
