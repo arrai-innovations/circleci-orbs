@@ -2,11 +2,11 @@ version: 2.1
 orbs:
     utils: arrai/utils@1.12.0
 executors:
-    node16:
+    node18:
         environment:
             LANG: C.UTF-8
         docker:
-            - image: cimg/node:16.20.0-browsers
+            - image: cimg/node:18.17.1-browsers
 jobs:
     code_style:
         parameters:
@@ -17,7 +17,7 @@ jobs:
             executor:
                 description: "The executor to use for the job."
                 type: executor
-                default: node16
+                default: node18
             resource_class:
                 description: "The resource class to use for the job."
                 type: enum
