@@ -26,7 +26,7 @@ jobs:
             executor:
                 description: "The executor to use for the job."
                 type: executor
-                default: v16
+                default: v18
             resource_class:
                 description: "The resource class to use for the job."
                 type: enum
@@ -124,14 +124,14 @@ executors:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: cimg/node:16.20
+            - image: cimg/node:16.20.2
     v18:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: cimg/node:18.16
+            - image: cimg/node:18.17.1
     v20:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: cimg/node:20.0
+            - image: cimg/node:20.5.1
