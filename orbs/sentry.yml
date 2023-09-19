@@ -47,9 +47,9 @@ jobs:
             - steps: <<parameters.setup>>
             - run:
                   command: |
-                      sentry-cli deploys new -o "<<parameters.sentry_org>>"             \
-                                             -r "<<parameters.sentry_release>>"         \
-                                             -u "<<parameters.deployment_url>>"         \
+                      sentry-cli deploys new -o "<<parameters.sentry_org>>"                                   \
+                                             -r "<<parameters.sentry_project>>-<<parameters.sentry_release>>" \
+                                             -u "<<parameters.deployment_url>>"                               \
                                              -e "<<parameters.deployment_environment>>"
     create_release:
         parameters:
