@@ -355,12 +355,12 @@ commands:
                   name: Install pipenv packages
                   command: |
                       mkdir -p logs/${CIRCLE_PROJECT_REPONAME}
-                      pipenv clean
                       if [ "<<parameters.pipenv_python_arg>>" == "" ]; then
-                          pipenv install --dev <<# parameters.pipenv_skip_lock>>--skip-lock<</ parameters.pipenv_skip_lock>>
+                          pipenv clean
                       else
-                          pipenv install --dev --python <<parameters.pipenv_python_arg>> <<# parameters.pipenv_skip_lock>>--skip-lock<</ parameters.pipenv_skip_lock>>
+                          pipenv clean --python <<parameters.pipenv_python_arg>>
                       fi
+                      pipenv install --dev <<# parameters.pipenv_skip_lock>>--skip-lock<</ parameters.pipenv_skip_lock>>
                       export BADASS_PIPENV_VENV="$(pipenv --venv)"
                       echo "import sys; import os; print([x for x in sys.path if x.find(os.environ['BADASS_PIPENV_VENV']) != -1 and x.find('site-packages') != -1][0])" > get_coverage_pth_path.py
                       export BADASS_COVERAGE_PTH_PATH="$(pipenv run python get_coverage_pth_path.py)/coverage-all-the-things.pth"
