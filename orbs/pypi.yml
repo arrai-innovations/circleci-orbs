@@ -30,6 +30,10 @@ jobs:
                 description: "The URL of the repository to upload to."
                 type: string
                 default: ${TWINE_REPOSITORY_URL}
+            cache_key:
+                description: "Key used to restore build cache."
+                type: string
+                default: build-{{ checksum "/etc/os-release" }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
             setup:
                 description: "Any additional setup steps."
                 type: steps
@@ -41,11 +45,10 @@ jobs:
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
-            - checkout
             - steps: <<parameters.setup>>
             - restore_cache:
                   keys:
-                      - build-{{ checksum "/etc/os-release" }}-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+                      - <<parameters.cache_key>>
             - run:
                   name: "Check that the long description renders correctly."
                   command: |
