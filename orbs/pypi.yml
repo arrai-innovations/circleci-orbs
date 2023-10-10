@@ -45,7 +45,6 @@ jobs:
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
-            - checkout
             - steps: <<parameters.setup>>
             - restore_cache:
                   keys:
