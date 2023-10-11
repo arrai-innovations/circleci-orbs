@@ -69,7 +69,7 @@ For information on how to override these defaults, refer to the generated [docum
 
 ### pypi
 
-Publishes python packages to a PyPI (or compatible) server. It does not include the build step. It is assumed that some other job builds the packages and persists the dist folder to the workspace. Refer to the [example configuration](/examples/pypi.yml) on how this might look.
+Publishes python packages to a PyPI (or compatible) server. It does not include the build step. It is assumed that some other job builds the packages and stashes the dist folder in a cache. Refer to the [example configuration](/examples/pypi.yml) on how this might look.
 
 For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pypi).
 

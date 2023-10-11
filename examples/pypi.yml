@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    pypi: arrai/pypi@1.0.0
+    pypi: arrai/pypi@3.1.0
 executors:
     python310:
         docker:
@@ -20,10 +20,10 @@ jobs:
                   name: Build Package
                   command: |
                       python setup.py sdist bdist_wheel
-            - persist_to_workspace:
-                  root: ./
+            - save_cache:
                   paths:
-                      - dist
+                      - ~/project/dist
+                  key: build-{{ .Environment.CIRCLE_WORKFLOW_ID }}
 workflows:
     test_and_release:
         jobs:
@@ -45,6 +45,7 @@ workflows:
                           ignore: /.*/
             - pypi/upload_release:
                   name: release
+                  cache_key: build-{{ .Environment.CIRCLE_WORKFLOW_ID }}
                   context: arrai-private-package-publishing
                   requires:
                       - build
