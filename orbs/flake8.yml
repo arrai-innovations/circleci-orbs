@@ -48,6 +48,7 @@ jobs:
                 default: true
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
         steps:
             - checkout
             - steps: <<parameters.setup>>
@@ -121,6 +122,7 @@ jobs:
                 default: "1"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
         environment:
             PIPENV_DONT_LOAD_ENV: 1
         steps:

@@ -52,6 +52,7 @@ jobs:
                 default: false
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
         working_directory: <<parameters.repodir>>
         steps:
             - checkout
@@ -156,6 +157,7 @@ jobs:
                 default: "1"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
         steps:
             - checkout
             - utils/add_ssh_config
@@ -294,6 +296,7 @@ jobs:
                 default: []
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
         working_directory: <<parameters.repodir>>
         steps:
             - checkout

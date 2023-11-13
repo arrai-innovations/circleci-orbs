@@ -89,6 +89,7 @@ jobs:
                 default: true
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
         steps:
             - checkout
             - utils/add_ssh_config
@@ -178,6 +179,7 @@ jobs:
                 default: coverage
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
         steps:
             - checkout
             - utils/add_ssh_config
