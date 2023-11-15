@@ -40,6 +40,7 @@ aliases:
         create_badges:
             description: "Generate badges."
             type: boolean
+            default: true
     common_badge_upload: &common_badge_upload
         - utils/add_ssh_config
         - run:
