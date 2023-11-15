@@ -6,7 +6,7 @@ executors:
         environment:
             LANG: C.UTF-8
         docker:
-            - image: cimg/node:18.17.1-browsers
+            - image: cimg/node:18.18-browsers
 aliases:
     common_parameters: &common_parameters
         wd:
