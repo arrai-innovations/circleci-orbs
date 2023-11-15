@@ -1,210 +1,253 @@
 version: 2.1
 orbs:
     utils: arrai/utils@1.13.0
+aliases:
+    common_parameters: &common_parameters
+        wd:
+            description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
+            type: string
+            default: ${CIRCLE_PROJECT_REPONAME}
+        setup:
+            description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
+            type: steps
+            default: []
+        executor:
+            description: "Execution environment for the test job."
+            type: executor
+        resource_class:
+            description: "The resource class to use for the job."
+            type: enum
+            enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+    common_badass_parameters: &common_badass_parameters
+        <<: *common_parameters
+        repodir:
+            description: "Location of the git repo (no trailing slash)."
+            type: string
+            default: ~/project
+        config:
+            description: "Any additional BMS configuration steps."
+            type: steps
+            default: []
+        parallel:
+            description: "The level of test parallelism."
+            type: integer
+            default: 4
+        badge_label:
+            description: "The label to use for the badge."
+            type: string
+            default: tests
+        meta_job_name:
+            description: "The filename to use for the badge."
+            type: string
+        test_script:
+            description: "The test script to run (e.g., manage.py test)."
+            type: string
+            default: manage.py test
+        pipenv_python_arg:
+            description: "Location or version of the python interpreter to use for pipenv."
+            type: string
+            default: ""
+        pipenv_skip_lock:
+            description: "Skip use of the pipenv lock file."
+            type: boolean
+            default: false
+    common_badass_steps: &common_badass_steps
+        - checkout
+        - utils/add_maxmind_config
+        - utils/add_ssh_config
+        - utils/make_status_shield:
+              status: running
+              color: lightblue
+              file: ~/status.svg
+              label: <<parameters.badge_label>>
+        - utils/rsync_file:
+              file: ~/status.svg
+              remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
+              host: docs
+        - steps: <<parameters.setup>>
+        - setup_pipenv:
+              pipenv_python_arg: <<parameters.pipenv_python_arg>>
+              pipenv_skip_lock: <<parameters.pipenv_skip_lock>>
+        - setup_badass_config:
+              wd: <<parameters.wd>>
+        - steps: <<parameters.config>>
+        - run_tests:
+              wd: <<parameters.wd>>
+              parallel: <<parameters.parallel>>
+              test_script: <<parameters.test_script>>
+        - coverage_combine_and_html:
+              wd: <<parameters.wd>>
+        - store_test_results:
+              path: test-results
+        - store_artifacts:
+              path: test-results
+              destination: tr1
+        - utils/rsync_folder:
+              when: always
+              folder: <<parameters.wd>>/htmlcov/
+              remote_folder: ${CIRCLE_BRANCH}/htmlcov_<<parameters.meta_job_name>>
+              host: docs
+        - utils/make_coverage_shield:
+              when: always
+              link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH}/htmlcov_<<parameters.meta_job_name>>/
+        - utils/rsync_file:
+              when: always
+              file: /tmp/coverage.svg
+              remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.coverage.svg
+              host: docs
+        - utils/make_status_shield:
+              when: on_success
+              status: passed
+              color: brightgreen
+              file: ~/status.svg
+              label: <<parameters.badge_label>>
+        - utils/make_status_shield:
+              when: on_fail
+              status: failed
+              color: red
+              file: ~/status.svg
+              label: <<parameters.badge_label>>
+        - utils/rsync_file:
+              when: always
+              file: ~/status.svg
+              remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
+              host: docs
+    common_badass_pre_spread_parameters: &common_badass_pre_spread_parameters
+        <<: *common_parameters
+        config:
+            description: "Any additional BMS configuration steps."
+            type: steps
+            default: []
+        badge_label:
+            description: "The label to use for the badge."
+            type: string
+            default: tests
+        meta_job_name:
+            description: "The filename to use for the badge."
+            type: string
+        pipenv_python_arg:
+            description: "Location or version of the python interpreter to use for pipenv."
+            type: string
+            default: ""
+        pipenv_skip_lock:
+            description: "Skip use of the pipenv lock file."
+            type: boolean
+            default: false
+        pipenv_cache_key_version:
+            description: "a string that can be changed to bust the pipenv cache."
+            type: string
+            default: "1"
+    common_badass_pre_spread_steps: &common_badass_pre_spread_steps
+        - checkout
+        - utils/add_ssh_config
+        - utils/make_status_shield:
+              status: running
+              color: lightblue
+              file: ~/status.svg
+              label: <<parameters.badge_label>>
+        - utils/rsync_file:
+              file: ~/status.svg
+              remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
+              host: docs
+        - steps: <<parameters.setup>>
+        - restore_cache:
+              keys:
+                  - pipenv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                  - pipenv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}
+                  - pipenv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-main
+        - setup_pipenv:
+              pipenv_python_arg: <<parameters.pipenv_python_arg>>
+              pipenv_skip_lock: <<parameters.pipenv_skip_lock>>
+        - save_cache:
+              paths:
+                  - ~/.local/share/virtualenvs
+              key: pipenv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+        - steps: <<parameters.config>>
+        - persist_to_workspace:
+              root: ~/
+              paths:
+                  - .local/share/virtualenvs
+    common_badass_test_combine: &common_badass_test_combine
+        - checkout
+        - steps: <<parameters.setup>>
+        - utils/add_ssh_config
+        - attach_workspace:
+              at: ~/
+        - run:
+              name: Restore workspace files
+              command: |
+                  shopt -s dotglob
+                  cp ~/workspace/* <<parameters.wd>>/
+        - run:
+              name: Combine status
+              command: |
+                  if [ $(cat <<parameters.wd>>/0.status) -eq "0" ]; then
+                      diff -q --from-file <<parameters.wd>>/*.status && touch /tmp/passed
+                  fi
+        - utils/make_status_shield:
+              status: $([ -f /tmp/passed ] && echo "passed" || echo "failed")
+              color: $([ -f /tmp/passed ] && echo "brightgreen" || echo "red")
+              file: /tmp/status.svg
+              label: <<parameters.badge_label>>
+        - utils/rsync_file:
+              when: always
+              file: /tmp/status.svg
+              remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
+              host: docs
+        - coverage_combine_and_html:
+              wd: <<parameters.wd>>
+        - utils/rsync_folder:
+              when: always
+              folder: <<parameters.wd>>/htmlcov/
+              remote_folder: ${CIRCLE_BRANCH}/htmlcov_<<parameters.meta_job_name>>
+              host: docs
+        - utils/make_coverage_shield:
+              when: always
+              file: /tmp/coverage.svg
+              link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH}/htmlcov_<<parameters.meta_job_name>>/
+        - utils/rsync_file:
+              when: always
+              file: /tmp/coverage.svg
+              remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.coverage.svg
+              host: docs
 jobs:
     badass:
         parameters:
-            repodir:
-                description: "Location of the git repo (no trailing slash)."
-                type: string
-                default: ~/project
-            wd:
-                description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
-                type: string
-                default: ${CIRCLE_PROJECT_REPONAME}
-            setup:
-                description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
-                type: steps
-                default: []
-            config:
-                description: "Any additional BMS configuration steps."
-                type: steps
-                default: []
-            executor:
-                description: "Execution environment for the test job."
-                type: executor
-            resource_class:
-                description: "The resource class to use for the job."
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-            parallel:
-                description: "The level of test parallelism."
-                type: integer
-                default: 4
-            badge_label:
-                description: "The label to use for the badge."
-                type: string
-                default: tests
-            meta_job_name:
-                description: "The filename to use for the badge."
-                type: string
-            test_script:
-                description: "The test script to run (e.g., manage.py test)."
-                type: string
-                default: manage.py test
-            pipenv_python_arg:
-                description: "Location or version of the python interpreter to use for pipenv."
-                type: string
-                default: ""
-            pipenv_skip_lock:
-                description: "Skip use of the pipenv lock file."
-                type: boolean
-                default: false
+            <<: *common_badass_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        working_directory: <<parameters.repodir>>
+        steps: *common_badass_steps
+    badass_fixed_ip:
+        parameters:
+            <<: *common_badass_parameters
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
         working_directory: <<parameters.repodir>>
-        steps:
-            - checkout
-            - utils/add_maxmind_config
-            - utils/add_ssh_config
-            - utils/make_status_shield:
-                  status: running
-                  color: lightblue
-                  file: ~/status.svg
-                  label: <<parameters.badge_label>>
-            - utils/rsync_file:
-                  file: ~/status.svg
-                  remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
-                  host: docs
-            - steps: <<parameters.setup>>
-            - setup_pipenv:
-                  pipenv_python_arg: <<parameters.pipenv_python_arg>>
-                  pipenv_skip_lock: <<parameters.pipenv_skip_lock>>
-            - setup_badass_config:
-                  wd: <<parameters.wd>>
-            - steps: <<parameters.config>>
-            - run_tests:
-                  wd: <<parameters.wd>>
-                  parallel: <<parameters.parallel>>
-                  test_script: <<parameters.test_script>>
-            - coverage_combine_and_html:
-                  wd: <<parameters.wd>>
-            - store_test_results:
-                  path: test-results
-            - store_artifacts:
-                  path: test-results
-                  destination: tr1
-            - utils/rsync_folder:
-                  when: always
-                  folder: <<parameters.wd>>/htmlcov/
-                  remote_folder: ${CIRCLE_BRANCH}/htmlcov_<<parameters.meta_job_name>>
-                  host: docs
-            - utils/make_coverage_shield:
-                  when: always
-                  link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH}/htmlcov_<<parameters.meta_job_name>>/
-            - utils/rsync_file:
-                  when: always
-                  file: /tmp/coverage.svg
-                  remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.coverage.svg
-                  host: docs
-            - utils/make_status_shield:
-                  when: on_success
-                  status: passed
-                  color: brightgreen
-                  file: ~/status.svg
-                  label: <<parameters.badge_label>>
-            - utils/make_status_shield:
-                  when: on_fail
-                  status: failed
-                  color: red
-                  file: ~/status.svg
-                  label: <<parameters.badge_label>>
-            - utils/rsync_file:
-                  when: always
-                  file: ~/status.svg
-                  remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
-                  host: docs
+        steps: *common_badass_steps
     badass_test_pre_spread:
         parameters:
-            wd:
-                description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
-                type: string
-                default: ${CIRCLE_PROJECT_REPONAME}
-            setup:
-                description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
-                type: steps
-                default: []
-            config:
-                description: "Any additional BMS configuration steps."
-                type: steps
-                default: []
-            executor:
-                description: "Execution environment for the test job."
-                type: executor
-            resource_class:
-                description: "The resource class to use for the job."
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-            badge_label:
-                description: "The label to use for the badge."
-                type: string
-                default: tests
-            meta_job_name:
-                description: "The filename to use for the badge."
-                type: string
-            pipenv_python_arg:
-                description: "Location or version of the python interpreter to use for pipenv."
-                type: string
-                default: ""
-            pipenv_skip_lock:
-                description: "Skip use of the pipenv lock file."
-                type: boolean
-                default: false
-            pipenv_cache_key_version:
-                description: "a string that can be changed to bust the pipenv cache."
-                type: string
-                default: "1"
+            <<: *common_badass_pre_spread_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        steps: *common_badass_pre_spread_steps
+    badass_test_pre_spread_fixed_ip:
+        parameters:
+            <<: *common_badass_pre_spread_parameters
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
-        steps:
-            - checkout
-            - utils/add_ssh_config
-            - utils/make_status_shield:
-                  status: running
-                  color: lightblue
-                  file: ~/status.svg
-                  label: <<parameters.badge_label>>
-            - utils/rsync_file:
-                  file: ~/status.svg
-                  remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
-                  host: docs
-            - steps: <<parameters.setup>>
-            - restore_cache:
-                  keys:
-                      - pipenv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-                      - pipenv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}
-                      - pipenv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-main
-            - setup_pipenv:
-                  pipenv_python_arg: <<parameters.pipenv_python_arg>>
-                  pipenv_skip_lock: <<parameters.pipenv_skip_lock>>
-            - save_cache:
-                  paths:
-                      - ~/.local/share/virtualenvs
-                  key: pipenv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-            - steps: <<parameters.config>>
-            - persist_to_workspace:
-                  root: ~/
-                  paths:
-                      - .local/share/virtualenvs
+        steps: *common_badass_pre_spread_steps
     badass_test_spread:
         parameters:
+            <<: *common_parameters
             repodir:
                 description: "Location of the git repo (no trailing slash)."
                 type: string
                 default: ~/project
-            wd:
-                description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
-                type: string
-                default: ${CIRCLE_PROJECT_REPONAME}
-            executor:
-                description: "Execution environment for the test job."
-                type: executor
-            resource_class:
-                description: "The resource class to use for the job."
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
             parallel:
                 description: "The level of test parallelism."
                 type: integer
@@ -217,10 +260,6 @@ jobs:
                 description: "The level of test parallelism via circleci splitting."
                 type: integer
                 default: 4
-            setup:
-                description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
-                type: steps
-                default: []
             config:
                 description: "Any additional BMS configuration steps."
                 type: steps
@@ -268,14 +307,11 @@ jobs:
                       - workspace
     badass_test_combine:
         parameters:
+            <<: *common_parameters
             repodir:
                 description: "Location of the git repo (no trailing slash)."
                 type: string
                 default: ~/project
-            wd:
-                description: "Where tests should be run in the repo, relative to the repodir (no trailing slash)."
-                type: string
-                default: ${CIRCLE_PROJECT_REPONAME}
             badge_label:
                 description: "The label to use for the badge."
                 type: string
@@ -283,64 +319,30 @@ jobs:
             meta_job_name:
                 description: "The filename to use for the badge."
                 type: string
-            executor:
-                description: "Execution environment for the test job."
-                type: executor
-            resource_class:
-                description: "The resource class to use for the job."
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-            setup:
-                description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
-                type: steps
-                default: []
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        working_directory: <<parameters.repodir>>
+        steps: *common_badass_test_combine
+    badass_test_combine_fixed_ip:
+        parameters:
+            <<: *common_parameters
+            repodir:
+                description: "Location of the git repo (no trailing slash)."
+                type: string
+                default: ~/project
+            badge_label:
+                description: "The label to use for the badge."
+                type: string
+                default: tests
+            meta_job_name:
+                description: "The filename to use for the badge."
+                type: string
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
         working_directory: <<parameters.repodir>>
-        steps:
-            - checkout
-            - steps: <<parameters.setup>>
-            - utils/add_ssh_config
-            - attach_workspace:
-                  at: ~/
-            - run:
-                  name: Restore workspace files
-                  command: |
-                      shopt -s dotglob
-                      cp ~/workspace/* <<parameters.wd>>/
-            - run:
-                  name: Combine status
-                  command: |
-                      if [ $(cat <<parameters.wd>>/0.status) -eq "0" ]; then
-                          diff -q --from-file <<parameters.wd>>/*.status && touch /tmp/passed
-                      fi
-            - utils/make_status_shield:
-                  status: $([ -f /tmp/passed ] && echo "passed" || echo "failed")
-                  color: $([ -f /tmp/passed ] && echo "brightgreen" || echo "red")
-                  file: /tmp/status.svg
-                  label: <<parameters.badge_label>>
-            - utils/rsync_file:
-                  when: always
-                  file: /tmp/status.svg
-                  remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
-                  host: docs
-            - coverage_combine_and_html:
-                  wd: <<parameters.wd>>
-            - utils/rsync_folder:
-                  when: always
-                  folder: <<parameters.wd>>/htmlcov/
-                  remote_folder: ${CIRCLE_BRANCH}/htmlcov_<<parameters.meta_job_name>>
-                  host: docs
-            - utils/make_coverage_shield:
-                  when: always
-                  file: /tmp/coverage.svg
-                  link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH}/htmlcov_<<parameters.meta_job_name>>/
-            - utils/rsync_file:
-                  when: always
-                  file: /tmp/coverage.svg
-                  remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.coverage.svg
-                  host: docs
+        steps: *common_badass_test_combine
 commands:
     setup_pipenv:
         description: "Setup pipenv."
