@@ -22,6 +22,97 @@ executors:
             LANG: en_US.UTF-8
         docker:
             - image: cimg/node:20.9
+aliases:
+    common_audit_parameters: &common_audit_parameters
+        wd:
+            type: string
+            default: ~/project
+        executor:
+            type: executor
+            default: lts
+        resource_class:
+            description: "The resource class to use for the job."
+            type: enum
+            enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+            default: small
+        setup:
+            description: "Any additional setup steps."
+            type: steps
+            default:
+                - run:
+                      name: "Install additional OS packages"
+                      command: |
+                          sudo apt update
+                          sudo apt install rsync colorized-logs jq
+        config:
+            description: "Any additional configuration steps."
+            type: steps
+            default: []
+        report_to:
+            description: "E-mail address to send npm audit failure report to."
+            type: string
+            default: ""
+        skip_dev:
+            description: "Don't check development dependencies."
+            type: boolean
+            default: true
+        create_badges:
+            description: "Generate badges."
+            type: boolean
+            default: true
+    common_audit_steps: &common_audit_steps
+        - checkout
+        - utils/add_ssh_config
+        - steps: <<parameters.setup>>
+        - upgrade_npm
+        - utils/add_npm_config
+        - steps: <<parameters.config>>
+        - run:
+              name: "Run npm audit"
+              command: |
+                  cd <<parameters.wd>>
+                  npx -y better-npm-audit audit <<# parameters.skip_dev >> -p <</ parameters.skip_dev >> |& tee ~/audit.log
+        - run:
+              name: "Generate HTML audit report"
+              when: on_fail
+              command: cat ${HOME}/audit.log | ansi2html > ${HOME}/audit.html
+        - when:
+              condition: <<parameters.report_to>>
+              steps:
+                  - utils/send_email:
+                        when: on_fail
+                        to: <<parameters.report_to>>
+                        subject: "npm audit report for ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}"
+                        html: "<${HOME}/audit.html"
+        - when:
+              condition: <<parameters.create_badges>>
+              steps:
+                  - run:
+                        name: "Count vulnerabilities"
+                        when: on_fail
+                        command: |
+                            if [ -f ~/audit.log ]; then
+                                echo "export TOTAL_VULNERABILITIES=`tail -1 ~/audit.log | grep -Po '^(\d+)' --color=never`" >> $BASH_ENV
+                            else
+                                echo "export TOTAL_VULNERABILITIES=?" >> $BASH_ENV
+                             fi
+                  - utils/make_status_shield:
+                        when: on_fail
+                        status: "${TOTAL_VULNERABILITIES}"
+                        label: vulnerabilities
+                        color: red
+                        logo: npm
+                  - utils/make_status_shield:
+                        when: on_success
+                        status: "0"
+                        label: vulnerabilities
+                        color: brightgreen
+                        logo: npm
+                  - utils/rsync_file:
+                        when: always
+                        file: ~/status.svg
+                        remote_file: ${CIRCLE_BRANCH}/npm-audit.svg
+                        host: docs
 commands:
     upgrade_npm:
         steps:
@@ -36,98 +127,19 @@ commands:
 jobs:
     audit:
         parameters:
-            wd:
-                type: string
-                default: ~/project
-            executor:
-                type: executor
-                default: lts
-            resource_class:
-                description: "The resource class to use for the job."
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-                default: small
-            setup:
-                description: "Any additional setup steps."
-                type: steps
-                default:
-                    - run:
-                          name: "Install additional OS packages"
-                          command: |
-                              sudo apt update
-                              sudo apt install rsync colorized-logs jq
-            config:
-                description: "Any additional configuration steps."
-                type: steps
-                default: []
-            report_to:
-                description: "E-mail address to send npm audit failure report to."
-                type: string
-                default: ""
-            skip_dev:
-                description: "Don't check development dependencies."
-                type: boolean
-                default: true
-            create_badges:
-                description: "Generate badges."
-                type: boolean
-                default: true
+            <<: *common_audit_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        steps: *common_audit_steps
+
+    audit_fixed_ip:
+        parameters:
+            <<: *common_audit_parameters
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
-        steps:
-            - checkout
-            - utils/add_ssh_config
-            - steps: <<parameters.setup>>
-            - upgrade_npm
-            - utils/add_npm_config
-            - steps: <<parameters.config>>
-            - run:
-                  name: "Run npm audit"
-                  command: |
-                      cd <<parameters.wd>>
-                      npx -y better-npm-audit audit <<# parameters.skip_dev >> -p <</ parameters.skip_dev >> |& tee ~/audit.log
-            - run:
-                  name: "Generate HTML audit report"
-                  when: on_fail
-                  command: cat ${HOME}/audit.log | ansi2html > ${HOME}/audit.html
-            - when:
-                  condition: <<parameters.report_to>>
-                  steps:
-                      - utils/send_email:
-                            when: on_fail
-                            to: <<parameters.report_to>>
-                            subject: "npm audit report for ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}"
-                            html: "<${HOME}/audit.html"
-            - when:
-                  condition: <<parameters.create_badges>>
-                  steps:
-                      - run:
-                            name: "Count vulnerabilities"
-                            when: on_fail
-                            command: |
-                                if [ -f ~/audit.log ]; then
-                                    echo "export TOTAL_VULNERABILITIES=`tail -1 ~/audit.log | grep -Po '^(\d+)' --color=never`" >> $BASH_ENV
-                                else
-                                    echo "export TOTAL_VULNERABILITIES=?" >> $BASH_ENV
-                                fi
-                      - utils/make_status_shield:
-                            when: on_fail
-                            status: "${TOTAL_VULNERABILITIES}"
-                            label: vulnerabilities
-                            color: red
-                            logo: npm
-                      - utils/make_status_shield:
-                            when: on_success
-                            status: "0"
-                            label: vulnerabilities
-                            color: brightgreen
-                            logo: npm
-                      - utils/rsync_file:
-                            when: always
-                            file: ~/status.svg
-                            remote_file: ${CIRCLE_BRANCH}/npm-audit.svg
-                            host: docs
+        steps: *common_audit_steps
     coverage:
         parameters:
             wd:
