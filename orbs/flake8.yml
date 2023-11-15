@@ -14,105 +14,129 @@ executors:
     python36:
         docker:
             - image: cimg/python:3.6
+aliases:
+    common_parameters: &common_parameters
+        flake8_cmd:
+            description: "The flake8 command to use; allows for alternatives (e.g. pflake)."
+            type: string
+            default: "flake8"
+        wd:
+            description: "The working directory for the job."
+            type: string
+            default: ./${CIRCLE_PROJECT_REPONAME}
+        executor:
+            description: "The executor to use for the job."
+            type: executor
+            default: python38
+        resource_class:
+            description: "The resource class to use for the job."
+            type: enum
+            enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+            default: small
+        setup:
+            description: "Any additional setup steps."
+            type: steps
+            default: []
+        create_badges:
+            description: "Generate badges."
+            type: boolean
+    common_badge_upload: &common_badge_upload
+        - utils/add_ssh_config
+        - run:
+              name: Install additional OS packages
+              command: |
+                  if [ -f /usr/bin/apt ]; then
+                      sudo apt update
+                      sudo apt install rsync
+                  elif [ -f /usr/bin/yum ]; then
+                      sudo yum -y install rsync
+                  fi
+        - utils/make_status_shield:
+              when: on_fail
+              status: errors
+              color: red
+              logo: python
+        - utils/make_status_shield:
+              when: on_success
+              status: passed
+              color: brightgreen
+              logo: python
+        - utils/rsync_file:
+              when: always
+              file: ~/status.svg
+              remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
+              host: docs
+    common_flake8_steps: &common_flake8_steps
+        - checkout
+        - steps: <<parameters.setup>>
+        - setup_flake8:
+              wd: <<parameters.wd>>
+              additional_packages: <<parameters.additional_packages>>
+        - flake8_errors:
+              flake8_cmd: <<parameters.flake8_cmd>>
+              wd: <<parameters.wd>>
+        - when:
+              condition: <<parameters.create_badges>>
+              steps: *common_badge_upload
+    common_flake8_pipenv_steps: &common_flake8_pipenv_steps
+        - checkout
+        - steps: <<parameters.setup>>
+        - setup_flake8_pipenv:
+              wd: <<parameters.wd>>
+              pipenv_meta_job_name: <<parameters.pipenv_meta_job_name>>
+              pipenv_cache_key_version: <<parameters.pipenv_cache_key_version>>
+        - flake8_errors_pipenv:
+              flake8_cmd: <<parameters.flake8_cmd>>
+              wd: <<parameters.wd>>
+        - when:
+              condition: <<parameters.create_badges>>
+              steps: *common_badge_upload
 jobs:
     flake8:
         parameters:
-            flake8_cmd:
-                description: "The flake8 command to use; allows for alternatives (e.g. pflake)."
-                type: string
-                default: "flake8"
-            wd:
-                description: "The working directory for the job."
-                type: string
-                default: ./${CIRCLE_PROJECT_REPONAME}
-            executor:
-                description: "The executor to use for the job."
-                type: executor
-                default: python38
-            resource_class:
-                description: "The resource class to use for the job."
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-                default: small
-            setup:
-                description: "Any additional setup steps."
-                type: steps
-                default: []
+            <<: *common_parameters
             additional_packages:
                 description: "Allows installing additional packages or requirements.txt files."
                 type: string
                 default: ""
-            create_badges:
-                description: "Generate badges."
-                type: boolean
-                default: true
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
-        circleci_ip_ranges: true
-        steps:
-            - checkout
-            - steps: <<parameters.setup>>
-            - setup_flake8:
-                  wd: <<parameters.wd>>
-                  additional_packages: <<parameters.additional_packages>>
-            - flake8_errors:
-                  flake8_cmd: <<parameters.flake8_cmd>>
-                  wd: <<parameters.wd>>
-            - when:
-                  condition: <<parameters.create_badges>>
-                  steps:
-                      - utils/add_ssh_config
-                      - run:
-                            name: Install additional OS packages
-                            command: |
-                                if [ -f /usr/bin/apt ]; then
-                                    sudo apt update
-                                    sudo apt install rsync
-                                elif [ -f /usr/bin/yum ]; then
-                                    sudo yum -y install rsync
-                                fi
-                      - utils/make_status_shield:
-                            when: on_fail
-                            status: errors
-                            color: red
-                            logo: python
-                      - utils/make_status_shield:
-                            when: on_success
-                            status: passed
-                            color: brightgreen
-                            logo: python
-                      - utils/rsync_file:
-                            when: always
-                            file: ~/status.svg
-                            remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
-                            host: docs
-    flake8_pipenv:
+        circleci_ip_ranges: false
+        steps: *common_flake8_steps
+    flake8_fixed_ip:
         parameters:
+            <<: *common_parameters
             flake8_cmd:
                 description: "The flake8 command to use; allows for alternatives (e.g. pflake)."
                 type: string
                 default: "flake8"
-            wd:
-                description: "The working directory for the job."
+            additional_packages:
+                description: "Allows installing additional packages or requirements.txt files."
                 type: string
-                default: .
-            executor:
-                description: "The executor to use for the job."
-                type: executor
-                default: python38
-            resource_class:
-                description: "The resource class to use for the job."
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-                default: small
-            setup:
-                description: "Any additional setup steps."
-                type: steps
-                default: []
-            create_badges:
-                description: "Generate badges."
-                type: boolean
-                default: true
+                default: ""
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
+        steps: *common_flake8_steps
+    flake8_pipenv:
+        parameters:
+            <<: *common_parameters
+            pipenv_meta_job_name:
+                description: "a test job's meta job name for sharing pipenv cache."
+                type: string
+            pipenv_cache_key_version:
+                description: "a string that can be changed to bust the pipenv cache."
+                type: string
+                default: "1"
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        environment:
+            PIPENV_DONT_LOAD_ENV: 1
+        steps: *common_flake8_pipenv_steps
+    flake8_pipenv_fixed_ip:
+        parameters:
+            <<: *common_parameters
             pipenv_meta_job_name:
                 description: "a test job's meta job name for sharing pipenv cache."
                 type: string
@@ -125,44 +149,7 @@ jobs:
         circleci_ip_ranges: true
         environment:
             PIPENV_DONT_LOAD_ENV: 1
-        steps:
-            - checkout
-            - steps: <<parameters.setup>>
-            - setup_flake8_pipenv:
-                  wd: <<parameters.wd>>
-                  pipenv_meta_job_name: <<parameters.pipenv_meta_job_name>>
-                  pipenv_cache_key_version: <<parameters.pipenv_cache_key_version>>
-            - flake8_errors_pipenv:
-                  flake8_cmd: <<parameters.flake8_cmd>>
-                  wd: <<parameters.wd>>
-            - when:
-                  condition: <<parameters.create_badges>>
-                  steps:
-                      - utils/add_ssh_config
-                      - run:
-                            name: Install additional OS packages
-                            command: |
-                                if [ -f /usr/bin/apt ]; then
-                                    sudo apt update
-                                    sudo apt install rsync
-                                elif [ -f /usr/bin/yum ]; then
-                                    sudo yum -y install rsync
-                                fi
-                      - utils/make_status_shield:
-                            when: on_fail
-                            status: errors
-                            color: red
-                            logo: python
-                      - utils/make_status_shield:
-                            when: on_success
-                            status: passed
-                            color: brightgreen
-                            logo: python
-                      - utils/rsync_file:
-                            when: always
-                            file: ~/status.svg
-                            remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
-                            host: docs
+        steps: *common_flake8_pipenv_steps
 commands:
     setup_flake8:
         description: "Set up a python virtual environment to run flake8"
