@@ -117,26 +117,6 @@ executors:
             LANG: en_US.UTF-8
         docker:
             - image: cimg/node:current
-    v10:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:10.24
-    v12:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:12.22
-    v14:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:14.21.3
-    v16:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:16.20.2
     v18:
         environment:
             LANG: en_US.UTF-8
