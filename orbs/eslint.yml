@@ -12,89 +12,100 @@ commands:
                       else
                           npm install -g --upgrade npm
                       fi
+aliases:
+    common_parameters: &common_parameters
+        wd:
+            description: "The working directory for this job."
+            type: string
+            default: ~/project
+        files:
+            description: "Files/Directories to lint."
+            type: string
+            default: lib/**
+        executor:
+            description: "The executor to use for the job."
+            type: executor
+            default: v18
+        resource_class:
+            description: "The resource class to use for the job."
+            type: enum
+            enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+            default: small
+        setup:
+            description: "Any additional setup steps."
+            type: steps
+            default: []
+        config:
+            description: "Any additional configuration steps."
+            type: steps
+            default: []
+        create_badges:
+            description: "Generate badges."
+            type: boolean
+            default: true
+    common_steps: &common_steps
+        - checkout
+        - steps: <<parameters.setup>>
+        - upgrade_npm
+        - utils/add_npm_config
+        - steps: <<parameters.config>>
+        - run:
+              name: Run eslint
+              command: |
+                  cd <<parameters.wd>>
+                  npx -y eslint --color <<parameters.files>> | tee ~/lint
+        - when:
+              condition: <<parameters.create_badges>>
+              steps:
+                  - run:
+                        name: Install additional OS packages
+                        command: |
+                            sudo apt update
+                            sudo apt install rsync
+                  - utils/add_ssh_config
+                  - utils/make_status_shield:
+                        when: on_fail
+                        status: errors
+                        color: red
+                        logo: eslint
+        - run:
+              name: Check if we had any warnings
+              when: always
+              command: test ! -s ~/lint
+        - when:
+              condition: <<parameters.create_badges>>
+              steps:
+                  - utils/make_status_shield:
+                        when: always
+                        status: warnings
+                        color: orange
+                        logo: eslint
+                        preserve: true
+                  - utils/make_status_shield:
+                        when: on_success
+                        status: passed
+                        color: brightgreen
+                        logo: eslint
+                  - utils/rsync_file:
+                        when: always
+                        file: ~/status.svg
+                        remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
+                        host: doc
 jobs:
     eslint:
         parameters:
-            wd:
-                description: "The working directory for this job."
-                type: string
-                default: ~/project
-            files:
-                description: "Files/Directories to lint."
-                type: string
-                default: lib/**
-            executor:
-                description: "The executor to use for the job."
-                type: executor
-                default: v18
-            resource_class:
-                description: "The resource class to use for the job."
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-                default: small
-            setup:
-                description: "Any additional setup steps."
-                type: steps
-                default: []
-            config:
-                description: "Any additional configuration steps."
-                type: steps
-                default: []
-            create_badges:
-                description: "Generate badges."
-                type: boolean
-                default: true
+            <<: *common_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        steps: *common_steps
+    eslint_fixed_ip:
+        parameters:
+            <<: *common_parameters
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
-        steps:
-            - checkout
-            - steps: <<parameters.setup>>
-            - upgrade_npm
-            - utils/add_npm_config
-            - steps: <<parameters.config>>
-            - run:
-                  name: Run eslint
-                  command: |
-                      cd <<parameters.wd>>
-                      npx -y eslint --color <<parameters.files>> | tee ~/lint
-            - when:
-                  condition: <<parameters.create_badges>>
-                  steps:
-                      - run:
-                            name: Install additional OS packages
-                            command: |
-                                sudo apt update
-                                sudo apt install rsync
-                      - utils/add_ssh_config
-                      - utils/make_status_shield:
-                            when: on_fail
-                            status: errors
-                            color: red
-                            logo: eslint
-            - run:
-                  name: Check if we had any warnings
-                  when: always
-                  command: test ! -s ~/lint
-            - when:
-                  condition: <<parameters.create_badges>>
-                  steps:
-                      - utils/make_status_shield:
-                            when: always
-                            status: warnings
-                            color: orange
-                            logo: eslint
-                            preserve: true
-                      - utils/make_status_shield:
-                            when: on_success
-                            status: passed
-                            color: brightgreen
-                            logo: eslint
-                      - utils/rsync_file:
-                            when: always
-                            file: ~/status.svg
-                            remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
-                            host: docs
+        steps: *common_steps
 executors:
     lts:
         environment:
