@@ -1,93 +1,104 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.12.0
+    utils: arrai/utils@1.13.0
 executors:
     node18:
         environment:
             LANG: C.UTF-8
         docker:
-            - image: cimg/node:18.17.1-browsers
-jobs:
-    code_style:
-        parameters:
-            wd:
-                description: "The working directory for the job."
-                type: string
-                default: ~/project
-            executor:
-                description: "The executor to use for the job."
-                type: executor
-                default: node18
-            resource_class:
-                description: "The resource class to use for the job."
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-                default: small
-            version:
-                description: "The version of prettier to use."
-                type: string
-                default: ""
-            setup:
-                description: "Any additional setup steps."
-                type: steps
-                default: []
-            config:
-                description: "Any additional configuration steps."
-                type: steps
-                default: []
-            create_badges:
-                description: "Generate badges."
-                type: boolean
-                default: true
-        executor: <<parameters.executor>>
-        resource_class: <<parameters.resource_class>>
-        circleci_ip_ranges: true
-        steps:
-            - checkout
-            - steps: <<parameters.setup>>
-            - utils/add_npm_config
-            - steps: <<parameters.config>>
-            - run:
-                  name: Install prettier
-                  command: |
-                      cd <<parameters.wd>>
-                      if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
-                          if [ ! -z <<parameters.version>> ]; then
-                              sudo npm install -g prettier@<<parameters.version>>
-                          else
-                              npm ci
-                          fi
-                      elif [ ! -z <<parameters.version>> ]; then
-                          npm install -g prettier@<<parameters.version>>
+            - image: cimg/node:18.18-browsers
+aliases:
+    common_parameters: &common_parameters
+        wd:
+            description: "The working directory for the job."
+            type: string
+            default: ~/project
+        executor:
+            description: "The executor to use for the job."
+            type: executor
+            default: node18
+        resource_class:
+            description: "The resource class to use for the job."
+            type: enum
+            enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+            default: small
+        version:
+            description: "The version of prettier to use."
+            type: string
+            default: ""
+        setup:
+            description: "Any additional setup steps."
+            type: steps
+            default: []
+        config:
+            description: "Any additional configuration steps."
+            type: steps
+            default: []
+        create_badges:
+            description: "Generate badges."
+            type: boolean
+            default: true
+    common_steps: &common_steps
+        - checkout
+        - steps: <<parameters.setup>>
+        - utils/add_npm_config
+        - steps: <<parameters.config>>
+        - run:
+              name: Install prettier
+              command: |
+                  cd <<parameters.wd>>
+                  if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
+                      if [ ! -z <<parameters.version>> ]; then
+                          sudo npm install -g prettier@<<parameters.version>>
                       else
                           npm ci
                       fi
-            - run:
-                  name: Check prettier
-                  command: |
-                      cd <<parameters.wd>>
-                      npx prettier -c .
-            - when:
-                  condition: <<parameters.create_badges>>
-                  steps:
-                      - utils/add_ssh_config
-                      - run:
-                            name: Install additional OS packages
-                            command: |
-                                sudo apt update
-                                sudo apt install rsync
-                      - utils/make_status_shield:
-                            when: on_fail
-                            status: not_quite_prettier
-                            color: red
-                            logo: prettier
-                      - utils/make_status_shield:
-                            when: on_success
-                            status: prettier
-                            color: ff69b4
-                            logo: prettier
-                      - utils/rsync_file:
-                            when: always
-                            file: ~/status.svg
-                            remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
-                            host: docs
+                  elif [ ! -z <<parameters.version>> ]; then
+                      npm install -g prettier@<<parameters.version>>
+                  else
+                      npm ci
+                  fi
+        - run:
+              name: Check prettier
+              command: |
+                  cd <<parameters.wd>>
+                  npx prettier -c .
+        - when:
+              condition: <<parameters.create_badges>>
+              steps:
+                  - utils/add_ssh_config
+                  - run:
+                        name: Install additional OS packages
+                        command: |
+                            sudo apt update
+                            sudo apt install rsync
+                  - utils/make_status_shield:
+                        when: on_fail
+                        status: not_quite_prettier
+                        color: red
+                        logo: prettier
+                  - utils/make_status_shield:
+                        when: on_success
+                        status: prettier
+                        color: ff69b4
+                        logo: prettier
+                  - utils/rsync_file:
+                        when: always
+                        file: ~/status.svg
+                        remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
+                        host: docs
+jobs:
+    code_style:
+        parameters:
+            <<: *common_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        steps: *common_steps
+    code_style_fixed_ip:
+        parameters:
+            <<: *common_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
+        steps: *common_steps
