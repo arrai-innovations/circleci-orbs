@@ -43,7 +43,7 @@ aliases:
                       name: "Install additional OS packages"
                       command: |
                           sudo apt update
-                          sudo apt install rsync colorized-logs jq
+                          sudo apt install colorized-logs jq
         config:
             description: "Any additional configuration steps."
             type: steps
@@ -156,12 +156,7 @@ jobs:
             setup:
                 description: "Any additional setup steps."
                 type: steps
-                default:
-                    - run:
-                          name: "Install additional OS packages"
-                          command: |
-                              sudo apt update
-                              sudo apt install rsync
+                default: []
             config:
                 description: "Any additional configuration steps."
                 type: steps

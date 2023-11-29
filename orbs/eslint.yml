@@ -57,11 +57,6 @@ aliases:
         - when:
               condition: <<parameters.create_badges>>
               steps:
-                  - run:
-                        name: Install additional OS packages
-                        command: |
-                            sudo apt update
-                            sudo apt install rsync
                   - utils/add_ssh_config
                   - utils/make_status_shield:
                         when: on_fail
