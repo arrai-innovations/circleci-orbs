@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.13.0
+    utils: arrai/utils@1.14.0
 aliases:
     pre_spread_common_parameters: &pre_spread_common_parameters
         wd:
@@ -78,6 +78,14 @@ jobs:
                 description: "Skip use of the pipenv lock file."
                 type: boolean
                 default: false
+            pip_install_args:
+                description: "Any additional arguments to pip install (e.g., -r ./requirements.txt)."
+                type: string
+                default: ""
+            use_pipenv:
+                description: "Run commands using pipenv"
+                type: boolean
+                default: true
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
@@ -96,9 +104,18 @@ jobs:
                   remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
                   host: docs
             - steps: <<parameters.setup>>
-            - setup_pipenv:
-                  pipenv_python_arg: <<parameters.pipenv_python_arg>>
-                  pipenv_skip_lock: <<parameters.pipenv_skip_lock>>
+            - when:
+                  condition: <<parameters.use_pipenv>>
+                  steps:
+                      - setup_pipenv:
+                            pipenv_python_arg: <<parameters.pipenv_python_arg>>
+                            pipenv_skip_lock: <<parameters.pipenv_skip_lock>>
+            - when:
+                  condition:
+                      not: <<parameters.use_pipenv>>
+                  steps:
+                      - setup_venv:
+                            pip_install_args: <<parameters.pip_install_args>>
             - setup_badass_config:
                   wd: <<parameters.wd>>
             - steps: <<parameters.config>>
@@ -106,8 +123,10 @@ jobs:
                   wd: <<parameters.wd>>
                   parallel: <<parameters.parallel>>
                   test_script: <<parameters.test_script>>
+                  use_pipenv: <<parameters.use_pipenv>>
             - coverage_combine_and_html:
                   wd: <<parameters.wd>>
+                  use_pipenv: <<parameters.use_pipenv>>
             - store_test_results:
                   path: test-results
             - store_artifacts:
@@ -457,6 +476,19 @@ commands:
                       export BADASS_COVERAGE_PTH_PATH="$(pipenv run python get_coverage_pth_path.py)/coverage-all-the-things.pth"
                       echo "exec('try:\n\timport tomli; import coverage; coverage.process_startup()\nexcept ImportError:\n\tpass')" > "${BADASS_COVERAGE_PTH_PATH}"
                       rm get_coverage_pth_path.py
+    setup_venv:
+        description: "Set up the Python virtual environment."
+        parameters:
+            pip_install_args:
+                description: "Any additional arguments to pip install (e.g., -r ./requirements.txt)."
+                type: string
+        steps:
+            - run:
+                  name: "Setup Python environment"
+                  command: |
+                      mkdir -p ./logs/${CIRCLE_PROJECT_REPONAME}
+                      pip install <<parameters.pip_install_args>> | cat; test ${PIPESTATUS[0]} -eq 0
+                      echo "import coverage; coverage.process_startup()" > `python -c "import sys; import os; print([x for x in sys.path if x.find(os.path.expanduser('~/.venv')) != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
     setup_badass_config:
         parameters:
             wd:
@@ -485,15 +517,19 @@ commands:
             test_script:
                 description: "The test script to run (e.g., manage.py test)."
                 type: string
+            use_pipenv:
+                description: "run commands using pipenv"
+                type: boolean
+                default: true
         steps:
             - run:
                   name: Run test suite
                   command: |
                       cd <<parameters.wd>>
                       if [ "<<parameters.parallel>>" -eq "0" ]; then
-                          pipenv run coverage run -p <<parameters.test_script>>
+                          <<# parameters.use_pipenv>>pipenv run<</ parameters.use_pipenv>> coverage run -p <<parameters.test_script>>
                       else
-                          pipenv run coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>>
+                          <<# parameters.use_pipenv>>pipenv run<</ parameters.use_pipenv>> coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>>
                       fi
     run_tests_spread:
         description: "Run the test suite, split by amount of circleci parallelism."
@@ -563,7 +599,10 @@ commands:
                   name: Combine coverage and build reports
                   command: |
                       cd <<parameters.wd>>
-                      <<^ parameters.use_pipenv>>pip install --user coverage[toml]<</ parameters.use_pipenv>>
+                      if ! [ -x "$(command -v coverage)" ]; then
+                          echo "Installing coverage."
+                          <<^ parameters.use_pipenv>>pip install --user coverage[toml]<</ parameters.use_pipenv>>
+                      fi
                       <<# parameters.use_pipenv>>pipenv run<</ parameters.use_pipenv>> coverage combine
                       <<# parameters.use_pipenv>>pipenv run<</ parameters.use_pipenv>> coverage html
                       <<# parameters.use_pipenv>>pipenv run<</ parameters.use_pipenv>> coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> <<parameters.coveragep>>

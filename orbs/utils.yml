@@ -197,22 +197,12 @@ commands:
                   command: |
                       if ! [ -x "$(command -v rsync)" ]; then
                           if [ -f /usr/bin/yum ]; then
-                              if [ <<parameters.requires_sudo>> = true ]; then
-                                  sudo yum -y install rsync
-                              else
-                                  yum -y install rsync
-                              fi
+                              <<# parameters.requires_sudo>>sudo<</ parameters.requires_sudo>> yum -y install rsync
                           elif [ -f /usr/bin/apt-get ]; then
-                              if [ <<parameters.requires_sudo>> = true ]; then
-                                  sudo apt-get -y update
-                                  sudo apt-get -y install rsync
-                              else
-                                  apt-get -y update
-                                  apt-get -y install rsync
-                              fi
+                              <<# parameters.requires_sudo>>sudo<</ parameters.requires_sudo>> apt-get -y update
+                              <<# parameters.requires_sudo>>sudo<</ parameters.requires_sudo>> apt-get -y install rsync
                           fi
                       fi
-
     rsync_file:
         description: "Copy a single file to a remote destination via rsync."
         parameters:

@@ -3,7 +3,7 @@ description: |
     This job requires `pytest-cov` and `coverage` to be installed as `pipenv` `devDependences`.
     Configure pytest and coverage via pyproject.toml.
 orbs:
-    utils: arrai/utils@1.13.0
+    utils: arrai/utils@1.14.0
 executors:
     python310:
         docker:
@@ -37,7 +37,7 @@ jobs:
                 type: steps
                 default:
                     - run:
-                          command: sudo apt-get install rsync pipenv
+                          command: sudo apt-get install pipenv
             setup:
                 description: "Any additional setup steps to run (e.g., yum install foo-bar-baz). It occurs before pipenv install. If you passed a wd, you need to cd to it if desired."
                 type: steps
