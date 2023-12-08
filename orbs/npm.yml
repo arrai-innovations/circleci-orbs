@@ -16,12 +16,12 @@ executors:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: cimg/node:18.18
+            - image: cimg/node:18.19
     v20:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: cimg/node:20.9
+            - image: cimg/node:20.10
 aliases:
     common_audit_parameters: &common_audit_parameters
         wd:
