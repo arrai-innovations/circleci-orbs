@@ -62,7 +62,6 @@ aliases:
             default: true
     common_audit_steps: &common_audit_steps
         - checkout
-        - utils/add_ssh_config
         - steps: <<parameters.setup>>
         - upgrade_npm
         - utils/add_npm_config
@@ -96,6 +95,7 @@ aliases:
                             else
                                 echo "export TOTAL_VULNERABILITIES=?" >> $BASH_ENV
                              fi
+                  - utils/add_ssh_config
                   - utils/make_status_shield:
                         when: on_fail
                         status: "${TOTAL_VULNERABILITIES}"
