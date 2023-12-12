@@ -16,12 +16,12 @@ executors:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: cimg/node:18.18
+            - image: cimg/node:18.19
     v20:
         environment:
             LANG: en_US.UTF-8
         docker:
-            - image: cimg/node:20.9
+            - image: cimg/node:20.10
 aliases:
     common_audit_parameters: &common_audit_parameters
         wd:
@@ -62,7 +62,6 @@ aliases:
             default: true
     common_audit_steps: &common_audit_steps
         - checkout
-        - utils/add_ssh_config
         - steps: <<parameters.setup>>
         - upgrade_npm
         - utils/add_npm_config
@@ -96,6 +95,7 @@ aliases:
                             else
                                 echo "export TOTAL_VULNERABILITIES=?" >> $BASH_ENV
                              fi
+                  - utils/add_ssh_config
                   - utils/make_status_shield:
                         when: on_fail
                         status: "${TOTAL_VULNERABILITIES}"
