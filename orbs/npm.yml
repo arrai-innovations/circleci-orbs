@@ -60,10 +60,15 @@ aliases:
             description: "Generate badges."
             type: boolean
             default: true
+        npm_version:
+            description: "NPM version to use"
+            type: string
+            default: "latest"
     common_audit_steps: &common_audit_steps
         - checkout
         - steps: <<parameters.setup>>
-        - upgrade_npm
+        - upgrade_npm:
+              version: <<parameters.npm_version>>
         - utils/add_npm_config
         - steps: <<parameters.config>>
         - run:
@@ -115,14 +120,19 @@ aliases:
                         host: docs
 commands:
     upgrade_npm:
+        parameters:
+            version:
+                description: "NPM version to use"
+                type: string
+                default: "latest"
         steps:
             - run:
-                  name: "Install the latest npm"
+                  name: "Install/Update npm"
                   command: |
                       if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
-                          sudo npm install -g --upgrade npm
+                          sudo npm install -g npm@<<parameters.version>>
                       else
-                          npm install -g --upgrade npm
+                          npm install -g npm@<<parameters.version>>
                       fi
 jobs:
     audit:
@@ -169,6 +179,10 @@ jobs:
                 description: "The npm run script to run."
                 type: string
                 default: coverage
+            npm_version:
+                description: "NPM version to use"
+                type: string
+                default: "latest"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
@@ -176,7 +190,8 @@ jobs:
             - checkout
             - utils/add_ssh_config
             - steps: <<parameters.setup>>
-            - upgrade_npm
+            - upgrade_npm:
+                  version: <<parameters.npm_version>>
             - utils/add_npm_config
             - steps: <<parameters.config>>
             - run:
@@ -245,12 +260,17 @@ jobs:
                 description: "Any additional configuration steps."
                 type: steps
                 default: []
+            npm_version:
+                description: "NPM version to use"
+                type: string
+                default: "latest"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
             - checkout
             - steps: <<parameters.setup>>
-            - upgrade_npm
+            - upgrade_npm:
+                  version: <<parameters.npm_version>>
             - utils/add_npm_config
             - run:
                   name: "Install Packages"
