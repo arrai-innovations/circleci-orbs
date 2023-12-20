@@ -61,7 +61,7 @@ commands:
                           sudo sed -i -e "s/^AccountID.*/AccountID $MAXMIND_ID/" -e "s/^LicenseKey.*/LicenseKey $MAXMIND_KEY/" /usr/local/etc/GeoIP.conf
                       fi
     add_ssh_config:
-        description: "Fetch host keys from a SSH server and generate ~/.ssh/config and ~/.ssh/known_hosts."
+        description: "Update ~/.ssh/config and ~/.ssh/known_hosts with server host keys or certificate authority details."
         parameters:
             host:
                 description: "The name of the entry in ~/.ssh/config to use as a short-hand in SSH commands."
@@ -79,14 +79,26 @@ commands:
                 description: "The user name to present to the remote SSH server."
                 type: string
                 default: ${DOCS_USER}
+            ca:
+                description: "Type and public key data of the CA that signed the server's host key; e.g. ed25519 AABBCCDD..."
+                type: string
+                default: ${SSH_CA}
+            hostkeyalgorithms:
+                description: "List of preferred host key algorithms."
+                type: string
+                default: "ssh-ed25519-cert-v01@openssh.com,ssh-ed25519"
         steps:
             - run:
                   name: "Configure SSH Client"
                   command: |
                       touch ~/.ssh/config
                       if [ -n "<<parameters.hostname>>" ]; then
-                          ssh-keyscan -p <<parameters.port>> <<parameters.hostname>> >> ~/.ssh/known_hosts
-                          echo -e "Host <<parameters.host>>\n\tHostName <<parameters.hostname>>\n\tPort <<parameters.port>>\n\tUser <<parameters.user>>" >> ~/.ssh/config
+                          if [ -n "<<parameters.ca>>" ]; then
+                              echo "@cert-authority <<parameters.hostname>> <<parameters.ca>>" >> ~/.ssh/known_hosts
+                          else
+                              ssh-keyscan -p <<parameters.port>> <<parameters.hostname>> >> ~/.ssh/known_hosts
+                          fi
+                          echo -e "Host <<parameters.host>>\n\tHostName <<parameters.hostname>>\n\tPort <<parameters.port>>\n\tUser <<parameters.user>>\n\tHostKeyAlgorithms <<parameters.hostkeyalgorithms>>" >> ~/.ssh/config
                       fi
     make_status_shield:
         description: "Fetch status shield from shields.io."
