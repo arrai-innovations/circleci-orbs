@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.15.0
+    utils: arrai/utils@1.16.0
 executors:
     lts:
         environment:
@@ -57,7 +57,7 @@ aliases:
     common_audit_steps: &common_audit_steps
         - checkout
         - steps: <<parameters.setup>>
-        - upgrade_npm:
+        - utils/upgrade_npm:
               version: <<parameters.npm_version>>
         - utils/add_npm_config
         - steps: <<parameters.config>>
@@ -108,22 +108,6 @@ aliases:
                         file: ~/status.svg
                         remote_file: ${CIRCLE_BRANCH}/npm-audit.svg
                         host: docs
-commands:
-    upgrade_npm:
-        parameters:
-            version:
-                description: "NPM version to use"
-                type: string
-                default: "latest"
-        steps:
-            - run:
-                  name: "Install/Update npm"
-                  command: |
-                      if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
-                          sudo npm install -g npm@<<parameters.version>>
-                      else
-                          npm install -g npm@<<parameters.version>>
-                      fi
 jobs:
     audit:
         parameters:
@@ -180,7 +164,7 @@ jobs:
             - checkout
             - utils/add_ssh_config
             - steps: <<parameters.setup>>
-            - upgrade_npm:
+            - utils/upgrade_npm:
                   version: <<parameters.npm_version>>
             - utils/add_npm_config
             - steps: <<parameters.config>>
@@ -259,7 +243,7 @@ jobs:
         steps:
             - checkout
             - steps: <<parameters.setup>>
-            - upgrade_npm:
+            - utils/upgrade_npm:
                   version: <<parameters.npm_version>>
             - utils/add_npm_config
             - run:
