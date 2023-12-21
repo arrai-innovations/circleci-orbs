@@ -17,8 +17,8 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [prettier](#prettier)
   - [pypi](#pypi)
   - [pytest](#pytest)
-  - [utils](#utils)
   - [sentry](#sentry)
+  - [utils](#utils)
 - [Developing Orbs](#developing-orbs)
 - [Publishing Orbs](#publishing-orbs)
 
@@ -77,12 +77,6 @@ For information on configuration parameters, refer to the generated [documentati
 
 Provides generic test environment for pytest based tests that have dependencies installed using `pipenv`. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pytest).
 
-### utils
-
-![utils: version][]
-
-This orb provides utility functions such as status badging, file uploads, and ssh key import. This is required by the other orbs. For information on the available utility functions, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/utils).
-
 ### sentry
 
 ![sentry: version][]
@@ -94,6 +88,12 @@ Publish releases to [Sentry](https://sentry.io/). Note that the `create_release`
 -   It is assumed that repositories have been configured within the Sentry organisation so that commits can be associated with the release. Refer to the [Sentry documentation on this matter](https://docs.sentry.io/product/cli/releases/#sentry-cli-commit-integration).
 
 For information on how to override these defaults, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/sentry). An [example configuration](/examples/sentry.yml) is provided in the [examples folder](/examples/).
+
+### utils
+
+![utils: version][]
+
+This orb provides utility functions such as status badging, file uploads, and ssh key import. This is required by the other orbs. For information on the available utility functions, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/utils).
 
 ## Developing Orbs
 
