@@ -1,7 +1,5 @@
 # CircleCI Orbs
 
-![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=for-the-badge)
-
 This repository contains circleci orbs that Arrai Innovations publishes to the CircleCI Orb registry. While available for public consumption, these are tailored towards our CI process. These orbs are published into the _arrai_ namespace.
 
 _Note to contributors_: The Orb Registry is public; private data should be passed via variables configured in the CI interface or stored in the appropriate private repo.
@@ -14,13 +12,13 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [badass](#badass)
   - [eslint](#eslint)
   - [flake8](#flake8)
-  - [prettier](#prettier)
-  - [pytest](#pytest)
-  - [utils](#utils)
-  - [npm](#npm)
-  - [sentry](#sentry)
-  - [pypi](#pypi)
   - [github](#github)
+  - [npm](#npm)
+  - [prettier](#prettier)
+  - [pypi](#pypi)
+  - [pytest](#pytest)
+  - [sentry](#sentry)
+  - [utils](#utils)
 - [Developing Orbs](#developing-orbs)
 - [Publishing Orbs](#publishing-orbs)
 
@@ -31,33 +29,57 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
 
 ### badass
 
+[![badass: version][]](https://circleci.com/orbs/registry/orb/arrai/badass)
+
 This Orb provides an environment for running our BMS/Django tests. Not likely to be useful for testing Django instances not built or based on BMS. For a description of the Orb, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/badass).
 
 ### eslint
+
+[![eslint: version][]](https://circleci.com/orbs/registry/orb/arrai/eslint)
 
 Runs eslint on project code. Note that any warnings are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/eslint).
 
 ### flake8
 
+[![flake8: version][]](https://circleci.com/orbs/registry/orb/arrai/flake8)
+
 Provides functionality for running flake8 on project code. Everything is treated as an error. For a description of the Orb, available steps, parameters, etc, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/flake8).
 
-### prettier
+### github
 
-Provides functionality for running prettier on project code. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/prettier).
+[![github: version][]](https://circleci.com/orbs/registry/orb/arrai/github)
 
-### pytest
-
-Provides generic test environment for pytest based tests that have dependencies installed using `pipenv`. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pytest).
-
-### utils
-
-This orb provides utility functions such as status badging, file uploads, and ssh key import. This is required by the other orbs. For information on the available utility functions, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/utils).
+Creates a release on GitHub. For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/github).
 
 ### npm
 
+[![npm: version][]](https://circleci.com/orbs/registry/orb/arrai/npm)
+
 Provides npm utility functions. For information on available functions and configuration parameters, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/npm).
 
+### prettier
+
+[![prettier: version][]](https://circleci.com/orbs/registry/orb/arrai/prettier)
+
+Provides functionality for running prettier on project code. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/prettier).
+
+### pypi
+
+[![pypi: version][]](https://circleci.com/orbs/registry/orb/arrai/pypi)
+
+Publishes python packages to a PyPI (or compatible) server. It does not include the build step. It is assumed that some other job builds the packages and stashes the dist folder in a cache. Refer to the [example configuration](/examples/pypi.yml) on how this might look.
+
+For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pypi).
+
+### pytest
+
+[![pytest: version][]](https://circleci.com/orbs/registry/orb/arrai/pytest)
+
+Provides generic test environment for pytest based tests that have dependencies installed using `pipenv`. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pytest).
+
 ### sentry
+
+[![sentry: version][]](https://circleci.com/orbs/registry/orb/arrai/sentry)
 
 Publish releases to [Sentry](https://sentry.io/). Note that the `create_release` job uses the following defaults when creating releases:
 
@@ -67,15 +89,11 @@ Publish releases to [Sentry](https://sentry.io/). Note that the `create_release`
 
 For information on how to override these defaults, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/sentry). An [example configuration](/examples/sentry.yml) is provided in the [examples folder](/examples/).
 
-### pypi
+### utils
 
-Publishes python packages to a PyPI (or compatible) server. It does not include the build step. It is assumed that some other job builds the packages and stashes the dist folder in a cache. Refer to the [example configuration](/examples/pypi.yml) on how this might look.
+[![utils: version][]](https://circleci.com/orbs/registry/orb/arrai/utils)
 
-For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pypi).
-
-### github
-
-Creates a release on GitHub. For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/github).
+This orb provides utility functions such as status badging, file uploads, and ssh key import. This is required by the other orbs. For information on the available utility functions, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/utils).
 
 ## Developing Orbs
 
@@ -98,3 +116,14 @@ After making the requisite changes, you can check for syntactic validity by runn
 You can then publish a dev version of your Orb: `circleci orb publish example.yml arrai/example@dev:1`. You can now reference this Orb in project-specific configs or other Orbs. Unlike release Orbs, development Orbs are mutable and will be deleted after 90 days.
 
 Once you're ready to promote your Orb to release, determine whether this counts as a patch, minor, or major release; this will be passed into the promote command: `circleci orb publish promote arrai/example@dev:1 patch`. The command will return the version number used for the Orb; use this to reference the new Orb in your project CI configurations.
+
+[badass: version]: https://badges.circleci.com/orbs/arrai/badass.svg
+[eslint: version]: https://badges.circleci.com/orbs/arrai/eslint.svg
+[flake8: version]: https://badges.circleci.com/orbs/arrai/flake8.svg
+[github: version]: https://badges.circleci.com/orbs/arrai/github.svg
+[npm: version]: https://badges.circleci.com/orbs/arrai/npm.svg
+[prettier: version]: https://badges.circleci.com/orbs/arrai/prettier.svg
+[pypi: version]: https://badges.circleci.com/orbs/arrai/pypi.svg
+[pytest: version]: https://badges.circleci.com/orbs/arrai/pytest.svg
+[sentry: version]: https://badges.circleci.com/orbs/arrai/sentry.svg
+[utils: version]: https://badges.circleci.com/orbs/arrai/utils.svg

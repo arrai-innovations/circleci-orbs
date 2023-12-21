@@ -3,8 +3,14 @@ description: |
     This job requires `pytest-cov` and `coverage` to be installed as `pipenv` `devDependences`.
     Configure pytest and coverage via pyproject.toml.
 orbs:
-    utils: arrai/utils@1.14.0
+    utils: arrai/utils@1.16.0
 executors:
+    python312:
+        docker:
+            - image: cimg/python:3.12
+    python311:
+        docker:
+            - image: cimg/python:3.11
     python310:
         docker:
             - image: cimg/python:3.10
@@ -14,9 +20,6 @@ executors:
     python38:
         docker:
             - image: cimg/python:3.8
-    python36:
-        docker:
-            - image: cimg/python:3.6
 jobs:
     pytest:
         parameters:

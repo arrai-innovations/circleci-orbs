@@ -170,8 +170,6 @@ commands:
                         "flat",
                         "flat-square",
                         "for-the-badge",
-                        "popout",
-                        "popout-square",
                         "social",
                     ]
                 default: for-the-badge
@@ -309,3 +307,19 @@ commands:
                   name: "Inject NPM_TOKEN into config"
                   command: |
                       echo "//<<parameters.registry>>/:_authToken=<<parameters.token>>" > ~/.npmrc
+    upgrade_npm:
+        description: "Install / Upgrade npm"
+        parameters:
+            version:
+                description: "NPM version to use"
+                type: string
+                default: "latest"
+        steps:
+            - run:
+                  name: "Install/Update npm"
+                  command: |
+                      if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
+                          sudo npm install -g npm@<<parameters.version>>
+                      else
+                          npm install -g npm@<<parameters.version>>
+                      fi

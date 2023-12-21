@@ -1,17 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.14.0
-commands:
-    upgrade_npm:
-        steps:
-            - run:
-                  name: "Install the latest npm"
-                  command: |
-                      if [ "$(which npm)" = "/usr/local/bin/npm" ]; then
-                          sudo npm install -g --upgrade npm
-                      else
-                          npm install -g --upgrade npm
-                      fi
+    utils: arrai/utils@1.16.0
 aliases:
     common_parameters: &common_parameters
         wd:
@@ -25,7 +14,7 @@ aliases:
         executor:
             description: "The executor to use for the job."
             type: executor
-            default: v18
+            default: lts
         resource_class:
             description: "The resource class to use for the job."
             type: enum
@@ -43,10 +32,15 @@ aliases:
             description: "Generate badges."
             type: boolean
             default: true
+        npm_version:
+            description: "NPM version to use"
+            type: string
+            default: "latest"
     common_steps: &common_steps
         - checkout
         - steps: <<parameters.setup>>
-        - upgrade_npm
+        - utils/upgrade_npm:
+              version: <<parameters.npm_version>>
         - utils/add_npm_config
         - steps: <<parameters.config>>
         - run:
@@ -112,13 +106,3 @@ executors:
             LANG: en_US.UTF-8
         docker:
             - image: cimg/node:current
-    v18:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:18.19
-    v20:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:20.10

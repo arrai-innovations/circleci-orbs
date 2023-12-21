@@ -1,12 +1,12 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.14.0
+    utils: arrai/utils@1.16.0
 executors:
-    node18:
+    node:
         environment:
             LANG: C.UTF-8
         docker:
-            - image: cimg/node:18.19-browsers
+            - image: cimg/node:lts-browsers
 aliases:
     common_parameters: &common_parameters
         wd:
@@ -16,7 +16,7 @@ aliases:
         executor:
             description: "The executor to use for the job."
             type: executor
-            default: node18
+            default: node
         resource_class:
             description: "The resource class to use for the job."
             type: enum
