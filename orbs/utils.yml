@@ -158,8 +158,6 @@ commands:
                         "flat",
                         "flat-square",
                         "for-the-badge",
-                        "popout",
-                        "popout-square",
                         "social",
                     ]
                 default: for-the-badge
