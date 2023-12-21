@@ -1,16 +1,5 @@
 # CircleCI Orbs
 
-[![badass: version][]](#badass)
-[![eslint: version][]](#eslint)
-[![flake8: version][]](#flake8)
-[![github: version][]](#github)
-[![npm: version][]](#npm)
-[![prettier: version][]](#prettier)
-[![pypi: version][]](#pypi)
-[![pytest: version][]](#pytest)
-[![sentry: version][]](#sentry)
-[![utils: version][]](#utils)
-
 This repository contains circleci orbs that Arrai Innovations publishes to the CircleCI Orb registry. While available for public consumption, these are tailored towards our CI process. These orbs are published into the _arrai_ namespace.
 
 _Note to contributors_: The Orb Registry is public; private data should be passed via variables configured in the CI interface or stored in the appropriate private repo.
@@ -40,29 +29,43 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
 
 ### badass
 
+![badass: version][]
+
 This Orb provides an environment for running our BMS/Django tests. Not likely to be useful for testing Django instances not built or based on BMS. For a description of the Orb, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/badass).
 
 ### eslint
+
+![eslint: version][]
 
 Runs eslint on project code. Note that any warnings are treated as job failures. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/eslint).
 
 ### flake8
 
+![flake8: version][]
+
 Provides functionality for running flake8 on project code. Everything is treated as an error. For a description of the Orb, available steps, parameters, etc, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/flake8).
 
 ### github
+
+![github: version][]
 
 Creates a release on GitHub. For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/github).
 
 ### npm
 
+![npm: version][]
+
 Provides npm utility functions. For information on available functions and configuration parameters, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/npm).
 
 ### prettier
 
+![prettier: version][]
+
 Provides functionality for running prettier on project code. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/prettier).
 
 ### pypi
+
+![pypi: version][]
 
 Publishes python packages to a PyPI (or compatible) server. It does not include the build step. It is assumed that some other job builds the packages and stashes the dist folder in a cache. Refer to the [example configuration](/examples/pypi.yml) on how this might look.
 
@@ -70,13 +73,19 @@ For information on configuration parameters, refer to the generated [documentati
 
 ### pytest
 
+![pytest: version][]
+
 Provides generic test environment for pytest based tests that have dependencies installed using `pipenv`. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pytest).
 
 ### utils
 
+![utils: version][]
+
 This orb provides utility functions such as status badging, file uploads, and ssh key import. This is required by the other orbs. For information on the available utility functions, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/utils).
 
 ### sentry
+
+![sentry: version][]
 
 Publish releases to [Sentry](https://sentry.io/). Note that the `create_release` job uses the following defaults when creating releases:
 
@@ -85,7 +94,6 @@ Publish releases to [Sentry](https://sentry.io/). Note that the `create_release`
 -   It is assumed that repositories have been configured within the Sentry organisation so that commits can be associated with the release. Refer to the [Sentry documentation on this matter](https://docs.sentry.io/product/cli/releases/#sentry-cli-commit-integration).
 
 For information on how to override these defaults, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/sentry). An [example configuration](/examples/sentry.yml) is provided in the [examples folder](/examples/).
-
 
 ## Developing Orbs
 
