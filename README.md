@@ -23,13 +23,13 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [badass](#badass)
   - [eslint](#eslint)
   - [flake8](#flake8)
+  - [github](#github)
+  - [npm](#npm)
   - [prettier](#prettier)
+  - [pypi](#pypi)
   - [pytest](#pytest)
   - [utils](#utils)
-  - [npm](#npm)
   - [sentry](#sentry)
-  - [pypi](#pypi)
-  - [github](#github)
 - [Developing Orbs](#developing-orbs)
 - [Publishing Orbs](#publishing-orbs)
 
@@ -50,9 +50,23 @@ Runs eslint on project code. Note that any warnings are treated as job failures.
 
 Provides functionality for running flake8 on project code. Everything is treated as an error. For a description of the Orb, available steps, parameters, etc, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/flake8).
 
+### github
+
+Creates a release on GitHub. For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/github).
+
+### npm
+
+Provides npm utility functions. For information on available functions and configuration parameters, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/npm).
+
 ### prettier
 
 Provides functionality for running prettier on project code. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/prettier).
+
+### pypi
+
+Publishes python packages to a PyPI (or compatible) server. It does not include the build step. It is assumed that some other job builds the packages and stashes the dist folder in a cache. Refer to the [example configuration](/examples/pypi.yml) on how this might look.
+
+For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pypi).
 
 ### pytest
 
@@ -61,10 +75,6 @@ Provides generic test environment for pytest based tests that have dependencies 
 ### utils
 
 This orb provides utility functions such as status badging, file uploads, and ssh key import. This is required by the other orbs. For information on the available utility functions, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/utils).
-
-### npm
-
-Provides npm utility functions. For information on available functions and configuration parameters, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/npm).
 
 ### sentry
 
@@ -76,15 +86,6 @@ Publish releases to [Sentry](https://sentry.io/). Note that the `create_release`
 
 For information on how to override these defaults, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/sentry). An [example configuration](/examples/sentry.yml) is provided in the [examples folder](/examples/).
 
-### pypi
-
-Publishes python packages to a PyPI (or compatible) server. It does not include the build step. It is assumed that some other job builds the packages and stashes the dist folder in a cache. Refer to the [example configuration](/examples/pypi.yml) on how this might look.
-
-For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pypi).
-
-### github
-
-Creates a release on GitHub. For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/github).
 
 ## Developing Orbs
 
