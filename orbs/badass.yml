@@ -92,7 +92,6 @@ jobs:
         working_directory: <<parameters.repodir>>
         steps:
             - checkout
-            - utils/add_maxmind_config
             - utils/add_ssh_config
             - utils/make_status_shield:
                   status: running
@@ -320,7 +319,6 @@ jobs:
         working_directory: <<parameters.repodir>>
         steps:
             - checkout
-            - utils/add_maxmind_config
             - steps: <<parameters.setup>>
             - attach_workspace:
                   at: ~/
