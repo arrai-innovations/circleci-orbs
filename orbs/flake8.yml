@@ -2,6 +2,12 @@ version: 2.1
 orbs:
     utils: arrai/utils@1.15.0
 executors:
+    python312:
+        docker:
+            - image: cimg/python:3.12
+    python311:
+        docker:
+            - image: cimg/python:3.11
     python310:
         docker:
             - image: cimg/python:3.10
@@ -11,9 +17,6 @@ executors:
     python38:
         docker:
             - image: cimg/python:3.8
-    python36:
-        docker:
-            - image: cimg/python:3.6
 aliases:
     common_parameters: &common_parameters
         flake8_cmd:
