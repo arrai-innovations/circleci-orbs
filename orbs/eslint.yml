@@ -25,7 +25,7 @@ aliases:
         executor:
             description: "The executor to use for the job."
             type: executor
-            default: v18
+            default: lts
         resource_class:
             description: "The resource class to use for the job."
             type: enum
@@ -112,13 +112,3 @@ executors:
             LANG: en_US.UTF-8
         docker:
             - image: cimg/node:current
-    v18:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:18.19
-    v20:
-        environment:
-            LANG: en_US.UTF-8
-        docker:
-            - image: cimg/node:20.10
