@@ -1,6 +1,15 @@
 # CircleCI Orbs
 
-![code style: prettier](https://img.shields.io/badge/code_style-prettier-ff69b4.svg?style=for-the-badge)
+[![badass: version][]](#badass)
+[![eslint: version][]](#eslint)
+[![flake8: version][]](#flake8)
+[![github: version][]](#github)
+[![npm: version][]](#npm)
+[![prettier: version][]](#prettier)
+[![pypi: version][]](#pypi)
+[![pytest: version][]](#pytest)
+[![sentry: version][]](#sentry)
+[![utils: version][]](#utils)
 
 This repository contains circleci orbs that Arrai Innovations publishes to the CircleCI Orb registry. While available for public consumption, these are tailored towards our CI process. These orbs are published into the _arrai_ namespace.
 
@@ -98,3 +107,14 @@ After making the requisite changes, you can check for syntactic validity by runn
 You can then publish a dev version of your Orb: `circleci orb publish example.yml arrai/example@dev:1`. You can now reference this Orb in project-specific configs or other Orbs. Unlike release Orbs, development Orbs are mutable and will be deleted after 90 days.
 
 Once you're ready to promote your Orb to release, determine whether this counts as a patch, minor, or major release; this will be passed into the promote command: `circleci orb publish promote arrai/example@dev:1 patch`. The command will return the version number used for the Orb; use this to reference the new Orb in your project CI configurations.
+
+[badass: version]: https://badges.circleci.com/orbs/arrai/badass.svg
+[eslint: version]: https://badges.circleci.com/orbs/arrai/eslint.svg
+[flake8: version]: https://badges.circleci.com/orbs/arrai/flake8.svg
+[github: version]: https://badges.circleci.com/orbs/arrai/github.svg
+[npm: version]: https://badges.circleci.com/orbs/arrai/npm.svg
+[prettier: version]: https://badges.circleci.com/orbs/arrai/prettier.svg
+[pypi: version]: https://badges.circleci.com/orbs/arrai/pypi.svg
+[pytest: version]: https://badges.circleci.com/orbs/arrai/pytest.svg
+[sentry: version]: https://badges.circleci.com/orbs/arrai/sentry.svg
+[utils: version]: https://badges.circleci.com/orbs/arrai/utils.svg
