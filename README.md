@@ -17,6 +17,7 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [prettier](#prettier)
   - [pypi](#pypi)
   - [pytest](#pytest)
+  - [safety](#safety)
   - [sentry](#sentry)
   - [utils](#utils)
 - [Developing Orbs](#developing-orbs)
@@ -77,6 +78,12 @@ For information on configuration parameters, refer to the generated [documentati
 
 Provides generic test environment for pytest based tests that have dependencies installed using `pipenv`. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pytest).
 
+### safety
+
+[![safety: version][]](https://circleci.com/orbs/registry/orb/arrai/safety)
+
+This is now somewhat miss-named; it provides jobs to run `pipenv check` against the installed project. For more details, refer to the generated[documentation](https://circleci.com/orbs/registry/orb/arrai/safety).
+
 ### sentry
 
 [![sentry: version][]](https://circleci.com/orbs/registry/orb/arrai/sentry)
@@ -125,5 +132,6 @@ Once you're ready to promote your Orb to release, determine whether this counts 
 [prettier: version]: https://badges.circleci.com/orbs/arrai/prettier.svg
 [pypi: version]: https://badges.circleci.com/orbs/arrai/pypi.svg
 [pytest: version]: https://badges.circleci.com/orbs/arrai/pytest.svg
+[safety: version]: https://badges.circleci.com/orbs/arrai/safety.svg
 [sentry: version]: https://badges.circleci.com/orbs/arrai/sentry.svg
 [utils: version]: https://badges.circleci.com/orbs/arrai/utils.svg
