@@ -82,7 +82,7 @@ Provides generic test environment for pytest based tests that have dependencies 
 
 [![safety: version][]](https://circleci.com/orbs/registry/orb/arrai/safety)
 
-This is now somewhat miss-named; it provides jobs to run `pipenv check` against the installed project. For more details, refer to the generated[documentation](https://circleci.com/orbs/registry/orb/arrai/safety).
+This is now somewhat miss-named; it provides jobs to run `pipenv check` against the installed project. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/safety).
 
 ### sentry
 
