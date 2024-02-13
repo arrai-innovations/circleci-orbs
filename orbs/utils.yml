@@ -201,9 +201,14 @@ commands:
             requires_sudo:
                 type: boolean
                 default: true
+            when:
+                type: enum
+                enum: ["always", "on_success", "on_fail"]
+                default: on_success
         steps:
             - run:
                   name: install rsync
+                  when: <<parameters.when>>
                   command: |
                       if ! [ -x "$(command -v rsync)" ]; then
                           if [ -f /usr/bin/yum ]; then
@@ -235,6 +240,7 @@ commands:
         steps:
             - rsync_install:
                   requires_sudo: <<parameters.requires_sudo>>
+                  when: <<parameters.when>>
             - run:
                   name: rsync file (<<parameters.file>> -> <<parameters.remote_file>>)
                   command: |
@@ -276,6 +282,7 @@ commands:
         steps:
             - rsync_install:
                   requires_sudo: <<parameters.requires_sudo>>
+                  when: <<parameters.when>>
             - run:
                   name: rsync folder (<<parameters.folder>> -> <<parameters.remote_folder>>)
                   command: |
