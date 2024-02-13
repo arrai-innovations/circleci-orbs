@@ -40,7 +40,11 @@ jobs:
                 type: steps
                 default:
                     - run:
-                          command: sudo apt-get install pipenv
+                          name: Install pipenv
+                          command: |
+                              if ! [ -x "$(command -v pipenv)" ]; then
+                                  sudo apt-get install pipenv
+                              fi
             setup:
                 description: "Any additional setup steps to run (e.g., yum install foo-bar-baz). It occurs before pipenv install. If you passed a wd, you need to cd to it if desired."
                 type: steps
