@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.16.2
+    utils: arrai/utils@1.16.3
 executors:
     python312:
         docker:
