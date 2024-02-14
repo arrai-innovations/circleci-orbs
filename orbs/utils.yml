@@ -87,6 +87,10 @@ commands:
                 description: "List of preferred host key algorithms."
                 type: string
                 default: "ssh-ed25519-cert-v01@openssh.com,ssh-ed25519"
+            when:
+                type: enum
+                enum: ["always", "on_success", "on_fail"]
+                default: always
         steps:
             - run:
                   name: "Configure SSH Client"
@@ -100,6 +104,7 @@ commands:
                           fi
                           echo -e "Host <<parameters.host>>\n\tHostName <<parameters.hostname>>\n\tPort <<parameters.port>>\n\tUser <<parameters.user>>\n\tHostKeyAlgorithms <<parameters.hostkeyalgorithms>>" >> ~/.ssh/config
                       fi
+                  when: <<parameters.when>>
     make_status_shield:
         description: "Fetch status shield from shields.io."
         parameters:
