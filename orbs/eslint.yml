@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.16.1
+    utils: arrai/utils@1.16.3
 aliases:
     common_parameters: &common_parameters
         wd:
@@ -79,7 +79,7 @@ aliases:
                         when: always
                         file: ~/status.svg
                         remote_file: $CIRCLE_BRANCH/$CIRCLE_JOB.svg
-                        host: doc
+                        host: docs
 jobs:
     eslint:
         parameters:
