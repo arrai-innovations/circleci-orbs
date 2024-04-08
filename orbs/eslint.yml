@@ -36,6 +36,10 @@ aliases:
             description: "NPM version to use"
             type: string
             default: "latest"
+        npm_install:
+            description: "Run npm install prior to lintint"
+            type: boolean
+            default: true
     common_steps: &common_steps
         - checkout
         - steps: <<parameters.setup>>
@@ -43,6 +47,14 @@ aliases:
               version: <<parameters.npm_version>>
         - utils/add_npm_config
         - steps: <<parameters.config>>
+        - when:
+              condition: <<parameters.npm_install>>
+              steps:
+                  - run:
+                        name: Run npm install
+                        command: |
+                            cd <<parameters.wd>>
+                            npm install --include dev
         - run:
               name: Run eslint
               command: |
