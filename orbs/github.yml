@@ -21,6 +21,38 @@ aliases:
             type: string
             description: "GitHub token for authentication."
             default: $GITHUB_TOKEN
+    release_parameters: &release_parameters
+        release_title:
+            type: string
+            description: "The title of the release."
+            default: ${CIRCLE_TAG}
+        release_notes:
+            type: string
+            description: "Release notes or path to file."
+            default: ""
+        prerelease:
+            type: boolean
+            description: "Mark the release as a prerelease."
+            default: false
+        draft:
+            type: boolean
+            description: "Save the release as a draft."
+            default: false
+        generate_notes:
+            type: boolean
+            description: "Automatically generate notes for the release."
+            default: true
+        files:
+            type: string
+            description: "Files to upload as part of the release (e.g. ./dist/*.zip)."
+            default: ""
+    post_status_parameters: &post_status_parameters
+        gh_context:
+            type: string
+            description: "The context for the status update."
+        gh_description:
+            type: string
+            description: "A short description of the status."
 commands:
     install_github_cli:
         description: "Install GitHub CLI tools."
@@ -32,7 +64,6 @@ commands:
                       echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
                       sudo apt update
                       sudo apt install gh
-
     post_status:
         description: "Post a status to GitHub."
         parameters:
@@ -41,13 +72,7 @@ commands:
                 type: enum
                 enum: [pending, success, failure, error]
                 description: "The status state to set."
-            gh_context:
-                type: string
-                description: "The context for the status update."
-            gh_description:
-                type: string
-                description: "A short description of the status."
-                default: $CIRCLE_SHA1
+            <<: *post_status_parameters
         steps:
             - run:
                   name: Post GitHub Status
@@ -64,93 +89,56 @@ commands:
                            -d "{\"state\": \"$STATE\", \"target_url\": \"$CIRCLE_BUILD_URL\", \"description\": \"$DESCRIPTION\", \"context\": \"$CONTEXT\"}" \
                            "$API/repos/$USER/$REPO/statuses/$SHA"
     create_release:
-        description: "Create a GitHub release using GitHub CLI tools."
+        description: "Create a GitHub release."
         parameters:
             <<: *github_parameters
-            release_title:
-                type: string
-                description: "The title of the release."
-                default: ${CIRCLE_TAG}
-            release_notes:
-                type: string
-                description: "Release notes or path to file."
-            prerelease:
-                type: boolean
-                description: "Mark the release as a prerelease."
-                default: false
-            draft:
-                type: boolean
-                description: "Save the release as a draft."
-                default: false
-            files:
-                type: string
-                description: "Files to upload as part of the release."
-                default: ""
+            <<: *release_parameters
         steps:
             - run:
                   name: Create GitHub Release
                   command: |
+                      export GH_TOKEN="<<parameters.github_token>>"
                       gh release create "<<parameters.target_commit_or_tag>>" \
-                      --title "<<parameters.release_title>>" \
-                      --notes "<<parameters.release_notes>>" \
-                      $(if [ "<<parameters.prerelease>>" = "true" ]; then echo "--prerelease"; fi) \
-                      $(if [ "<<parameters.draft>>" = "true" ]; then echo "--draft"; fi) \
-                      $(if [ -n "<<parameters.files>>" ]; then echo "<<parameters.files>>"; fi)
+                        --title "<<parameters.release_title>>" \
+                        $(if [ "<<parameters.generate_notes>>" = "true" ]; then echo "--generate-notes"; fi) \
+                        $(if [ "<<parameters.prerelease>>" = "true" ]; then echo "--prerelease"; fi) \
+                        $(if [ "<<parameters.draft>>" = "true" ]; then echo "--draft"; fi) \
+                        $(if [ -n "<<parameters.release_notes>>" ]; then echo "--notes-file <<parameters.release_notes>>"; fi) \
+                        $(if [ -n "<<parameters.files>>" ]; then echo "<<parameters.files>>"; fi)
 jobs:
     deploy_status:
-        description: "Post success or failure status to GitHub."
+        description: "Post GitHub status (success or failure)."
         parameters:
             <<: *github_parameters
-            gh_context:
-                type: string
-            gh_description:
-                type: string
-                default: $CIRCLE_SHA1
+            <<: *post_status_parameters
             executor:
                 type: executor
                 default: base
-            resource_class:
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-                default: small
         executor: <<parameters.executor>>
-        resource_class: <<parameters.resource_class>>
         steps:
             - post_status:
-                  target_user: <<parameters.target_user>>
-                  target_repo: <<parameters.target_repo>>
-                  target_commit_or_tag: <<parameters.target_commit_or_tag>>
                   state: success
                   gh_context: <<parameters.gh_context>>
                   gh_description: <<parameters.gh_description>>
-            - post_status:
                   target_user: <<parameters.target_user>>
                   target_repo: <<parameters.target_repo>>
                   target_commit_or_tag: <<parameters.target_commit_or_tag>>
+            - post_status:
                   state: failure
                   gh_context: <<parameters.gh_context>>
                   gh_description: <<parameters.gh_description>>
-    create_release_job:
+                  target_user: <<parameters.target_user>>
+                  target_repo: <<parameters.target_repo>>
+                  target_commit_or_tag: <<parameters.target_commit_or_tag>>
+    create_release:
         description: "Create a release in GitHub."
         parameters:
             <<: *github_parameters
-            release_title:
-                type: string
-            release_notes:
-                type: string
-            prerelease:
-                type: boolean
-            draft:
-                type: boolean
+            <<: *release_parameters
             executor:
                 type: executor
                 default: base
-            resource_class:
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-                default: small
         executor: <<parameters.executor>>
-        resource_class: <<parameters.resource_class>>
         steps:
             - checkout
             - install_github_cli
@@ -162,3 +150,5 @@ jobs:
                   release_notes: <<parameters.release_notes>>
                   prerelease: <<parameters.prerelease>>
                   draft: <<parameters.draft>>
+                  generate_notes: <<parameters.generate_notes>>
+                  files: <<parameters.files>>
