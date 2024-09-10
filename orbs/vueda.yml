@@ -25,7 +25,7 @@ commands:
             - run:
                   name: Install Deployment Prerequisites
                   command: |
-                      npm install -g semver
+                      sudo npm install -g semver
             - run:
                   name: Deploy to <<parameters.deploy_to>>
                   command: |
