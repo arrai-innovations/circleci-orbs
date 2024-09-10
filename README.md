@@ -143,3 +143,6 @@ Once you're ready to promote your Orb to release, determine whether this counts 
 [sentry: version]: https://badges.circleci.com/orbs/arrai/sentry.svg
 [utils: version]: https://badges.circleci.com/orbs/arrai/utils.svg
 [vueda: version]: https://badges.circleci.com/orbs/arrai/vueda.svg
+[`vueda-server`]: https://github.com/arrai-innovations/vueda-server
+[`vueda-client`]: https://github.com/arrai-innovations/vueda-client
+[`vueda-deployer`]: https://github.com/arrai-innovations/vueda-deployer
