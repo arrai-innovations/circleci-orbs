@@ -3,13 +3,9 @@ orbs:
     utils: arrai/utils@1.16.3
 executors:
     lts:
-        environment:
-            LANG: en_US.UTF-8
         docker:
             - image: cimg/node:lts
     current:
-        environment:
-            LANG: en_US.UTF-8
         docker:
             - image: cimg/node:current
 aliases:
@@ -108,58 +104,54 @@ aliases:
                         file: ~/status.svg
                         remote_file: ${CIRCLE_BRANCH}/npm-audit.svg
                         host: docs
-jobs:
+    coverage_parameters: &coverage_parameters
+        wd:
+            type: string
+            default: ~/project
+        setup:
+            description: "Any additional setup steps."
+            type: steps
+            default: []
+        config:
+            description: "Any additional configuration steps."
+            type: steps
+            default: []
+        create_badges:
+            description: "Generate badges."
+            type: boolean
+            default: true
+        npm_run:
+            description: "The npm run script to run."
+            type: string
+            default: coverage
+        npm_version:
+            description: "NPM version to use"
+            type: string
+            default: "latest"
+    publish_parameters: &publish_parameters
+        wd:
+            type: string
+            default: ~/project
+        setup:
+            description: "Any additional setup steps."
+            type: steps
+            default: []
+        config:
+            description: "Any additional configuration steps."
+            type: steps
+            default: []
+        npm_version:
+            description: "NPM version to use"
+            type: string
+            default: "latest"
+commands:
     audit:
         parameters:
             <<: *common_audit_parameters
-        executor: <<parameters.executor>>
-        resource_class: <<parameters.resource_class>>
-        circleci_ip_ranges: false
-        steps: *common_audit_steps
-
-    audit_fixed_ip:
-        parameters:
-            <<: *common_audit_parameters
-        executor: <<parameters.executor>>
-        resource_class: <<parameters.resource_class>>
-        circleci_ip_ranges: true
         steps: *common_audit_steps
     coverage:
         parameters:
-            wd:
-                type: string
-                default: ~/project
-            executor:
-                type: executor
-                default: lts
-            resource_class:
-                description: "The resource class to use for the job."
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-                default: medium
-            setup:
-                description: "Any additional setup steps."
-                type: steps
-                default: []
-            config:
-                description: "Any additional configuration steps."
-                type: steps
-                default: []
-            create_badges:
-                description: "Generate badges."
-                type: boolean
-                default: true
-            npm_run:
-                description: "The npm run script to run."
-                type: string
-                default: coverage
-            npm_version:
-                description: "NPM version to use"
-                type: string
-                default: "latest"
-        executor: <<parameters.executor>>
-        resource_class: <<parameters.resource_class>>
-        circleci_ip_ranges: true
+            <<: *coverage_parameters
         steps:
             - checkout
             - utils/add_ssh_config
@@ -215,31 +207,7 @@ jobs:
                             host: docs
     publish:
         parameters:
-            wd:
-                type: string
-                default: ~/project
-            executor:
-                type: executor
-                default: lts
-            resource_class:
-                description: "The resource class to use for the job."
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-                default: small
-            setup:
-                description: "Any additional setup steps."
-                type: steps
-                default: []
-            config:
-                description: "Any additional configuration steps."
-                type: steps
-                default: []
-            npm_version:
-                description: "NPM version to use"
-                type: string
-                default: "latest"
-        executor: <<parameters.executor>>
-        resource_class: <<parameters.resource_class>>
+            <<: *publish_parameters
         steps:
             - checkout
             - steps: <<parameters.setup>>
@@ -255,3 +223,59 @@ jobs:
                   name: "Publish to npm"
                   command: |
                       npm publish
+jobs:
+    audit:
+        parameters:
+            <<: *common_audit_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        steps: *common_audit_steps
+    audit_fixed_ip:
+        parameters:
+            <<: *common_audit_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
+        steps: *common_audit_steps
+    coverage:
+        parameters:
+            <<: *coverage_parameters
+            executor:
+                type: executor
+                default: lts
+            resource_class:
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: medium
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
+        steps:
+            - coverage:
+                  wd: <<parameters.wd>>
+                  setup: <<parameters.setup>>
+                  config: <<parameters.config>>
+                  create_badges: <<parameters.create_badges>>
+                  npm_run: <<parameters.npm_run>>
+                  npm_version: <<parameters.npm_version>>
+    publish:
+        parameters:
+            <<: *publish_parameters
+            executor:
+                type: executor
+                default: lts
+            resource_class:
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        steps:
+            - publish:
+                  wd: <<parameters.wd>>
+                  setup: <<parameters.setup>>
+                  config: <<parameters.config>>
+                  npm_version: <<parameters.npm_version>>
