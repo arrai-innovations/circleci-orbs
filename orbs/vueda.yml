@@ -1,5 +1,9 @@
 version: 2.1
 description: "For deploying `vueda-server`s & `vueda-client`s using `vueda-deployer`."
+executors:
+    node_lts:
+        docker:
+            - image: cimg/node:lts
 aliases:
     common_parameters: &common_parameters
         deploy_url:
@@ -9,24 +13,32 @@ aliases:
             description: "Human readable name of the deployment target"
             type: string
         deploy_type:
-            description: "Type of deployment, either 'tag' or 'commit'"
+            description: "Type of deployment, either 'tag', 'commit', or 'build'"
             type: enum
-            enum: [tag, commit]
+            enum: [tag, commit, build]
 commands:
     deploy:
-        description: "Deploy to a target using a tag or commit"
+        description: "Deploy to a target using a tag or commit. Assumes a checkout was done."
         parameters:
             <<: *common_parameters
         steps:
+            - run:
+                  name: Install Deployment Prerequisites
+                  command: |
+                      npm install -g semver
             - run:
                   name: Deploy to <<parameters.deploy_to>>
                   command: |
                       if [ "<<parameters.deploy_type>>" = "tag" ]; then
                           SIGNATURE=$(printf '{"tag":"%s"}' "${CIRCLE_TAG}" | openssl dgst -sha256 -hmac "${DEPLOYER_KEY}" | cut -d ' ' -f2)
                           DATA="{\"tag\":\"${CIRCLE_TAG}\"}"
-                      else
+                      elif [ "<<parameters.deploy_type>>" = "commit" ]; then
                           SIGNATURE=$(printf '{"commit":"%s"}' "${CIRCLE_SHA1}" | openssl dgst -sha256 -hmac "${DEPLOYER_KEY}" | cut -d ' ' -f2)
                           DATA="{\"commit\":\"${CIRCLE_SHA1}\"}"
+                      else
+                          BUILT_VERSION=$(node -e "console.log(require('semver').inc(require('./package.json').version, 'patch') + '-dev')")
+                          SIGNATURE=$(echo -n "{\"build_num\":${CIRCLE_BUILD_NUM},\"version\":\"${BUILT_VERSION}\"}" | openssl dgst -sha256 -hmac "${DEPLOYER_KEY}" | cut -d ' ' -f2)
+                          DATA="{\"build_num\":${CIRCLE_BUILD_NUM},\"version\":\"${BUILT_VERSION}\"}"
                       fi
                       wget -U 'CircleCI Deployer' -nv -O - --header='Content-Type:application/json' --header="X-Signature:${SIGNATURE}" --content-on-error --post-data="${DATA}"  <<parameters.deploy_url>>
 jobs:
@@ -37,14 +49,15 @@ jobs:
             resource_class:
                 type: enum
                 enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-                default: medium
+                default: small
             executor:
                 type: executor
-                default: base
+                default: node_lts
         executor: <<parameters.executor>>
         circleci_ip_ranges: true
         resource_class: <<parameters.resource_class>>
         steps:
+            - checkout
             - deploy:
                   deploy_url: <<parameters.deploy_url>>
                   deploy_to: <<parameters.deploy_to>>
