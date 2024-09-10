@@ -82,15 +82,20 @@ commands:
                 type: boolean
                 description: "Save the release as a draft."
                 default: false
+            files:
+                type: string
+                description: "Files to upload as part of the release."
+                default: ""
         steps:
             - run:
                   name: Create GitHub Release
                   command: |
                       gh release create "<<parameters.target_commit_or_tag>>" \
-                        --title "<<parameters.release_title>>" \
-                        --notes "<<parameters.release_notes>>" \
-                        $(if [ "<<parameters.prerelease>>" = "true" ]; then echo "--prerelease"; fi) \
-                        $(if [ "<<parameters.draft>>" = "true" ]; then echo "--draft"; fi)
+                      --title "<<parameters.release_title>>" \
+                      --notes "<<parameters.release_notes>>" \
+                      $(if [ "<<parameters.prerelease>>" = "true" ]; then echo "--prerelease"; fi) \
+                      $(if [ "<<parameters.draft>>" = "true" ]; then echo "--draft"; fi) \
+                      $(if [ -n "<<parameters.files>>" ]; then echo "<<parameters.files>>"; fi)
 jobs:
     deploy_status:
         description: "Post success or failure status to GitHub."
