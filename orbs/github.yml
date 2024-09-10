@@ -47,6 +47,7 @@ commands:
             gh_description:
                 type: string
                 description: "A short description of the status."
+                default: $CIRCLE_SHA1
         steps:
             - run:
                   name: Post GitHub Status
@@ -99,6 +100,7 @@ jobs:
                 type: string
             gh_description:
                 type: string
+                default: $CIRCLE_SHA1
             executor:
                 type: executor
                 default: base
