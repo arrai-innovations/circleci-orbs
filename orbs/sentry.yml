@@ -3,104 +3,121 @@ executors:
     base:
         docker:
             - image: cimg/base:current
-jobs:
-    deploy_release:
-        parameters:
-            executor:
-                description: "The executor to use for the job."
-                type: executor
-                default: base
-            resource_class:
-                description: "The resource class to use for the job."
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-                default: small
-            sentry_org:
-                description: "The Sentry organization slug."
-                type: string
-                default: ${SENTRY_ORG}
-            sentry_project:
-                description: "The Sentry project slug."
-                type: string
-                default: ${CIRCLE_PROJECT_REPONAME}
-            sentry_release:
-                description: "The version for the Sentry release."
-                type: string
-                default: ${CIRCLE_TAG}
-            deployment_url:
-                description: "The URL of the deployment."
-                type: string
-            deployment_environment:
-                description: "The deployment environment (e.g. development, production)"
-                type: string
-            setup:
-                description: "Any additional setup steps."
-                type: steps
-                default:
-                    - run:
-                          name: Install Sentry CLI Tools
-                          command: |
-                              curl -sL https://sentry.io/get-cli/ | bash
-        executor: <<parameters.executor>>
-        resource_class: <<parameters.resource_class>>
+
+aliases:
+    sentry_parameters: &sentry_parameters
+        sentry_org:
+            type: string
+            description: "The Sentry organization slug."
+            default: ${SENTRY_ORG}
+        sentry_project:
+            type: string
+            description: "The Sentry project slug."
+            default: ${CIRCLE_PROJECT_REPONAME}
+        sentry_release:
+            type: string
+            description: "The version for the Sentry release."
+            default: ${CIRCLE_TAG}
+commands:
+    install_sentry_cli:
+        description: "Install Sentry CLI Tools."
         steps:
-            - steps: <<parameters.setup>>
             - run:
-                  command: |
-                      sentry-cli deploys new -o "<<parameters.sentry_org>>"                                   \
-                                             -r "<<parameters.sentry_project>>-<<parameters.sentry_release>>" \
-                                             -u "<<parameters.deployment_url>>"                               \
-                                             -e "<<parameters.deployment_environment>>"
-    create_release:
+                  name: Install Sentry CLI
+                  command: curl -sL https://sentry.io/get-cli/ | bash
+
+    create_sentry_release:
+        description: "Create a Sentry release and associate commits."
         parameters:
-            executor:
-                description: "The executor to use for the job."
-                type: executor
-                default: base
-            resource_class:
-                description: "The resource class to use for the job."
-                type: enum
-                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
-                default: small
-            sentry_org:
-                description: "The Sentry organization slug."
-                type: string
-                default: ${SENTRY_ORG}
-            sentry_project:
-                description: "The Sentry project slug."
-                type: string
-                default: ${CIRCLE_PROJECT_REPONAME}
-            sentry_release:
-                description: "The version for the Sentry release."
-                type: string
-                default: ${CIRCLE_TAG}
+            <<: *sentry_parameters
             sentry_commit_integration:
-                description: "From where to pull commit information."
                 type: enum
+                description: "From where to pull commit information."
                 enum: [auto, local]
                 default: auto
-            setup:
-                description: "Any additional setup steps."
-                type: steps
-                default:
-                    - run:
-                          name: Install Sentry CLI Tools
-                          command: |
-                              curl -sL https://sentry.io/get-cli/ | bash
-        executor: <<parameters.executor>>
-        resource_class: <<parameters.resource_class>>
         steps:
-            - checkout
-            - steps: <<parameters.setup>>
             - run:
+                  name: Create Sentry Release
                   command: |
                       export SENTRY_ORG="<<parameters.sentry_org>>"
                       export SENTRY_PROJECT="<<parameters.sentry_project>>"
                       export SENTRY_RELEASE="<<parameters.sentry_project>>-<<parameters.sentry_release>>"
                       sentry-cli releases new ${SENTRY_RELEASE}
-                      if [ "${<<parameters.sentry_commit_integration>>}" = "local" ]; then
+                      if [ "<<parameters.sentry_commit_integration>>" = "local" ]; then
                           sentry-cli releases set-commits ${SENTRY_RELEASE} --local --initial-depth 9223372036854775807
                       else
                           sentry-cli releases set-commits ${SENTRY_RELEASE} --auto
                       fi
                       sentry-cli releases finalize ${SENTRY_RELEASE}
+
+    create_sentry_deploy:
+        description: "Notify Sentry of a deployment."
+        parameters:
+            <<: *sentry_parameters
+            deployment_url:
+                type: string
+                description: "The URL of the deployment."
+            deployment_environment:
+                type: string
+                description: "The deployment environment (e.g. development, production)"
+        steps:
+            - run:
+                  name: Notify Sentry of Deployment
+                  command: |
+                      sentry-cli deploys new -o "<<parameters.sentry_org>>"                                  \
+                                             -r "<<parameters.sentry_project>>-<<parameters.sentry_release>>" \
+                                             -u "<<parameters.deployment_url>>"                               \
+                                             -e "<<parameters.deployment_environment>>"
+
+jobs:
+    deploy_release:
+        description: "Deploy a Sentry release."
+        parameters:
+            <<: *sentry_parameters
+            deployment_url:
+                type: string
+            deployment_environment:
+                type: string
+            resource_class:
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+            executor:
+                type: executor
+                default: base
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        steps:
+            - install_sentry_cli
+            - create_sentry_deploy:
+                  sentry_org: <<parameters.sentry_org>>
+                  sentry_project: <<parameters.sentry_project>>
+                  sentry_release: <<parameters.sentry_release>>
+                  deployment_url: <<parameters.deployment_url>>
+                  deployment_environment: <<parameters.deployment_environment>>
+
+    create_release:
+        description: "Create a Sentry release."
+        parameters:
+            <<: *sentry_parameters
+            sentry_commit_integration:
+                type: enum
+                enum: [auto, local]
+                default: auto
+            resource_class:
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+            executor:
+                type: executor
+                default: base
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        steps:
+            - checkout
+            - install_sentry_cli
+            - create_sentry_release:
+                  sentry_org: <<parameters.sentry_org>>
+                  sentry_project: <<parameters.sentry_project>>
+                  sentry_release: <<parameters.sentry_release>>
+                  sentry_commit_integration: <<parameters.sentry_commit_integration>>

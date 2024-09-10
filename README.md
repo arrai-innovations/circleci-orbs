@@ -20,6 +20,7 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [safety](#safety)
   - [sentry](#sentry)
   - [utils](#utils)
+  - [vueda](#vueda)
 - [Developing Orbs](#developing-orbs)
 - [Publishing Orbs](#publishing-orbs)
 
@@ -102,6 +103,12 @@ For information on how to override these defaults, refer to the generated [docum
 
 This orb provides utility functions such as status badging, file uploads, and ssh key import. This is required by the other orbs. For information on the available utility functions, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/utils).
 
+### vueda
+
+[![vueda: version][]](https://circleci.com/orbs/registry/orb/arrai/vueda)
+
+This orb facilitates the deployment of [`vueda-server`] and [`vueda-client`] applications using our [`vueda-deployer`]. It supports deployments to environments like Dev, Demo, Staging and Production, based on git tags or commits. For more details on how to use this orb, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/vueda).
+
 ## Developing Orbs
 
 This repository uses git hooks via the node module `husky`. These hooks keep the orb `.yml` formatted using `prettier`. They also enforce our commit message rules via `commitlint`. Orbs are validated using the [circleci cli tool](https://circleci.com/docs/local-cli/), which must be installed beforehand. You can install these hooks by running the following command:
@@ -135,3 +142,7 @@ Once you're ready to promote your Orb to release, determine whether this counts 
 [safety: version]: https://badges.circleci.com/orbs/arrai/safety.svg
 [sentry: version]: https://badges.circleci.com/orbs/arrai/sentry.svg
 [utils: version]: https://badges.circleci.com/orbs/arrai/utils.svg
+[vueda: version]: https://badges.circleci.com/orbs/arrai/vueda.svg
+[`vueda-server`]: https://github.com/arrai-innovations/vueda-server
+[`vueda-client`]: https://github.com/arrai-innovations/vueda-client
+[`vueda-deployer`]: https://github.com/arrai-innovations/vueda-deployer
