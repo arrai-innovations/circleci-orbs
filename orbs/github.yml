@@ -13,10 +13,10 @@ aliases:
             type: string
             description: "The GitHub repository name."
             default: $CIRCLE_PROJECT_REPONAME
-        target_commit_or_tag:
+        target_tag:
             type: string
-            description: "The commit SHA or tag for the operation."
-            default: $CIRCLE_SHA1
+            description: "The tag for the operation."
+            default: $CIRCLE_TAG
         github_token:
             type: string
             description: "GitHub token for authentication."
@@ -25,7 +25,7 @@ aliases:
         release_title:
             type: string
             description: "The title of the release."
-            default: ${CIRCLE_TAG}
+            default: $CIRCLE_TAG
         release_notes:
             type: string
             description: "Release notes or path to file."
@@ -80,7 +80,7 @@ commands:
                       API=https://api.github.com
                       USER="<<parameters.target_user>>"
                       REPO="<<parameters.target_repo>>"
-                      SHA="<<parameters.target_commit_or_tag>>"
+                      SHA="<<parameters.target_tag>>"
                       CONTEXT="<<parameters.gh_context>>"
                       DESCRIPTION="<<parameters.gh_description>>"
                       STATE="<<parameters.state>>"
@@ -98,7 +98,7 @@ commands:
                   name: Create GitHub Release
                   command: |
                       export GH_TOKEN="<<parameters.github_token>>"
-                      gh release create "<<parameters.target_commit_or_tag>>" \
+                      gh release create "<<parameters.target_tag>>" \
                         --title "<<parameters.release_title>>" \
                         $(if [ "<<parameters.generate_notes>>" = "true" ]; then echo "--generate-notes"; fi) \
                         $(if [ "<<parameters.prerelease>>" = "true" ]; then echo "--prerelease"; fi) \
@@ -122,14 +122,14 @@ jobs:
                   gh_description: <<parameters.gh_description>>
                   target_user: <<parameters.target_user>>
                   target_repo: <<parameters.target_repo>>
-                  target_commit_or_tag: <<parameters.target_commit_or_tag>>
+                  target_tag: <<parameters.target_tag>>
             - post_status:
                   state: failure
                   gh_context: <<parameters.gh_context>>
                   gh_description: <<parameters.gh_description>>
                   target_user: <<parameters.target_user>>
                   target_repo: <<parameters.target_repo>>
-                  target_commit_or_tag: <<parameters.target_commit_or_tag>>
+                  target_tag: <<parameters.target_tag>>
     create_release:
         description: "Create a release in GitHub."
         parameters:
@@ -145,7 +145,7 @@ jobs:
             - create_release:
                   target_user: <<parameters.target_user>>
                   target_repo: <<parameters.target_repo>>
-                  target_commit_or_tag: <<parameters.target_commit_or_tag>>
+                  target_tag: <<parameters.target_tag>>
                   release_title: <<parameters.release_title>>
                   release_notes: <<parameters.release_notes>>
                   prerelease: <<parameters.prerelease>>
