@@ -98,13 +98,26 @@ commands:
                   name: Create GitHub Release
                   command: |
                       export GH_TOKEN="<<parameters.github_token>>"
-                      gh release create "<<parameters.target_tag>>" \
-                        --title "<<parameters.release_title>>" \
-                        $(if [ "<<parameters.generate_notes>>" = "true" ]; then echo "--generate-notes"; fi) \
-                        $(if [ "<<parameters.prerelease>>" = "true" ]; then echo "--prerelease"; fi) \
-                        $(if [ "<<parameters.draft>>" = "true" ]; then echo "--draft"; fi) \
-                        $(if [ -n "<<parameters.release_notes>>" ]; then echo "--notes-file <<parameters.release_notes>>"; fi) \
-                        $(if [ -n "<<parameters.files>>" ]; then echo "<<parameters.files>>"; fi)
+                      if [ "<<parameters.draft>>" = "true" ]; then
+                          set -- "$@" --draft
+                      fi
+                      if [ "<<parameters.prerelease>>" = "true" ]; then
+                          set -- "$@" --prerelease
+                      fi
+                      if [ -n "<<parameters.release_notes>>" ] && [ -f "<<parameters.release_notes>>" ] && [ "<<parameters.generate_notes>>" = "false" ]; then
+                          set -- "$@" --notes-file "<<parameters.release_notes>>"
+                      fi
+                      if [ "<<parameters.generate_notes>>" == "true" ]; then
+                          set -- "$@" --generate-notes
+                      fi
+                      if [ -n "<<parameters.release_title>>" ]; then
+                          set -- "$@" --title "<<parameters.release_title>>"
+                      fi
+                      if [ -n "<<parameters.files>>" ]; then
+                          set -- "$@" <<parameters.files>>
+                      fi
+                      gh release create "<<parameters.target_tag>>" "$@"
+
 jobs:
     deploy_status:
         description: "Post GitHub status (success or failure)."
