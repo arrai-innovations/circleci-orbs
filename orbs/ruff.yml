@@ -1,0 +1,90 @@
+version: 2.1
+orbs:
+    utils: arrai/utils@1.18.0
+executors:
+    python313:
+        docker:
+            - image: cimg/python3.13
+    python312:
+        docker:
+            - image: cimg/python:3.12
+    python311:
+        docker:
+            - image: cimg/python:3.11
+    python310:
+        docker:
+            - image: cimg/python:3.10
+    python39:
+        docker:
+            - image: cimg/python:3.9
+aliases:
+    common_parameters: &common_parameters
+        executor:
+            description: "The executor to use for the job."
+            type: executor
+            default: python312
+        resource_class:
+            description: "The resource class to use for the job."
+            type: enum
+            enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+            default: small
+        config:
+            description: "Any additional configuration steps."
+            type: steps
+            default: []
+        setup:
+            description: "Any additional setup steps."
+            type: steps
+            default: []
+        create_badges:
+            description: "Generate badges."
+            type: boolean
+            default: true
+    common_steps: &common_steps
+        - checkout
+        - steps: <<parameters.setup>>
+        - run:
+              name: Install ruff
+              command: |
+                  export RUFF_VERSION=$(jq -r '.["develop"]["ruff"]["version"]' Pipfile.lock)
+                  pip install --user ruff$RUFF_VERSION
+        - steps: <<parameters.config>>
+        - run:
+              name: Run ruff
+              command: |
+                  ruff check
+        - when:
+              condition: <<parameters.create_badges>>
+              steps:
+                  - utils/add_ssh_config
+                  - utils/rsync_install
+                  - utils/make_status_shield:
+                        when: on_fail
+                        status: errors
+                        color: red
+                        logo: ruff
+                  - utils/make_status_shield:
+                        when: on_success
+                        status: passed
+                        color: brightgreen
+                        logo: ruff
+                  - utils/rsync_file:
+                        when: always
+                        file: ~/status.svg
+                        remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.svg
+                        host: docs
+jobs:
+    ruff:
+        parameters:
+            <<: *common_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        steps: *common_steps
+    ruff_fixed_ip:
+        parameters:
+            <<: *common_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
+        steps: *common_steps
