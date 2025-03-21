@@ -25,7 +25,7 @@ aliases:
         executor:
             description: "The executor to use for the job."
             type: executor
-            default: python310
+            default: python312
         resource_class:
             description: "The resource class to use for the job."
             type: enum
