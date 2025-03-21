@@ -2,6 +2,9 @@ version: 2.1
 orbs:
     utils: arrai/utils@1.18.0
 executors:
+    python313:
+        docker:
+            - image: cimg/python:3.13
     python312:
         docker:
             - image: cimg/python:3.12
@@ -22,7 +25,7 @@ aliases:
         executor:
             description: "The executor to use for the job."
             type: executor
-            default: python310
+            default: python312
         resource_class:
             description: "The resource class to use for the job."
             type: enum
@@ -44,35 +47,16 @@ aliases:
             description: "List of ignored vulnerabilities, e.g. '-i 123 -i 456'"
             type: string
             default: ""
-        pipenv_cache_key_version:
-            description: "a string that can be changed to bust the pipenv cache."
-            type: string
-            default: "1"
     common_steps: &common_steps
         - checkout
         - steps: <<parameters.setup>>
         - run:
-              name: Keep track of the python version.
-              command: |
-                  python --version > /tmp/python.version
-        - restore_cache: # ensure this step occurs *before* installing dependencies
-              keys:
-                  - pipenv-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-                  - pipenv-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}
-                  - pipenv-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-main
-        - run:
               name: Set up python environment
               command: |
                   pip list --outdated --format=json | jq -r '.[]|.name' | xargs -r pip install -U
-                  pipenv clean
-                  pipenv sync | cat; test ${PIPESTATUS[0]} -eq 0
-        - save_cache:
-              paths:
-                  - ~/.local/share/virtualenvs/
-              key: pipenv-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
         - steps: <<parameters.config>>
         - run:
-              name: Run safety
+              name: Run audit
               command: |
                   pipenv check <<parameters.ignored_vulnerabilities>>
         - when:
