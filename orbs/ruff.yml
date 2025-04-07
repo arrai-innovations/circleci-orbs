@@ -50,9 +50,11 @@ aliases:
                   pip install --user ruff$RUFF_VERSION
         - steps: <<parameters.config>>
         - run:
-              name: Run ruff
-              command: |
-                  ruff check
+              name: Run ruff check
+              command: ruff check
+        - run:
+              name: Run ruff formatter
+              command: ruff format --check
         - when:
               condition: <<parameters.create_badges>>
               steps:
