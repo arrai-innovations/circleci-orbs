@@ -17,6 +17,7 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [prettier](#prettier)
   - [pypi](#pypi)
   - [pytest](#pytest)
+  - [ruff](#ruff)
   - [safety](#safety)
   - [sentry](#sentry)
   - [utils](#utils)
@@ -79,6 +80,12 @@ For information on configuration parameters, refer to the generated [documentati
 
 Provides generic test environment for pytest based tests that have dependencies installed using `pipenv`. For more details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pytest).
 
+### ruff
+
+[![ruff: version][]](https://circleci.com/orbs/registry/orb/arrai/ruff)
+
+Installs ruff and runs the validator against the code base. For a description of the Orb, available steps, parameters, etc, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/ruff)
+
 ### safety
 
 [![safety: version][]](https://circleci.com/orbs/registry/orb/arrai/safety)
@@ -139,6 +146,7 @@ Once you're ready to promote your Orb to release, determine whether this counts 
 [prettier: version]: https://badges.circleci.com/orbs/arrai/prettier.svg
 [pypi: version]: https://badges.circleci.com/orbs/arrai/pypi.svg
 [pytest: version]: https://badges.circleci.com/orbs/arrai/pytest.svg
+[ruff: version]: https://badges.circleci.com/orbs/arrai/ruff.svg
 [safety: version]: https://badges.circleci.com/orbs/arrai/safety.svg
 [sentry: version]: https://badges.circleci.com/orbs/arrai/sentry.svg
 [utils: version]: https://badges.circleci.com/orbs/arrai/utils.svg
@@ -146,3 +154,4 @@ Once you're ready to promote your Orb to release, determine whether this counts 
 [`vueda-server`]: https://github.com/arrai-innovations/vueda-server
 [`vueda-client`]: https://github.com/arrai-innovations/vueda-client
 [`vueda-deployer`]: https://github.com/arrai-innovations/vueda-deployer
+
