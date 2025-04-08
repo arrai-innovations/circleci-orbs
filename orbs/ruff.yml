@@ -55,6 +55,7 @@ aliases:
         - run:
               name: Run ruff formatter
               command: ruff format --check
+              when: always
         - when:
               condition: <<parameters.create_badges>>
               steps:
