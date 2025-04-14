@@ -347,3 +347,25 @@ commands:
                       wget https://github.com/jwilder/dockerize/releases/download/<<parameters.version>>/dockerize-linux-amd64-<<parameters.version>>.tar.gz
                       sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-<<parameters.version>>.tar.gz
                       rm dockerize-linux-amd64-<<parameters.version>>.tar.gz
+    verify_changelog:
+        description: "Make sure the changelog was updated between tags."
+        parameters:
+            changelog:
+                description: "Path to the changelog."
+                type: string
+                default: "CHANGELOG.md"
+        steps:
+            - run:
+                  name: "Make sure the changelog was updated."
+                  command: |
+                      if ! [ -f <<parameters.changelog>> ]; then
+                          exit 0
+                      fi
+                      TAGS=($(git tag --list --sort=-creatordate --merged))
+                      if [ ${#TAGS[@]} -lt 2 ]; then
+                          exit 0
+                      fi
+                      HAS_COMMIT=$(git diff "${TAGS[1]}..${CIRCLE_TAG}" --name-only | grep -F <<parameters.changelog>>)
+                      if [ -z "${HAS_COMMIT}" ]; then
+                          exit 1
+                      fi
