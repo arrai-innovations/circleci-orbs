@@ -362,12 +362,12 @@ commands:
                           echo "No changelog found at <<parameters.changelog>>. Skipping check."
                           exit 0
                       fi
-                      TAGS=($(git tag --list --sort=-creatordate --merged))
-                      if [ ${#TAGS[@]} -lt 2 ]; then
+                      PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${CIRCLE_TAG}^" 2> /dev/null || true)
+                      if [ -z "${PREVIOUS_TAG}" ]; then
                           echo "No previous tag found. Nothing to compare against."
                           exit 0
                       fi
-                      HAS_COMMIT=$(git diff "${TAGS[1]}..${CIRCLE_TAG}" --name-only | grep -F <<parameters.changelog>>)
+                      HAS_COMMIT=$(git diff "${PREVIOUS_TAG}..${CIRCLE_TAG}" --name-only | grep -F <<parameters.changelog>>)
                       if [ -z "${HAS_COMMIT}" ]; then
                           echo "<<parameters.changelog>> has not been updated for this tag."
                           exit 1
