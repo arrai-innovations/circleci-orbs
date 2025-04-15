@@ -347,7 +347,7 @@ commands:
                       wget https://github.com/jwilder/dockerize/releases/download/<<parameters.version>>/dockerize-linux-amd64-<<parameters.version>>.tar.gz
                       sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-<<parameters.version>>.tar.gz
                       rm dockerize-linux-amd64-<<parameters.version>>.tar.gz
-    verify_changelog:
+    require_changelog_between_tags:
         description: "Make sure the changelog was updated between tags."
         parameters:
             changelog:
