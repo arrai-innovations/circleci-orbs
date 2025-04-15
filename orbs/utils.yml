@@ -369,6 +369,6 @@ commands:
                       fi
                       HAS_COMMIT=$(git diff "${PREVIOUS_TAG}..${CIRCLE_TAG}" --name-only | grep -F <<parameters.changelog>>)
                       if [ -z "${HAS_COMMIT}" ]; then
-                          echo "<<parameters.changelog>> has not been updated for this tag."
+                          echo "<<parameters.changelog>> has not been updated between ${PREVIOUS_TAG} and ${CIRCLE_TAG}."
                           exit 1
                       fi
