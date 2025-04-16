@@ -347,3 +347,28 @@ commands:
                       wget https://github.com/jwilder/dockerize/releases/download/<<parameters.version>>/dockerize-linux-amd64-<<parameters.version>>.tar.gz
                       sudo tar -C /usr/local/bin -xzvf dockerize-linux-amd64-<<parameters.version>>.tar.gz
                       rm dockerize-linux-amd64-<<parameters.version>>.tar.gz
+    require_changelog_between_tags:
+        description: "Make sure the changelog was updated between tags."
+        parameters:
+            changelog:
+                description: "Path to the changelog."
+                type: string
+                default: "CHANGELOG.md"
+        steps:
+            - run:
+                  name: "Make sure the changelog was updated."
+                  command: |
+                      if ! [ -f <<parameters.changelog>> ]; then
+                          echo "No changelog found at <<parameters.changelog>>. Skipping check."
+                          exit 0
+                      fi
+                      PREVIOUS_TAG=$(git describe --tags --abbrev=0 "${CIRCLE_TAG}^" 2> /dev/null || true)
+                      if [ -z "${PREVIOUS_TAG}" ]; then
+                          echo "No previous tag found. Nothing to compare against."
+                          exit 0
+                      fi
+                      HAS_COMMIT=$(git diff "${PREVIOUS_TAG}..${CIRCLE_TAG}" --name-only | grep -F <<parameters.changelog>>)
+                      if [ -z "${HAS_COMMIT}" ]; then
+                          echo "<<parameters.changelog>> has not been updated between ${PREVIOUS_TAG} and ${CIRCLE_TAG}."
+                          exit 1
+                      fi
