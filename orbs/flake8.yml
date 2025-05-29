@@ -1,7 +1,10 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.18.0
+    utils: arrai/utils@1.19.0
 executors:
+    python313:
+        docker:
+            - image: cimg/python:3.13
     python312:
         docker:
             - image: cimg/python:3.12
@@ -14,9 +17,6 @@ executors:
     python39:
         docker:
             - image: cimg/python:3.9
-    python38:
-        docker:
-            - image: cimg/python:3.8
 aliases:
     common_parameters: &common_parameters
         flake8_cmd:
@@ -30,7 +30,7 @@ aliases:
         executor:
             description: "The executor to use for the job."
             type: executor
-            default: python38
+            default: python39
         resource_class:
             description: "The resource class to use for the job."
             type: enum
