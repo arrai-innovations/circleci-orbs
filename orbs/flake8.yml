@@ -1,7 +1,10 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.18.0
+    utils: arrai/utils@1.19.0
 executors:
+    python313:
+        docker:
+            - image: cimg/python:3.13
     python312:
         docker:
             - image: cimg/python:3.12
@@ -14,9 +17,6 @@ executors:
     python39:
         docker:
             - image: cimg/python:3.9
-    python38:
-        docker:
-            - image: cimg/python:3.8
 aliases:
     common_parameters: &common_parameters
         flake8_cmd:
@@ -30,7 +30,7 @@ aliases:
         executor:
             description: "The executor to use for the job."
             type: executor
-            default: python38
+            default: python39
         resource_class:
             description: "The resource class to use for the job."
             type: enum
@@ -80,6 +80,17 @@ aliases:
               wd: <<parameters.wd>>
               pipenv_cache_key_version: <<parameters.pipenv_cache_key_version>>
         - flake8_errors_pipenv:
+              flake8_cmd: <<parameters.flake8_cmd>>
+              wd: <<parameters.wd>>
+        - when:
+              condition: <<parameters.create_badges>>
+              steps: *common_badge_upload
+    common_flake8_uv_steps: &common_flake8_uv_steps
+        - checkout
+        - steps: <<parameters.setup>>
+        - setup_flake8_uv:
+              wd: <<parameters.wd>>
+        - flake8_errors:
               flake8_cmd: <<parameters.flake8_cmd>>
               wd: <<parameters.wd>>
         - when:
@@ -138,6 +149,20 @@ jobs:
         environment:
             PIPENV_DONT_LOAD_ENV: 1
         steps: *common_flake8_pipenv_steps
+    flake8_uv:
+        parameters:
+            <<: *common_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        steps: *common_flake8_uv_steps
+    flake8_uv_fixed_ip:
+        parameters:
+            <<: *common_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
+        steps: *common_flake8_uv_steps
 commands:
     setup_flake8:
         description: "Set up a python virtual environment to run flake8"
@@ -201,6 +226,20 @@ commands:
                   paths:
                       - ~/.local/share/virtualenvs/
                   key: pipenv-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+    setup_flake8_uv:
+        description: "Set up an environment to run flake8 with uv"
+        parameters:
+            wd:
+                type: string
+        steps:
+            - run:
+                  name: "Install uv"
+                  command: curl -LsSf https://astral.sh/uv/install.sh | bash
+            - run:
+                  name: "Set up pre-commit"
+                  command: |
+                      uv tool install pre-commit --with pre-commit-uv
+                      pre-commit install
     flake8_errors_pipenv:
         description: "Run flake8, checking for errors only."
         parameters:
