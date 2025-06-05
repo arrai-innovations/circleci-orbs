@@ -159,17 +159,23 @@ commands:
                   name: Make status shield (<<parameters.status>>)
                   command: |
                       if [ -f <<parameters.config>> ]; then
-                          eval "export $(printf "%s\n" `cat <<parameters.config>>` | jq -r 'to_entries | map(.key |= ascii_upcase | "\(.key)=\(.value)") | @sh')"
+                          COLOR=$(jq -r '.color // empty' <<parameters.config>>)
+                          FILE=$(jq -r '.file // empty' <<parameters.config>>)
+                          LABEL=$(jq -r '.label // empty' <<parameters.config>>)
+                          LOGO=$(jq -r '.logo // empty' <<parameters.config>>)
+                          PRESERVE=$(jq -r '.preserve // empty' <<parameters.config>>)
+                          STATUS=$(jq -r '.status // empty' <<parameters.config>>)
+                          STYLE=$(jq -r '.style // empty' <<parameters.config>>)
                       fi
-                      export COLOR=${COLOR:=<<parameters.color>>}
-                      export FILE=${FILE:=<<parameters.file>>}
-                      export LABEL=${LABEL:=<<parameters.label>>}
-                      export LABEL=${LABEL// /_}
-                      export LABEL=${LABEL//-/--}
-                      export LOGO=${LOGO:=<<parameters.logo>>}
-                      export PRESERVE=${PRESERVE:=<<parameters.preserve>>}
-                      export STATUS=${STATUS:=<<parameters.status>>}
-                      export STYLE=${STYLE:=<<parameters.style>>}
+                      COLOR=${COLOR:-<<parameters.color>>}
+                      FILE=${FILE:-<<parameters.file>>}
+                      LABEL=${LABEL:-<<parameters.label>>}
+                      LABEL=${LABEL// /_}
+                      LABEL=${LABEL//-/--}
+                      LOGO=${LOGO:-<<parameters.logo>>}
+                      PRESERVE=${PRESERVE:-<<parameters.preserve>>}
+                      STATUS=${STATUS:-<<parameters.status>>}
+                      STYLE=${STYLE:-<<parameters.style>>}
                       if [ -f ${FILE} ] && [ "${PRESERVE}" = "true" ]; then
                           exit 0
                       fi
