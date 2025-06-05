@@ -115,9 +115,11 @@ commands:
             status:
                 description: "Status to set on the shield."
                 type: string
+                default: "passed"
             color:
                 description: "Color of the shield."
                 type: string
+                default: "brightgreen"
             style:
                 description: "Shield style."
                 type: enum
@@ -144,6 +146,10 @@ commands:
                 description: "Prevent any existing shield of the same name from being overwritten."
                 type: boolean
                 default: false
+            config:
+                description: "Logo configuration file. Allows configuration without specifying parameters."
+                type: string
+                default: "~/status_shield.json"
             when:
                 type: enum
                 enum: ["always", "on_success", "on_fail"]
@@ -152,8 +158,22 @@ commands:
             - run:
                   name: Make status shield (<<parameters.status>>)
                   command: |
-                      LABEL=$(echo -n "<<parameters.label>>" | sed -e 's/ /_/g' -e 's/-/--/g')
-                      <<# parameters.preserve>>[ ! -f <<parameters.file>> ] && <</ parameters.preserve>> curl -sS -o <<parameters.file>> "https://img.shields.io/badge/${LABEL}-<<parameters.status>>-<<parameters.color>>.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>&link=${CIRCLE_BUILD_URL}" || :
+                      if [ -f <<parameters.config>> ]; then
+                          eval "export $(printf "%s\n" `cat <<parameters.config>>` | jq -r 'to_entries | map(.key |= ascii_upcase | "\(.key)=\(.value)") | @sh')"
+                      fi
+                      export COLOR=${COLOR:=<<parameters.color>>}
+                      export FILE=${FILE:=<<parameters.file>>}
+                      export LABEL=${LABEL:=<<parameters.label>>}
+                      export LABEL=${LABEL// /_}
+                      export LABEL=${LABEL//-/--}
+                      export LOGO=${LOGO:=<<parameters.logo>>}
+                      export PRESERVE=${PRESERVE:=<<parameters.preserve>>}
+                      export STATUS=${STATUS:=<<parameters.status>>}
+                      export STYLE=${STYLE:=<<parameters.style>>}
+                      if [ -f ${FILE} ] && [ "${PRESERVE}" = "true" ]; then
+                          exit 0
+                      fi
+                      curl -sS -o ${FILE} "https://img.shields.io/badge/${LABEL}-${STATUS}-${COLOR}.svg?logo=${LOGO}&logoColor=white&style=${STYLE}&link=${CIRCLE_BUILD_URL}" || :
                   when: <<parameters.when>>
     make_coverage_shield:
         description: "Fetch coverage shield from shields.io."
