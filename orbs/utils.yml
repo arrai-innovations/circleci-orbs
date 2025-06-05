@@ -149,7 +149,7 @@ commands:
             config:
                 description: "Badge configuration. Optional JSON document to override command parameters."
                 type: string
-                default: ~/project/.circleci/status_shield.json
+                default: ~/status_shield.json
             when:
                 type: enum
                 enum: ["always", "on_success", "on_fail"]
