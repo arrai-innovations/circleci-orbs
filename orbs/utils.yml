@@ -147,7 +147,7 @@ commands:
                 type: boolean
                 default: false
             config:
-                description: "Logo configuration file. Allows configuration without specifying parameters."
+                description: "Badge configuration. Optional JSON document to override command parameters."
                 type: string
                 default: "~/status_shield.json"
             when:
