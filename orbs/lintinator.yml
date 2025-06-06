@@ -4,19 +4,19 @@ orbs:
 executors:
     python313:
         docker:
-            - image: cimg/python3.13
+            - image: cimg/python:3.13-node
     python312:
         docker:
-            - image: cimg/python:3.12
+            - image: cimg/python:3.12-node
     python311:
         docker:
-            - image: cimg/python:3.11
+            - image: cimg/python:3.11-node
     python310:
         docker:
-            - image: cimg/python:3.10
+            - image: cimg/python:3.10-node
     python39:
         docker:
-            - image: cimg/python:3.9
+            - image: cimg/python:3.9-node
     node-current:
         docker:
             - image: cimg/node:current
