@@ -13,6 +13,7 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [eslint](#eslint)
   - [flake8](#flake8)
   - [github](#github)
+  - [lintinator](#lintinator)
   - [npm](#npm)
   - [prettier](#prettier)
   - [pypi](#pypi)
@@ -53,6 +54,12 @@ Provides functionality for running flake8 on project code. Everything is treated
 [![github: version][]](https://circleci.com/orbs/registry/orb/arrai/github)
 
 Creates a release on GitHub. For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/github).
+
+### lintinator
+
+[![lintinator: version][]](https://circleci.com/orbs/registry/orb/arrai/lintinator)
+
+Provides commands and jobs for running linters on projects. For information on configuration parameters and available jobs and commands, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/github).
 
 ### npm
 
@@ -142,6 +149,7 @@ Once you're ready to promote your Orb to release, determine whether this counts 
 [eslint: version]: https://badges.circleci.com/orbs/arrai/eslint.svg
 [flake8: version]: https://badges.circleci.com/orbs/arrai/flake8.svg
 [github: version]: https://badges.circleci.com/orbs/arrai/github.svg
+[lintinator: version]: https://badges.circleci.com/orbs/arrai/lintinator.svg
 [npm: version]: https://badges.circleci.com/orbs/arrai/npm.svg
 [prettier: version]: https://badges.circleci.com/orbs/arrai/prettier.svg
 [pypi: version]: https://badges.circleci.com/orbs/arrai/pypi.svg

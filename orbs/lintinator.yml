@@ -1,0 +1,389 @@
+version: 2.1
+orbs:
+    utils: arrai/utils@1.21.1
+executors:
+    python313:
+        docker:
+            - image: cimg/python:3.13-node
+    python312:
+        docker:
+            - image: cimg/python:3.12-node
+    python311:
+        docker:
+            - image: cimg/python:3.11-node
+    python310:
+        docker:
+            - image: cimg/python:3.10-node
+    python39:
+        docker:
+            - image: cimg/python:3.9-node
+    node-current:
+        docker:
+            - image: cimg/node:current
+    node-lts:
+        docker:
+            - image: cimg/node:lts
+aliases:
+    common_node_parameters: &common_node_parameters
+        hooks:
+            description: List of linters to run
+            type: string
+        create_badges:
+            description: Create status badges
+            type: boolean
+            default: true
+    common_node_steps: &common_node_steps
+        - checkout
+        - run_node_linters:
+              hooks: <<parameters.hooks>>
+              create_badges: <<parameters.create_badges>>
+    common_python_parameters: &common_python_parameters
+        hooks:
+            description: List of pre-commit hooks to run
+            type: string
+        create_badges:
+            description: Create status badges
+            type: boolean
+            default: true
+        use_cache:
+            description: Save and restore the pre-commit cache
+            type: boolean
+            default: true
+        cache_key_version:
+            description: Version of the pre-commit cache key
+            type: string
+            default: "1"
+    common_python_steps: &common_python_steps
+        - checkout
+        - run_python_linters:
+              hooks: <<parameters.hooks>>
+              create_badges: <<parameters.create_badges>>
+              use_cache: <<parameters.use_cache>>
+              cache_key_version: <<parameters.cache_key_version>>
+commands:
+    run_node_linters:
+        description: Run linters using npx
+        parameters:
+            <<: *common_node_parameters
+        steps:
+            - utils/add_npm_config
+            - run:
+                  name: Install node packages
+                  when: always
+                  command: npm install --include=dev
+            - when:
+                  condition: <<parameters.create_badges>>
+                  steps:
+                      - utils/add_ssh_config
+            - when:
+                  condition:
+                      matches:
+                          pattern: '.*(?:^|\s)prettier(?:$|\s).*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run prettier
+                            command: npx prettier -c .
+            - when:
+                  condition:
+                      matches:
+                          pattern: '.*(?:^|\s)eslint(?:$|\s).*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run eslint
+                            when: always
+                            command: |
+                                set +e
+                                npx eslint --color . | tee ~/eslint.log
+                                if [ $? -ne 0 ]; then
+                                    if [ -s ~/eslint.log ]; then
+                                        echo '{"color": "orange", "status": "warnings"}' > ~/eslint_status.json
+                                    else
+                                        echo '{"color": "red", "status": "errors"}' > ~/eslint_status.json
+                                    fi
+                                    exit 1
+                                fi
+                      - when:
+                            condition: <<parameters.create_badges>>
+                            steps:
+                                - utils/make_status_shield:
+                                      config: ~/eslint_status.json
+                                      logo: eslint
+                                      file: ~/eslint.svg
+                                      when: always
+                                - utils/rsync_file:
+                                      when: always
+                                      file: ~/eslint.svg
+                                      remote_file: $CIRCLE_BRANCH/eslint.svg
+                                      host: docs
+    run_python_linters:
+        description: Run linters using pre-commit
+        parameters:
+            <<: *common_python_parameters
+        steps:
+            - run:
+                  name: Install pre-commit
+                  when: always
+                  command: |
+                      if ! [ -x "$(command -v uv)" ]; then
+                          curl -LsSf https://astral.sh/uv/install.sh | bash
+                      else
+                          uv self update
+                      fi
+                      uv tool install pre-commit --with pre-commit-uv
+            - when:
+                  condition: <<parameters.use_cache>>
+                  steps:
+                      - run:
+                            name: Generate cache key
+                            when: always
+                            command: |
+                                python --version > /tmp/cache_key.txt
+                                cat .pre-commit-config.yaml >> /tmp/cache_key.txt
+                      - restore_cache:
+                            key: v<<parameters.cache_key_version>>-pre-commit-cache-{{ checksum "/tmp/cache_key.txt" }}
+            - when:
+                  condition: <<parameters.create_badges>>
+                  steps:
+                      - utils/add_ssh_config
+            - when:
+                  condition:
+                      or:
+                          - matches:
+                                pattern: '.*(?:^|\s)prettier(?:$|\s).*'
+                                value: <<parameters.hooks>>
+                          - matches:
+                                pattern: '.*(?:^|\s)eslint(?:$|\s).*'
+                                value: <<parameters.hooks>>
+                  steps:
+                      - utils/add_npm_config
+                      - run:
+                            name: Install node packages
+                            when: always
+                            command: npm install --include dev
+            - when:
+                  condition:
+                      matches:
+                          pattern: '.*(?:^|\s)prettier(?:$|\s).*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run prettier
+                            when: always
+                            command: pre-commit run prettier --all-files
+            - when:
+                  condition:
+                      matches:
+                          pattern: '.*(?:^|\s)black(?:$|\s).*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run black
+                            when: always
+                            command: pre-commit run black --all-files
+            - when:
+                  condition:
+                      matches:
+                          pattern: '.*(?:^|\s)eslint(?:$|\s).*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run eslint
+                            when: always
+                            command: |
+                                set +e
+                                pre-commit run eslint --all-files
+                                if [ $? -ne 0 ]; then
+                                    echo '{"color": "red", "status": "errors"}' > ~/eslint_status.json
+                                    exit 1
+                                fi
+                      - when:
+                            condition: <<parameters.create_badges>>
+                            steps:
+                                - utils/make_status_shield:
+                                      config: ~/eslint_status.json
+                                      logo: eslint
+                                      file: ~/eslint.svg
+                                      when: always
+                                - utils/rsync_file:
+                                      when: always
+                                      file: ~/eslint.svg
+                                      remote_file: $CIRCLE_BRANCH/eslint.svg
+                                      host: docs
+            - when:
+                  condition:
+                      matches:
+                          pattern: '.*(?:^|\s)md-toc(?:$|\s).*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run md-toc
+                            when: always
+                            command: pre-commit run md-toc --all-files
+            - when:
+                  condition:
+                      matches:
+                          pattern: '.*(:?^|\s)flake8(?:$|\s).*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run flake8
+                            when: always
+                            command: |
+                                set +e
+                                pre-commit run flake8 --all-files
+                                if [ $? -ne 0 ]; then
+                                    echo '{"color": "red", "status": "errors"}' > ~/flake8_status.json
+                                    exit 1
+                                fi
+            - when:
+                  condition:
+                      matches:
+                          pattern: '.*(:?^|\s)pyproject-flake8(?:$|\s).*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run flake8
+                            when: always
+                            command: |
+                                set +e
+                                pre-commit run pyproject-flake8 --all-files
+                                if [ $? -ne 0 ]; then
+                                    echo '{"color": "red", "status": "errors"}' > ~/flake8_status.json
+                                    exit 1
+                                fi
+            - when:
+                  condition:
+                      and:
+                          - equal: [true, <<parameters.create_badges>>]
+                          - or:
+                                - matches:
+                                      pattern: '.*(:?^|\s)flake8(?:$|\s).*'
+                                      value: <<parameters.hooks>>
+                                - matches:
+                                      pattern: '.*(:?^|\s)pyproject-flake8(?:$|\s).*'
+                                      value: <<parameters.hooks>>
+                  steps:
+                      - utils/make_status_shield:
+                            config: ~/flake8_status.json
+                            logo: python
+                            file: ~/flake8.svg
+                            when: always
+                      - utils/rsync_file:
+                            when: always
+                            file: ~/flake8.svg
+                            remote_file: $CIRCLE_BRANCH/flake8.svg
+                            host: docs
+            - when:
+                  condition:
+                      matches:
+                          pattern: '.*(?:^|\s)ruff(?:$|\s).*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run ruff lint
+                            when: always
+                            command: |
+                                set +e
+                                pre-commit run ruff --all-files
+                                if [ $? -ne 0 ]; then
+                                    echo '{"color": "red", "status": "errors"}' > ~/ruff_status.json
+                                    exit 1
+                                fi
+                      - run:
+                            name: Run ruff formatter
+                            when: always
+                            command: |
+                                set +e
+                                pre-commit run ruff-format --all-files
+                                if [ $? -ne 0 ]; then
+                                    echo '{"color": "red", "status": "errors"}' > ~/ruff_status.json
+                                    exit 1
+                                fi
+                      - when:
+                            condition: <<parameters.create_badges>>
+                            steps:
+                                - utils/make_status_shield:
+                                      config: ~/ruff_status.json
+                                      logo: ruff
+                                      file: ~/ruff.svg
+                                      when: always
+                                - utils/rsync_file:
+                                      when: always
+                                      file: ~/ruff.svg
+                                      remote_file: $CIRCLE_BRANCH/ruff.svg
+                                      host: docs
+            - when:
+                  condition: <<parameters.use_cache>>
+                  steps:
+                      - save_cache:
+                            when: always
+                            key: v<<parameters.cache_key_version>>-pre-commit-cache-{{ checksum "/tmp/cache_key.txt" }}
+                            paths:
+                                - ~/.cache/pre-commit
+jobs:
+    lint_python:
+        parameters:
+            <<: *common_python_parameters
+            executor:
+                description: The executor to use for the job
+                type: executor
+                default: python312
+            resource_class:
+                description: The resource class to use for the job
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        steps: *common_python_steps
+    lint_python_fixed_ip:
+        parameters:
+            <<: *common_python_parameters
+            executor:
+                description: The executor to use for the job
+                type: executor
+                default: python312
+            resource_class:
+                description: The resource class to use for the job
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
+        steps: *common_python_steps
+    lint_node:
+        parameters:
+            <<: *common_node_parameters
+            executor:
+                description: The executor to use for the job
+                type: executor
+                default: node-lts
+            resource_class:
+                description: The resource class to use for the job
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        steps: *common_node_steps
+    lint_node_fixed_ip:
+        parameters:
+            <<: *common_node_parameters
+            executor:
+                description: The executor to use for the job
+                type: executor
+                default: node-lts
+            resource_class:
+                description: The resource class to use for the job
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
+        steps: *common_node_steps
