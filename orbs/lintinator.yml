@@ -58,7 +58,7 @@ aliases:
         - run_python_linters:
               hooks: <<parameters.hooks>>
               create_badges: <<parameters.create_badges>>
-              use_cache: <<parameters.create_badges>>
+              use_cache: <<parameters.use_cache>>
               cache_key_version: <<parameters.cache_key_version>>
 commands:
     run_node_linters:
