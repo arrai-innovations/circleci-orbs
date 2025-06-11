@@ -37,7 +37,10 @@ commands:
         steps:
             - run:
                   name: Install Sentry CLI
-                  command: curl -sL https://sentry.io/get-cli/ | bash
+                  command: |
+                      if ! [ -x "$(command -v sentry-cli)" ]; then
+                          curl -sL https://sentry.io/get-cli/ | bash
+                      fi
     create_release:
         description: "Create a Sentry release and associate commits."
         parameters:
