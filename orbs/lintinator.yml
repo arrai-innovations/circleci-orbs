@@ -203,6 +203,7 @@ commands:
                             steps:
                                 - utils/make_status_shield:
                                       config: ~/eslint_status.json
+                                      label: eslint
                                       logo: eslint
                                       file: ~/eslint.svg
                                       when: always
@@ -267,6 +268,7 @@ commands:
                   steps:
                       - utils/make_status_shield:
                             config: ~/flake8_status.json
+                            label: flake8
                             logo: python
                             file: ~/flake8.svg
                             when: always
@@ -306,6 +308,7 @@ commands:
                             steps:
                                 - utils/make_status_shield:
                                       config: ~/ruff_status.json
+                                      label: ruff
                                       logo: ruff
                                       file: ~/ruff.svg
                                       when: always
