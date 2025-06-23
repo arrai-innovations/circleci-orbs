@@ -390,10 +390,11 @@ commands:
                           curl -LsSf https://astral.sh/uv/install.sh | bash
                       fi
                       cd <<parameters.wd>>
+                      source ~/project/.venv/bin/activate
                       if [ "<<parameters.parallel>>" -eq "0" ]; then
-                          uv run coverage run -p <<parameters.test_script>>
+                          coverage run -p <<parameters.test_script>>
                       else
-                          uv run coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>>
+                          coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>>
                       fi
     run_tests_spread:
         description: "Run the test suite, split by amount of circleci parallelism."
@@ -433,10 +434,11 @@ commands:
                           # massage filepaths into format manage.py test accepts
                           TESTFILES=$(echo $TESTFILES | tr "/" "." | sed 's/.py//g')
                       fi
+                      source ~/project/.venv/bin/activate
                       if [ "<<parameters.parallel>>" -eq "0" ]; then
-                          uv run coverage run -p <<parameters.test_script>> $TESTFILES
+                          coverage run -p <<parameters.test_script>> $TESTFILES
                       else
-                          uv run coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>> $TESTFILES
+                          coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>> $TESTFILES
                       fi
             - store_test_results:
                   path: test-results
