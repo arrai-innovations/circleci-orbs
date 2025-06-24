@@ -69,6 +69,7 @@ Provides commands and jobs for running linters on projects. For information on c
 Provides npm utility functions. For information on available functions and configuration parameters, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/npm).
 
 ### pip-audit
+
 [![pip-audit: version][]](https://circleci.com/orbs/registry/orb/arrai/pip-audit)
 
 Runs `pip-audit` on the project code. Supports `pip`, `pipenv`, and `uv` environments. For details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pip-audit).
@@ -169,4 +170,3 @@ Once you're ready to promote your Orb to release, determine whether this counts 
 [`vueda-server`]: https://github.com/arrai-innovations/vueda-server
 [`vueda-client`]: https://github.com/arrai-innovations/vueda-client
 [`vueda-deployer`]: https://github.com/arrai-innovations/vueda-deployer
-
