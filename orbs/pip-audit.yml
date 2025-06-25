@@ -1,0 +1,119 @@
+version: 2.1
+orbs:
+    utils: arrai/utils@1.21.1
+executors:
+    python313:
+        docker:
+            - image: cimg/python:3.13
+    python312:
+        docker:
+            - image: cimg/python:3.12
+    python311:
+        docker:
+            - image: cimg/python:3.11
+    python310:
+        docker:
+            - image: cimg/python:3.10
+    python39:
+        docker:
+            - image: cimg/python:3.9
+aliases:
+    common_parameters: &common_parameters
+        executor:
+            description: "The executor to use for the job."
+            type: executor
+            default: python313
+        resource_class:
+            description: "The resource class to use for the job."
+            type: enum
+            enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+            default: small
+        config:
+            description: "Any additional configuration steps."
+            type: steps
+            default: []
+        setup:
+            description: "Any additional setup steps."
+            type: steps
+            default: []
+        env_type:
+            description: "Python environment type."
+            type: enum
+            default: "pipenv"
+            enum: [pip, pipenv, uv]
+        create_badges:
+            description: "Generate badges."
+            type: boolean
+            default: true
+        ignored_vulnerabilities:
+            description: "Space separated list of ignored vulnerabilities, e.g. 'CVE-2025-27516'"
+            type: string
+            default: ""
+    common_steps: &common_steps
+        - checkout
+        - steps: <<parameters.setup>>
+        - run:
+              name: Install requirements
+              command: |
+                  if [ "<<parameters.env_type>>" != "uv" ]; then
+                      pip install --upgrade pip-audit pipenv
+                  else
+                      if ! [ -x "$(command -v uv)" ]; then
+                          curl -LsSf https://astral.sh/uv/install.sh | bash
+                      else
+                          uv self update
+                      fi
+                  fi
+        - steps: <<parameters.config>>
+        - run:
+              name: Run pip-audit
+              command: |
+                  IGNORES=(<<parameters.ignored_vulnerabilities>>)
+                  ARGS=("${IGNORES[@]/#/--ignore-vuln }")
+                  if [ "<<parameters.env_type>>" = "pip" ]; then
+                      pip-audit --aliases -r requirements.txt ${ARGS[@]}
+                  elif [ "<<parameters.env_type>>" == "pipenv" ]; then
+                      pip-audit --aliases -r <(pipenv requirements) ${ARGS[@]}
+                  elif [ "<<parameters.env_type>>" == "uv" ]; then
+                      uv export --locked --quiet --format requirements-txt --no-editable | sed -e '/^.$/d' > /tmp/requirements.txt
+                      uvx pip-audit --aliases -r /tmp/requirements.txt --disable-pip ${ARGS[@]}
+                  fi
+        - when:
+              condition: <<parameters.create_badges>>
+              steps:
+                  - utils/add_ssh_config
+                  - utils/rsync_install
+                  - utils/make_status_shield:
+                        when: on_fail
+                        status: errors
+                        color: red
+                        logo: python
+                  - utils/make_status_shield:
+                        when: on_success
+                        status: passed
+                        color: brightgreen
+                        logo: python
+                  - utils/rsync_file:
+                        when: always
+                        file: ~/status.svg
+                        remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.svg
+                        host: docs
+jobs:
+    pip_audit:
+        parameters:
+            <<: *common_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        environment:
+            PIP_AUDIT_PROGRESS_SPINNER: "off"
+        steps: *common_steps
+    pip_audit_ip:
+        parameters:
+            <<: *common_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
+        environment:
+            PIP_AUDIT_PROGRESS_SPINNER: "off"
+        steps: *common_steps
