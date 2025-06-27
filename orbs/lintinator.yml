@@ -146,6 +146,35 @@ commands:
                                       file: ~/biome.svg
                                       remote_file: $CIRCLE_BRANCH/biome.svg
                                       host: docs
+            - when:
+                  condition:
+                      matches:
+                          pattern: '.*(?:^|\s)lefthook(?:$|\s).*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run lefthook
+                            when: always
+                            command: |
+                                set +e
+                                npx lefthook run pre-commit | tee ~/lefthook.log
+                                if [ $? -ne 0 ]; then
+                                    echo '{"color": "red", "status": "errors"}' > ~/lefthook_status.json
+                                    exit 1
+                                fi
+                      - when:
+                            condition: <<parameters.create_badges>>
+                            steps:
+                                - utils/make_status_shield:
+                                      config: ~/lefthook_status.json
+                                      logo: lefthook
+                                      file: ~/lefthook.svg
+                                      when: always
+                                - utils/rsync_file:
+                                      when: always
+                                      file: ~/lefthook.svg
+                                      remote_file: $CIRCLE_BRANCH/lefthook.svg
+                                      host: docs
     run_python_linters:
         description: Run linters using pre-commit
         parameters:
