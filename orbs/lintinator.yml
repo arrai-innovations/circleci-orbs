@@ -37,7 +37,7 @@ aliases:
         - run_node_linters:
               hooks: <<parameters.hooks>>
               create_badges: <<parameters.create_badges>>
-    common_python_parameters: &common_python_parameters
+    common_lint_parameters: &common_lint_parameters
         hooks:
             description: List of linter hooks to run
             type: string
@@ -58,7 +58,7 @@ aliases:
             description: Version of the pre-commit cache key
             type: string
             default: "1"
-    common_python_steps: &common_python_steps
+    common_lint_steps: &common_lint_steps
         - checkout
         - run_python_linters:
               hooks: <<parameters.hooks>>
@@ -164,7 +164,7 @@ commands:
     run_python_linters:
         description: Run linters using hook manager (pre-commit or lefthook)
         parameters:
-            <<: *common_python_parameters
+            <<: *common_lint_parameters
         steps:
             - run:
                   name: Install pre-commit
@@ -455,7 +455,7 @@ commands:
 jobs:
     lint_python:
         parameters:
-            <<: *common_python_parameters
+            <<: *common_lint_parameters
             executor:
                 description: The executor to use for the job
                 type: executor
@@ -468,10 +468,10 @@ jobs:
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: false
-        steps: *common_python_steps
+        steps: *common_lint_steps
     lint_python_fixed_ip:
         parameters:
-            <<: *common_python_parameters
+            <<: *common_lint_parameters
             executor:
                 description: The executor to use for the job
                 type: executor
@@ -484,7 +484,7 @@ jobs:
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
-        steps: *common_python_steps
+        steps: *common_lint_steps
     lint_node:
         parameters:
             <<: *common_node_parameters
