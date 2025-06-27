@@ -37,10 +37,15 @@ aliases:
         - run_node_linters:
               hooks: <<parameters.hooks>>
               create_badges: <<parameters.create_badges>>
-    common_python_parameters: &common_python_parameters
+    common_lint_parameters: &common_lint_parameters
         hooks:
-            description: List of pre-commit hooks to run
+            description: List of linter hooks to run
             type: string
+        hook_manager:
+            description: Hook manager to use for running linters
+            type: enum
+            enum: [precommit, lefthook]
+            default: precommit
         create_badges:
             description: Create status badges
             type: boolean
@@ -53,10 +58,11 @@ aliases:
             description: Version of the pre-commit cache key
             type: string
             default: "1"
-    common_python_steps: &common_python_steps
+    common_lint_steps: &common_lint_steps
         - checkout
         - run_python_linters:
               hooks: <<parameters.hooks>>
+              hook_manager: <<parameters.hook_manager>>
               create_badges: <<parameters.create_badges>>
               use_cache: <<parameters.use_cache>>
               cache_key_version: <<parameters.cache_key_version>>
@@ -78,7 +84,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)prettier(?:$|\s).*'
+                          pattern: '.*\bprettier\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -87,7 +93,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)eslint(?:$|\s).*'
+                          pattern: '.*\beslint\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -117,10 +123,48 @@ commands:
                                       file: ~/eslint.svg
                                       remote_file: $CIRCLE_BRANCH/eslint.svg
                                       host: docs
+            - when:
+                  condition:
+                      matches:
+                          pattern: '.*\bbiome\b.*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run biome
+                            when: always
+                            command: |
+                                set +e
+                                npx @biomejs/biome check . | tee ~/biome.log
+                                if [ $? -ne 0 ]; then
+                                    if grep -q "Found .* errors" ~/biome.log; then
+                                        echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                    elif grep -q "Found .* warnings" ~/biome.log; then
+                                        echo '{"color": "orange", "status": "warnings"}' > ~/biome_status.json
+                                    else
+                                        echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                    fi
+                                    exit 1
+                                else
+                                    echo '{"color": "green", "status": "ok"}' > ~/biome_status.json
+                                fi
+                      - when:
+                            condition: <<parameters.create_badges>>
+                            steps:
+                                - utils/make_status_shield:
+                                      config: ~/biome_status.json
+                                      logo: biome
+                                      file: ~/biome.svg
+                                      when: always
+                                - utils/rsync_file:
+                                      when: always
+                                      file: ~/biome.svg
+                                      remote_file: $CIRCLE_BRANCH/biome.svg
+                                      host: docs
+
     run_python_linters:
-        description: Run linters using pre-commit
+        description: Run linters using hook manager (pre-commit or lefthook)
         parameters:
-            <<: *common_python_parameters
+            <<: *common_lint_parameters
         steps:
             - run:
                   name: Install pre-commit
@@ -149,13 +193,15 @@ commands:
                       - utils/add_ssh_config
             - when:
                   condition:
-                      or:
-                          - matches:
-                                pattern: '.*(?:^|\s)prettier(?:$|\s).*'
-                                value: <<parameters.hooks>>
-                          - matches:
-                                pattern: '.*(?:^|\s)eslint(?:$|\s).*'
-                                value: <<parameters.hooks>>
+                      and:
+                          - equal: [precommit, <<parameters.hook_manager>>]
+                          - or:
+                                - matches:
+                                      pattern: '.*\bprettier\b.*'
+                                      value: <<parameters.hooks>>
+                                - matches:
+                                      pattern: '.*\beslint\b.*'
+                                      value: <<parameters.hooks>>
                   steps:
                       - utils/add_npm_config
                       - run:
@@ -165,7 +211,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)prettier(?:$|\s).*'
+                          pattern: '.*\bprettier\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -175,7 +221,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)black(?:$|\s).*'
+                          pattern: '.*\bblack\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -185,7 +231,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)eslint(?:$|\s).*'
+                          pattern: '.*\beslint\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -215,7 +261,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)md-toc(?:$|\s).*'
+                          pattern: '.*\bmd-toc\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -225,7 +271,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(:?^|\s)flake8(?:$|\s).*'
+                          pattern: '.*\bflake8\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -241,7 +287,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(:?^|\s)pyproject-flake8(?:$|\s).*'
+                          pattern: '.*\bpyproject-flake8\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -260,10 +306,10 @@ commands:
                           - equal: [true, <<parameters.create_badges>>]
                           - or:
                                 - matches:
-                                      pattern: '.*(:?^|\s)flake8(?:$|\s).*'
+                                      pattern: '.*\bflake8\b.*'
                                       value: <<parameters.hooks>>
                                 - matches:
-                                      pattern: '.*(:?^|\s)pyproject-flake8(?:$|\s).*'
+                                      pattern: '.*\bpyproject-flake8\b.*'
                                       value: <<parameters.hooks>>
                   steps:
                       - utils/make_status_shield:
@@ -280,7 +326,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)ruff(?:$|\s).*'
+                          pattern: '.*\bruff\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -318,6 +364,87 @@ commands:
                                       remote_file: $CIRCLE_BRANCH/ruff.svg
                                       host: docs
             - when:
+                  condition:
+                      matches:
+                          pattern: '.*\bbiome\b.*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run biome
+                            when: always
+                            command: |
+                                set +e
+                                pre-commit run biome --all-files | tee ~/biome.log
+                                if [ $? -ne 0 ]; then
+                                    if grep -q "Found .* errors" ~/biome.log; then
+                                        echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                    elif grep -q "Found .* warnings" ~/biome.log; then
+                                        echo '{"color": "orange", "status": "warnings"}' > ~/biome_status.json
+                                    else
+                                        echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                    fi
+                                    exit 1
+                                else
+                                    echo '{"color": "green", "status": "ok"}' > ~/biome_status.json
+                                fi
+                      - when:
+                            condition: <<parameters.create_badges>>
+                            steps:
+                                - utils/make_status_shield:
+                                      config: ~/biome_status.json
+                                      label: biome
+                                      logo: biome
+                                      file: ~/biome.svg
+                                      when: always
+                                - utils/rsync_file:
+                                      when: always
+                                      file: ~/biome.svg
+                                      remote_file: $CIRCLE_BRANCH/biome.svg
+                                      host: docs
+            - when:
+                  condition:
+                      equal: [lefthook, <<parameters.hook_manager>>]
+                  steps:
+                      - utils/add_npm_config
+                      - restore_cache:
+                            keys:
+                                - v1-npm-deps-{{ checksum "package.json" }}
+                                - v1-npm-deps-
+                      - run:
+                            name: Install node packages
+                            when: always
+                            command: npm ci
+                      - save_cache:
+                            key: v1-npm-deps-{{ checksum "package.json" }}
+                            paths:
+                                - ~/.npm
+                      - run:
+                            name: Run lefthook hooks
+                            when: always
+                            command: |
+                                set +e
+                                npx lefthook run pre-commit | tee ~/lefthook.log
+                                if [ $? -ne 0 ]; then
+                                    echo '{"color": "red", "status": "errors"}' > ~/lefthook_status.json
+                                    exit 1
+                                else
+                                    echo '{"color": "green", "status": "ok"}' > ~/lefthook_status.json
+                                fi
+                      - when:
+                            condition: <<parameters.create_badges>>
+                            steps:
+                                - utils/make_status_shield:
+                                      config: ~/lefthook_status.json
+                                      label: lefthook
+                                      logo: lefthook
+                                      file: ~/lefthook.svg
+                                      when: always
+                                - utils/rsync_file:
+                                      when: always
+                                      file: ~/lefthook.svg
+                                      remote_file: $CIRCLE_BRANCH/lefthook.svg
+                                      host: docs
+            - when:
                   condition: <<parameters.use_cache>>
                   steps:
                       - save_cache:
@@ -328,7 +455,7 @@ commands:
 jobs:
     lint_python:
         parameters:
-            <<: *common_python_parameters
+            <<: *common_lint_parameters
             executor:
                 description: The executor to use for the job
                 type: executor
@@ -341,10 +468,10 @@ jobs:
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: false
-        steps: *common_python_steps
+        steps: *common_lint_steps
     lint_python_fixed_ip:
         parameters:
-            <<: *common_python_parameters
+            <<: *common_lint_parameters
             executor:
                 description: The executor to use for the job
                 type: executor
@@ -357,7 +484,7 @@ jobs:
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
-        steps: *common_python_steps
+        steps: *common_lint_steps
     lint_node:
         parameters:
             <<: *common_node_parameters
