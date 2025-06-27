@@ -406,10 +406,18 @@ commands:
                       equal: [lefthook, <<parameters.hook_manager>>]
                   steps:
                       - utils/add_npm_config
+                      - restore_cache:
+                            keys:
+                                - v1-npm-deps-{{ checksum "package.json" }}
+                                - v1-npm-deps-
                       - run:
                             name: Install node packages
                             when: always
-                            command: npm install --include dev
+                            command: npm ci
+                      - save_cache:
+                            key: v1-npm-deps-{{ checksum "package.json" }}
+                            paths:
+                                - ~/.npm
                       - run:
                             name: Run lefthook hooks
                             when: always
