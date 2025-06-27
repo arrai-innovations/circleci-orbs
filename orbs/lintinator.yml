@@ -144,6 +144,8 @@ commands:
                                         echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
                                     fi
                                     exit 1
+                                else
+                                    echo '{"color": "green", "status": "ok"}' > ~/biome_status.json
                                 fi
                       - when:
                             condition: <<parameters.create_badges>>
@@ -382,6 +384,8 @@ commands:
                                         echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
                                     fi
                                     exit 1
+                                else
+                                    echo '{"color": "green", "status": "ok"}' > ~/biome_status.json
                                 fi
                       - when:
                             condition: <<parameters.create_badges>>
@@ -415,6 +419,8 @@ commands:
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/lefthook_status.json
                                     exit 1
+                                else
+                                    echo '{"color": "green", "status": "ok"}' > ~/lefthook_status.json
                                 fi
                       - when:
                             condition: <<parameters.create_badges>>
