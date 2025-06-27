@@ -376,6 +376,36 @@ commands:
                                       remote_file: $CIRCLE_BRANCH/ruff.svg
                                       host: docs
             - when:
+                  condition:
+                      matches:
+                          pattern: '.*(?:^|\s)biome(?:$|\s).*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run biome
+                            when: always
+                            command: |
+                                set +e
+                                pre-commit run biome --all-files
+                                if [ $? -ne 0 ]; then
+                                    echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                    exit 1
+                                fi
+                      - when:
+                            condition: <<parameters.create_badges>>
+                            steps:
+                                - utils/make_status_shield:
+                                      config: ~/biome_status.json
+                                      label: biome
+                                      logo: biome
+                                      file: ~/biome.svg
+                                      when: always
+                                - utils/rsync_file:
+                                      when: always
+                                      file: ~/biome.svg
+                                      remote_file: $CIRCLE_BRANCH/biome.svg
+                                      host: docs
+            - when:
                   condition: <<parameters.use_cache>>
                   steps:
                       - save_cache:
