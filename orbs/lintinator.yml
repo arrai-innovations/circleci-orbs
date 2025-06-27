@@ -130,7 +130,13 @@ commands:
                                 set +e
                                 npx @biomejs/biome check . | tee ~/biome.log
                                 if [ $? -ne 0 ]; then
-                                    echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                    if grep -q "Found .* errors" ~/biome.log; then
+                                        echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                    elif grep -q "Found .* warnings" ~/biome.log; then
+                                        echo '{"color": "orange", "status": "warnings"}' > ~/biome_status.json
+                                    else
+                                        echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                    fi
                                     exit 1
                                 fi
                       - when:
@@ -386,9 +392,15 @@ commands:
                             when: always
                             command: |
                                 set +e
-                                pre-commit run biome --all-files
+                                pre-commit run biome --all-files | tee ~/biome.log
                                 if [ $? -ne 0 ]; then
-                                    echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                    if grep -q "Found .* errors" ~/biome.log; then
+                                        echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                    elif grep -q "Found .* warnings" ~/biome.log; then
+                                        echo '{"color": "orange", "status": "warnings"}' > ~/biome_status.json
+                                    else
+                                        echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                    fi
                                     exit 1
                                 fi
                       - when:
