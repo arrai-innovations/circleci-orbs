@@ -84,7 +84,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)prettier(?:$|\s).*'
+                          pattern: '.*\bprettier\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -93,7 +93,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)eslint(?:$|\s).*'
+                          pattern: '.*\beslint\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -126,7 +126,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)biome(?:$|\s).*'
+                          pattern: '.*\bbiome\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -197,10 +197,10 @@ commands:
                           - equal: [precommit, <<parameters.hook_manager>>]
                           - or:
                                 - matches:
-                                      pattern: '.*(?:^|\s)prettier(?:$|\s).*'
+                                      pattern: '.*\bprettier\b.*'
                                       value: <<parameters.hooks>>
                                 - matches:
-                                      pattern: '.*(?:^|\s)eslint(?:$|\s).*'
+                                      pattern: '.*\beslint\b.*'
                                       value: <<parameters.hooks>>
                   steps:
                       - utils/add_npm_config
@@ -211,7 +211,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)prettier(?:$|\s).*'
+                          pattern: '.*\bprettier\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -221,7 +221,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)black(?:$|\s).*'
+                          pattern: '.*\bblack\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -231,7 +231,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)eslint(?:$|\s).*'
+                          pattern: '.*\beslint\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -261,7 +261,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)md-toc(?:$|\s).*'
+                          pattern: '.*\bmd-toc\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -271,7 +271,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(:?^|\s)flake8(?:$|\s).*'
+                          pattern: '.*\bflake8\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -287,7 +287,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(:?^|\s)pyproject-flake8(?:$|\s).*'
+                          pattern: '.*\bpyproject-flake8\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -306,10 +306,10 @@ commands:
                           - equal: [true, <<parameters.create_badges>>]
                           - or:
                                 - matches:
-                                      pattern: '.*(:?^|\s)flake8(?:$|\s).*'
+                                      pattern: '.*\bflake8\b.*'
                                       value: <<parameters.hooks>>
                                 - matches:
-                                      pattern: '.*(:?^|\s)pyproject-flake8(?:$|\s).*'
+                                      pattern: '.*\bpyproject-flake8\b.*'
                                       value: <<parameters.hooks>>
                   steps:
                       - utils/make_status_shield:
@@ -326,7 +326,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)ruff(?:$|\s).*'
+                          pattern: '.*\bruff\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -366,7 +366,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)biome(?:$|\s).*'
+                          pattern: '.*\bbiome\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
