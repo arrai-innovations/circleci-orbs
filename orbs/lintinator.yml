@@ -44,8 +44,8 @@ aliases:
         hook_manager:
             description: Hook manager to use for running linters
             type: enum
-            enum: [precommit, lefthook]
-            default: precommit
+            enum: [pre-commit, lefthook]
+            default: pre-commit
         create_badges:
             description: Create status badges
             type: boolean
@@ -175,7 +175,11 @@ commands:
                       else
                           uv self update
                       fi
-                      uv tool install pre-commit --with pre-commit-uv
+                      if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                          uv tool install pre-commit --with pre-commit-uv
+                      elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                          uv tool install lefthook
+                      fi
             - when:
                   condition: <<parameters.use_cache>>
                   steps:
@@ -194,7 +198,7 @@ commands:
             - when:
                   condition:
                       and:
-                          - equal: [precommit, <<parameters.hook_manager>>]
+                          - equal: [pre-commit, <<parameters.hook_manager>>]
                           - or:
                                 - matches:
                                       pattern: '.*\bprettier\b.*'
@@ -217,7 +221,12 @@ commands:
                       - run:
                             name: Run prettier
                             when: always
-                            command: pre-commit run prettier --all-files
+                            command: |
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run prettier --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    lefthook run pre-commit --commands prettier --all-files
+                                fi
             - when:
                   condition:
                       matches:
@@ -227,7 +236,12 @@ commands:
                       - run:
                             name: Run black
                             when: always
-                            command: pre-commit run black --all-files
+                            command: |
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run black --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    lefthook run pre-commit --commands black --all-files
+                                fi
             - when:
                   condition:
                       matches:
@@ -239,7 +253,11 @@ commands:
                             when: always
                             command: |
                                 set +e
-                                pre-commit run eslint --all-files
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run eslint --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    lefthook run pre-commit --commands eslint --all-files
+                                fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/eslint_status.json
                                     exit 1
@@ -267,7 +285,12 @@ commands:
                       - run:
                             name: Run md-toc
                             when: always
-                            command: pre-commit run md-toc --all-files
+                            command: |
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run md-toc --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    lefthook run pre-commit --commands md-toc --all-files
+                                fi
             - when:
                   condition:
                       matches:
@@ -279,7 +302,11 @@ commands:
                             when: always
                             command: |
                                 set +e
-                                pre-commit run flake8 --all-files
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run flake8 --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    lefthook run pre-commit --commands flake8 --all-files
+                                fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/flake8_status.json
                                     exit 1
@@ -295,7 +322,11 @@ commands:
                             when: always
                             command: |
                                 set +e
-                                pre-commit run pyproject-flake8 --all-files
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run pyproject-flake8 --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    lefthook run pre-commit --commands pyproject-flake8 --all-files
+                                fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/flake8_status.json
                                     exit 1
@@ -334,7 +365,11 @@ commands:
                             when: always
                             command: |
                                 set +e
-                                pre-commit run ruff --all-files
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run ruff --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    lefthook run pre-commit --commands ruff --all-files
+                                fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/ruff_status.json
                                     exit 1
@@ -344,7 +379,11 @@ commands:
                             when: always
                             command: |
                                 set +e
-                                pre-commit run ruff-format --all-files
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run ruff-format --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    lefthook run pre-commit --commands ruff-format --all-files
+                                fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/ruff_status.json
                                     exit 1
@@ -374,7 +413,11 @@ commands:
                             when: always
                             command: |
                                 set +e
-                                pre-commit run biome --all-files | tee ~/biome.log
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run biome-check --all-files | tee ~/biome.log
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    lefthook run pre-commit --commands biome-check --all-files | tee ~/biome.log
+                                fi
                                 if [ $? -ne 0 ]; then
                                     if grep -q "Found .* errors" ~/biome.log; then
                                         echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
@@ -400,49 +443,6 @@ commands:
                                       when: always
                                       file: ~/biome.svg
                                       remote_file: $CIRCLE_BRANCH/biome.svg
-                                      host: docs
-            - when:
-                  condition:
-                      equal: [lefthook, <<parameters.hook_manager>>]
-                  steps:
-                      - utils/add_npm_config
-                      - restore_cache:
-                            keys:
-                                - v1-npm-deps-{{ checksum "package.json" }}
-                                - v1-npm-deps-
-                      - run:
-                            name: Install node packages
-                            when: always
-                            command: npm ci
-                      - save_cache:
-                            key: v1-npm-deps-{{ checksum "package.json" }}
-                            paths:
-                                - ~/.npm
-                      - run:
-                            name: Run lefthook hooks
-                            when: always
-                            command: |
-                                set +e
-                                npx lefthook run pre-commit | tee ~/lefthook.log
-                                if [ $? -ne 0 ]; then
-                                    echo '{"color": "red", "status": "errors"}' > ~/lefthook_status.json
-                                    exit 1
-                                else
-                                    echo '{"color": "green", "status": "ok"}' > ~/lefthook_status.json
-                                fi
-                      - when:
-                            condition: <<parameters.create_badges>>
-                            steps:
-                                - utils/make_status_shield:
-                                      config: ~/lefthook_status.json
-                                      label: lefthook
-                                      logo: lefthook
-                                      file: ~/lefthook.svg
-                                      when: always
-                                - utils/rsync_file:
-                                      when: always
-                                      file: ~/lefthook.svg
-                                      remote_file: $CIRCLE_BRANCH/lefthook.svg
                                       host: docs
             - when:
                   condition: <<parameters.use_cache>>
