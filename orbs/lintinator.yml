@@ -134,18 +134,14 @@ commands:
                             when: always
                             command: |
                                 set +e
-                                npx @biomejs/biome check . | tee ~/biome.log
+                                npx @biomejs/biome check --error-on-warnings . | tee ~/biome.log
                                 if [ $? -ne 0 ]; then
                                     if grep -q "Found .* errors" ~/biome.log; then
                                         echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
-                                    elif grep -q "Found .* warnings" ~/biome.log; then
-                                        echo '{"color": "orange", "status": "warnings"}' > ~/biome_status.json
                                     else
-                                        echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                        echo '{"color": "orange", "status": "warnings"}' > ~/biome_status.json
                                     fi
                                     exit 1
-                                else
-                                    echo '{"color": "green", "status": "ok"}' > ~/biome_status.json
                                 fi
                       - when:
                             condition: <<parameters.create_badges>>
@@ -160,52 +156,6 @@ commands:
                                       file: ~/biome.svg
                                       remote_file: $CIRCLE_BRANCH/biome.svg
                                       host: docs
-    run_biome_lint:
-        description: Run Biome and convert its exit-code / console output into correct build status, optionally creating status badges.
-        parameters:
-            biome_command:
-                description: Shell snippet that actually invokes Biome
-                type: string
-            create_badges:
-                description: Create status badges
-                type: boolean
-                default: true
-        steps:
-            - run:
-                  name: Run biome
-                  when: always
-                  command: |
-                      set +e
-                      # Execute the caller-supplied command (e.g. npx, pre-commit, lefthook)
-                      (<<parameters.biome_command>>) | tee ~/biome.log
-                      rc=$?
-
-                      # Non-zero exit → errors (red badge, fail build)
-                      if [ $rc -ne 0 ]; then
-                          echo '{"color":"red","status":"errors"}' > ~/biome_status.json
-                          exit 1
-                      # Zero exit but warnings present → warnings (orange badge, pass build)
-                      elif grep -q "Found .* warnings" ~/biome.log; then
-                          echo '{"color":"orange","status":"warnings"}' > ~/biome_status.json
-                      # Zero exit and no warnings → success (green badge, pass build)
-                      else
-                          echo '{"color":"green","status":"ok"}' > ~/biome_status.json
-                      fi
-            - when:
-                  condition: <<parameters.create_badges>>
-                  steps:
-                      - utils/make_status_shield:
-                            config: ~/biome_status.json
-                            label: biome
-                            logo: biome
-                            file: ~/biome.svg
-                            when: always
-                      - utils/rsync_file:
-                            when: always
-                            file: ~/biome.svg
-                            remote_file: $CIRCLE_BRANCH/biome.svg
-                            host: docs
-
     run_python_linters:
         description: Run linters using hook manager (pre-commit or lefthook)
         parameters:
@@ -469,14 +419,10 @@ commands:
                                 if [ $? -ne 0 ]; then
                                     if grep -q "Found .* errors" ~/biome.log; then
                                         echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
-                                    elif grep -q "Found .* warnings" ~/biome.log; then
-                                        echo '{"color": "orange", "status": "warnings"}' > ~/biome_status.json
                                     else
-                                        echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                        echo '{"color": "orange", "status": "warnings"}' > ~/biome_status.json
                                     fi
                                     exit 1
-                                else
-                                    echo '{"color": "green", "status": "ok"}' > ~/biome_status.json
                                 fi
                       - when:
                             condition: <<parameters.create_badges>>
