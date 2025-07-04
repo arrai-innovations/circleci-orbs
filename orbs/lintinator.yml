@@ -181,20 +181,19 @@ commands:
                           uv tool install lefthook
                       fi
             - when:
-                  condition: <<parameters.use_cache>>
+                  condition:
+                      and:
+                          - <<parameters.use_cache>>
+                          - equal: [pre-commit, <<parameters.hook_manager>>]
                   steps:
                       - run:
                             name: Generate cache key
                             when: always
                             command: |
                                 python --version > /tmp/cache_key.txt
-                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
-                                    cat .pre-commit-config.yaml >> /tmp/cache_key.txt
-                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    cat lefthook.yml >> /tmp/cache_key.txt
-                                fi
+                                cat .pre-commit-config.yaml >> /tmp/cache_key.txt
                       - restore_cache:
-                            key: v<<parameters.cache_key_version>>-<<parameters.hook_manager>>-cache-{{ checksum "/tmp/cache_key.txt" }}
+                            key: v<<parameters.cache_key_version>>-pre-commit-cache-{{ checksum "/tmp/cache_key.txt" }}
             - when:
                   condition: <<parameters.create_badges>>
                   steps:
@@ -449,14 +448,16 @@ commands:
                                       remote_file: $CIRCLE_BRANCH/biome.svg
                                       host: docs
             - when:
-                  condition: <<parameters.use_cache>>
+                  condition:
+                      and:
+                          - <<parameters.use_cache>>
+                          - equal: [pre-commit, <<parameters.hook_manager>>]
                   steps:
                       - save_cache:
                             when: always
-                            key: v<<parameters.cache_key_version>>-<<parameters.hook_manager>>-cache-{{ checksum "/tmp/cache_key.txt" }}
+                            key: v<<parameters.cache_key_version>>-pre-commit-cache-{{ checksum "/tmp/cache_key.txt" }}
                             paths:
                                 - ~/.cache/pre-commit
-                                - ~/.cache/lefthook
 jobs:
     lint_python:
         parameters:
