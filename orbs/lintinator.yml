@@ -188,9 +188,13 @@ commands:
                             when: always
                             command: |
                                 python --version > /tmp/cache_key.txt
-                                cat .pre-commit-config.yaml >> /tmp/cache_key.txt
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    cat .pre-commit-config.yaml >> /tmp/cache_key.txt
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    cat lefthook.yml >> /tmp/cache_key.txt
+                                fi
                       - restore_cache:
-                            key: v<<parameters.cache_key_version>>-pre-commit-cache-{{ checksum "/tmp/cache_key.txt" }}
+                            key: v<<parameters.cache_key_version>>-<<parameters.hook_manager>>-cache-{{ checksum "/tmp/cache_key.txt" }}
             - when:
                   condition: <<parameters.create_badges>>
                   steps:
@@ -449,9 +453,10 @@ commands:
                   steps:
                       - save_cache:
                             when: always
-                            key: v<<parameters.cache_key_version>>-pre-commit-cache-{{ checksum "/tmp/cache_key.txt" }}
+                            key: v<<parameters.cache_key_version>>-<<parameters.hook_manager>>-cache-{{ checksum "/tmp/cache_key.txt" }}
                             paths:
                                 - ~/.cache/pre-commit
+                                - ~/.cache/lefthook
 jobs:
     lint_python:
         parameters:
