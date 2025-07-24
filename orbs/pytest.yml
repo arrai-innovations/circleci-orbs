@@ -1,10 +1,13 @@
 version: 2.1
 description: |
-    This job requires `pytest-cov` and `coverage` to be installed as `pipenv` `devDependences`.
+    This job requires `pytest-cov` and `coverage` to be installed as `devDependences`.
     Configure pytest and coverage via pyproject.toml.
 orbs:
-    utils: arrai/utils@1.18.0
+    utils: arrai/utils@1.21.1
 executors:
+    python313:
+        docker:
+            - image: cimg/python:3.13
     python312:
         docker:
             - image: cimg/python:3.12
@@ -17,9 +20,6 @@ executors:
     python39:
         docker:
             - image: cimg/python:3.9
-    python38:
-        docker:
-            - image: cimg/python:3.8
 jobs:
     pytest:
         parameters:
@@ -35,16 +35,15 @@ jobs:
                 type: enum
                 enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
                 default: medium
+            env_type:
+                description: "Python environment type."
+                type: enum
+                default: "pipenv"
+                enum: [pipenv, uv]
             presetup:
                 description: "Any additional pre-setup steps."
                 type: steps
-                default:
-                    - run:
-                          name: Install pipenv
-                          command: |
-                              if ! [ -x "$(command -v pipenv)" ]; then
-                                  sudo apt-get install pipenv
-                              fi
+                default: []
             setup:
                 description: "Any additional setup steps to run (e.g., yum install foo-bar-baz). It occurs before pipenv install. If you passed a wd, you need to cd to it if desired."
                 type: steps
@@ -57,8 +56,8 @@ jobs:
                 description: "Any additional arguments to pass to pytest."
                 type: string
                 default: "--cov"
-            pipenv_cache_key_version:
-                description: "a string that can be changed to bust the pipenv cache."
+            cache_key_version:
+                description: "a string that can be changed to bust the python environment cache."
                 type: string
                 default: "1"
         executor: <<parameters.executor>>
@@ -66,6 +65,8 @@ jobs:
         circleci_ip_ranges: true
         environment:
             PIPENV_DONT_LOAD_ENV: 1
+            UV_LOCKED: 1
+            UV_NO_SYNC: 1
         steps:
             - checkout
             - utils/add_ssh_config
@@ -81,36 +82,60 @@ jobs:
             - run:
                   name: Keep track of the python version.
                   command: |
-                      python --version > /tmp/python.version
+                      <<parameters.env_type>> run python --version > /tmp/python.version
+                      if [ "pipenv" = <<parameters.env_type>> ]; then
+                          cp Pipfile.lock /tmp/env.lock
+                      elif [ "uv" = <<parameters.env_type>> ]; then
+                          cp uv.lock /tmp/env.lock
+                      fi
             - restore_cache: # ensure this step occurs *before* installing dependencies
                   keys:
-                      - pipenv-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
-                      - pipenv-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}
-                      - pipenv-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-main
+                      - <<parameters.env_type>>-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.cache_key_version>>-{{ .Branch }}-{{ checksum "/tmp/env.lock" }}
+                      - <<parameters.env_type>>-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.cache_key_version>>-{{ .Branch }}
+                      - <<parameters.env_type>>-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.cache_key_version>>-main
+                      - <<parameters.env_type>>-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.cache_key_version>>-main
             - run:
-                  name: Setup pipenv environment.
+                  name: Setup python environment.
                   command: |
                       cd <<parameters.wd>>
-                      pipenv clean
-                      pipenv sync --dev | cat; test ${PIPESTATUS[0]} -eq 0
-                      echo "import coverage; coverage.process_startup()" > `pipenv run python -c "import sys; print([x for x in sys.path if x.find('.local/share/virtualenvs') != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')"`
-            - save_cache:
-                  paths:
-                      - ~/.local/share/virtualenvs/
-                  key: pipenv-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.pipenv_cache_key_version>>-{{ .Branch }}-{{ checksum "Pipfile.lock" }}
+                      if [ <<parameters.env_type>> = "pipenv" ]; then
+                          pipenv clean
+                          pipenv sync --dev | cat; test ${PIPESTATUS[0]} -eq 0
+                      elif [ <<parameters.env_type>> = "uv" ]; then
+                          uv sync --dev | cat; test ${PIPESTATUS[0]} -eq 0
+                      fi
+                      export PYTEST_VENV=$(<<parameters.env_type>> run python -c "import sys; print(sys.prefix)")
+                      export PYTEST_COVERAGE_PTH=$(<<parameters.env_type>> run python -c "import sys; import os; print([x for x in sys.path if x.find(os.environ['PYTEST_VENV']) != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')")
+                      echo "import coverage; coverage.process_startup()" > "${PYTEST_COVERAGE_PTH}"
+            - when:
+                  condition:
+                      equal: ["pipenv", <<parameters.env_type>>]
+                  steps:
+                      - save_cache:
+                            paths:
+                                - ~/.local/share/virtualenvs/
+                            key: <<parameters.env_type>>-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.cache_key_version>>-{{ .Branch }}-{{ checksum "/tmp/env.lock" }}
+            - when:
+                  condition:
+                      equal: ["uv", <<parameters.env_type>>]
+                  steps:
+                      - save_cache:
+                            paths:
+                                - ~/.cache/uv/
+                            key: <<parameters.env_type>>-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.cache_key_version>>-{{ .Branch }}-{{ checksum "/tmp/env.lock" }}
             - steps: <<parameters.config>>
             - run:
                   name: Run tests
                   command: |
                       cd <<parameters.wd>>
-                      pipenv run pytest <<parameters.pytest_args>>
+                      <<parameters.env_type>> run pytest <<parameters.pytest_args>>
             - run:
                   name: Build coverage reports
                   command: |
                       cd <<parameters.wd>>
-                      pipenv run coverage combine && exit 0
-                      pipenv run coverage html
-                      pipenv run coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> /tmp/.coveragep
+                      <<parameters.env_type>> run coverage combine && exit 0
+                      <<parameters.env_type>> run coverage html
+                      <<parameters.env_type>> run coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> /tmp/.coveragep
                   when: always
             - utils/rsync_folder:
                   when: always
