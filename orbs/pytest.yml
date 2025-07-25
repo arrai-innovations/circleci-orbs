@@ -93,7 +93,6 @@ jobs:
                       - <<parameters.env_type>>-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.cache_key_version>>-{{ .Branch }}-{{ checksum "/tmp/env.lock" }}
                       - <<parameters.env_type>>-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.cache_key_version>>-{{ .Branch }}
                       - <<parameters.env_type>>-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.cache_key_version>>-main
-                      - <<parameters.env_type>>-{{ checksum "/etc/os-release" }}-{{ checksum "/tmp/python.version" }}-<<parameters.cache_key_version>>-main
             - run:
                   name: Setup python environment.
                   command: |
