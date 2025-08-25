@@ -74,6 +74,10 @@ jobs:
                 description: "Version of the python interpreter to use for uv."
                 type: string
                 default: ""
+            uv_sync_arguments:
+                description: "Additional command line arguments to pass to uv sync; defaults to '--dev'"
+                type: string
+                default: "--dev"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
@@ -93,6 +97,7 @@ jobs:
             - steps: <<parameters.setup>>
             - setup_venv:
                   python_version: <<parameters.python_version>>
+                  uv_sync_arguments: <<parameters.uv_sync_arguments>>
             - setup_badass_config:
                   wd: <<parameters.wd>>
             - steps: <<parameters.config>>
@@ -144,6 +149,10 @@ jobs:
                 description: "Version of the python interpreter to use for uv."
                 type: string
                 default: ""
+            uv_sync_arguments:
+                description: "Additional command line arguments to pass to uv sync; defaults to '--dev'"
+                type: string
+                default: "--dev"
             venv_cache_key_version:
                 description: "a string that can be changed to bust the venv cache."
                 type: string
@@ -171,6 +180,7 @@ jobs:
                       - venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-main
             - setup_venv:
                   python_version: <<parameters.python_version>>
+                  uv_sync_arguments: <<parameters.uv_sync_arguments>>
             - save_cache:
                   paths:
                       - ~/project/.venv/
@@ -340,6 +350,10 @@ commands:
                 description: "Version of the python interpreter to use for uv."
                 type: string
                 default: ""
+            uv_sync_arguments:
+                description: "Additional command line arguments to pass to uv sync; defaults to '--dev'"
+                type: string
+                default: "--dev"
         steps:
             - run:
                   name: Install python packages
@@ -348,7 +362,7 @@ commands:
                           curl -LsSf https://astral.sh/uv/install.sh | bash
                       fi
                       mkdir -p logs/${CIRCLE_PROJECT_REPONAME}
-                      uv sync --dev <<# parameters.python_version>> --python <<parameters.python_version>> <</ parameters.python_version>>
+                      uv sync <<parameters.uv_sync_arguments>> <<# parameters.python_version>> --python <<parameters.python_version>> <</ parameters.python_version>>
                       export BADASS_VENV="${HOME}/project/.venv/"
                       echo "import sys; import os; print([x for x in sys.path if x.find(os.environ['BADASS_VENV']) != -1 and x.find('site-packages') != -1][0])" > get_coverage_pth_path.py
                       export BADASS_COVERAGE_PTH_PATH="$(uv run python get_coverage_pth_path.py)/coverage-all-the-things.pth"
