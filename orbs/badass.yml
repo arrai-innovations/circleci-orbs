@@ -365,7 +365,7 @@ commands:
                       uv sync <<parameters.uv_sync_arguments>> <<# parameters.python_version>> --python <<parameters.python_version>> <</ parameters.python_version>>
                       export BADASS_VENV="${HOME}/project/.venv/"
                       echo "import sys; import os; print([x for x in sys.path if x.find(os.environ['BADASS_VENV']) != -1 and x.find('site-packages') != -1][0])" > get_coverage_pth_path.py
-                      export BADASS_COVERAGE_PTH_PATH="$(uv run python get_coverage_pth_path.py)/coverage-all-the-things.pth"
+                      export BADASS_COVERAGE_PTH_PATH="$(uv run --no-sync python get_coverage_pth_path.py)/coverage-all-the-things.pth"
                       echo "exec('try:\n\timport tomli; import coverage; coverage.process_startup()\nexcept ImportError:\n\tpass')" > "${BADASS_COVERAGE_PTH_PATH}"
                       rm get_coverage_pth_path.py
     setup_badass_config:
@@ -450,9 +450,9 @@ commands:
                       fi
                       source ~/project/.venv/bin/activate
                       if [ "<<parameters.parallel>>" -eq "0" ]; then
-                          coverage run -p <<parameters.test_script>> $TESTFILES
+                          uv run --no-sync coverage run -p <<parameters.test_script>> $TESTFILES
                       else
-                          coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>> $TESTFILES
+                          uv run --no-sync coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>> $TESTFILES
                       fi
             - store_test_results:
                   path: test-results
@@ -477,7 +477,7 @@ commands:
                           curl -LsSf https://astral.sh/uv/install.sh | bash
                       fi
                       cd <<parameters.wd>>
-                      uv run coverage combine
-                      uv run coverage html
-                      uv run coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> <<parameters.coveragep>>
+                      uv run --no-sync coverage combine
+                      uv run --no-sync coverage html
+                      uv run --no-sync coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> <<parameters.coveragep>>
                   when: always
