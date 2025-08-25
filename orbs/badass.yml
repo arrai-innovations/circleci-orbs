@@ -173,9 +173,13 @@ jobs:
                   remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
                   host: docs
             - steps: <<parameters.setup>>
+            - run:
+                  name: Use uv sync parameters as part of the cache key
+                  command: |
+                      echo '<<parameters.uv_sync_arguments>>' > /tmp/uv_sync_arguments.txt
             - restore_cache:
                   keys:
-                      - venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}-{{ checksum "uv.lock" }}
+                      - venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}-{{ checksum "uv.lock" }}-{{ checksum "/tmp/uv_sync_arguments" }}
                       - venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}
                       - venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-main
             - setup_venv:
@@ -184,7 +188,7 @@ jobs:
             - save_cache:
                   paths:
                       - ~/project/.venv/
-                  key: venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}-{{ checksum "uv.lock" }}
+                  key: venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}-{{ checksum "uv.lock" }}-{{ checksum "/tmp/uv_sync_arguments" }}
             - steps: <<parameters.config>>
             - persist_to_workspace:
                   root: ~/
