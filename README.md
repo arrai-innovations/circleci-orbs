@@ -60,7 +60,7 @@ Creates a release on GitHub. For information on configuration parameters, refer 
 
 [![lintinator: version][]](https://circleci.com/orbs/registry/orb/arrai/lintinator)
 
-Provides commands and jobs for running linters on projects. For information on configuration parameters and available jobs and commands, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/github).
+Provides commands and jobs for running linters on projects. For information on configuration parameters and available jobs and commands, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/lintinator).
 
 ### npm
 
