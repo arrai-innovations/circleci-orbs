@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.19.0
+    utils: arrai/utils@1.21.1
 aliases:
     pre_spread_common_parameters: &pre_spread_common_parameters
         wd:
@@ -74,6 +74,10 @@ jobs:
                 description: "Version of the python interpreter to use for uv."
                 type: string
                 default: ""
+            uv_sync_arguments:
+                description: "Additional command line arguments to pass to uv sync; defaults to '--dev'"
+                type: string
+                default: "--dev"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
@@ -93,6 +97,7 @@ jobs:
             - steps: <<parameters.setup>>
             - setup_venv:
                   python_version: <<parameters.python_version>>
+                  uv_sync_arguments: <<parameters.uv_sync_arguments>>
             - setup_badass_config:
                   wd: <<parameters.wd>>
             - steps: <<parameters.config>>
@@ -144,6 +149,10 @@ jobs:
                 description: "Version of the python interpreter to use for uv."
                 type: string
                 default: ""
+            uv_sync_arguments:
+                description: "Additional command line arguments to pass to uv sync; defaults to '--dev'"
+                type: string
+                default: "--dev"
             venv_cache_key_version:
                 description: "a string that can be changed to bust the venv cache."
                 type: string
@@ -164,17 +173,22 @@ jobs:
                   remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
                   host: docs
             - steps: <<parameters.setup>>
+            - run:
+                  name: Use uv sync parameters as part of the cache key
+                  command: |
+                      echo '<<parameters.uv_sync_arguments>>' > /tmp/uv_sync_arguments.txt
             - restore_cache:
                   keys:
-                      - venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}-{{ checksum "uv.lock" }}
+                      - venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}-{{ checksum "uv.lock" }}-{{ checksum "/tmp/uv_sync_arguments" }}
                       - venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}
                       - venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-main
             - setup_venv:
                   python_version: <<parameters.python_version>>
+                  uv_sync_arguments: <<parameters.uv_sync_arguments>>
             - save_cache:
                   paths:
                       - ~/project/.venv/
-                  key: venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}-{{ checksum "uv.lock" }}
+                  key: venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}-{{ checksum "uv.lock" }}-{{ checksum "/tmp/uv_sync_arguments" }}
             - steps: <<parameters.config>>
             - persist_to_workspace:
                   root: ~/
@@ -340,6 +354,10 @@ commands:
                 description: "Version of the python interpreter to use for uv."
                 type: string
                 default: ""
+            uv_sync_arguments:
+                description: "Additional command line arguments to pass to uv sync; defaults to '--dev'"
+                type: string
+                default: "--dev"
         steps:
             - run:
                   name: Install python packages
@@ -348,10 +366,10 @@ commands:
                           curl -LsSf https://astral.sh/uv/install.sh | bash
                       fi
                       mkdir -p logs/${CIRCLE_PROJECT_REPONAME}
-                      uv sync --dev <<# parameters.python_version>> --python <<parameters.python_version>> <</ parameters.python_version>>
+                      uv sync <<parameters.uv_sync_arguments>> <<# parameters.python_version>> --python <<parameters.python_version>> <</ parameters.python_version>>
                       export BADASS_VENV="${HOME}/project/.venv/"
                       echo "import sys; import os; print([x for x in sys.path if x.find(os.environ['BADASS_VENV']) != -1 and x.find('site-packages') != -1][0])" > get_coverage_pth_path.py
-                      export BADASS_COVERAGE_PTH_PATH="$(uv run python get_coverage_pth_path.py)/coverage-all-the-things.pth"
+                      export BADASS_COVERAGE_PTH_PATH="$(uv run --no-sync python get_coverage_pth_path.py)/coverage-all-the-things.pth"
                       echo "exec('try:\n\timport tomli; import coverage; coverage.process_startup()\nexcept ImportError:\n\tpass')" > "${BADASS_COVERAGE_PTH_PATH}"
                       rm get_coverage_pth_path.py
     setup_badass_config:
@@ -436,9 +454,9 @@ commands:
                       fi
                       source ~/project/.venv/bin/activate
                       if [ "<<parameters.parallel>>" -eq "0" ]; then
-                          coverage run -p <<parameters.test_script>> $TESTFILES
+                          uv run --no-sync coverage run -p <<parameters.test_script>> $TESTFILES
                       else
-                          coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>> $TESTFILES
+                          uv run --no-sync coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>> $TESTFILES
                       fi
             - store_test_results:
                   path: test-results
@@ -463,7 +481,7 @@ commands:
                           curl -LsSf https://astral.sh/uv/install.sh | bash
                       fi
                       cd <<parameters.wd>>
-                      uv run coverage combine
-                      uv run coverage html
-                      uv run coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> <<parameters.coveragep>>
+                      uv run --no-sync coverage combine
+                      uv run --no-sync coverage html
+                      uv run --no-sync coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> <<parameters.coveragep>>
                   when: always
