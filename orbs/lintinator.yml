@@ -37,10 +37,15 @@ aliases:
         - run_node_linters:
               hooks: <<parameters.hooks>>
               create_badges: <<parameters.create_badges>>
-    common_python_parameters: &common_python_parameters
+    common_lint_parameters: &common_lint_parameters
         hooks:
-            description: List of pre-commit hooks to run
+            description: List of linter hooks to run
             type: string
+        hook_manager:
+            description: Hook manager to use for running linters
+            type: enum
+            enum: [pre-commit, lefthook]
+            default: pre-commit
         create_badges:
             description: Create status badges
             type: boolean
@@ -53,10 +58,11 @@ aliases:
             description: Version of the pre-commit cache key
             type: string
             default: "1"
-    common_python_steps: &common_python_steps
+    common_lint_steps: &common_lint_steps
         - checkout
         - run_python_linters:
               hooks: <<parameters.hooks>>
+              hook_manager: <<parameters.hook_manager>>
               create_badges: <<parameters.create_badges>>
               use_cache: <<parameters.use_cache>>
               cache_key_version: <<parameters.cache_key_version>>
@@ -78,7 +84,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)prettier(?:$|\s).*'
+                          pattern: '.*\bprettier\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -87,7 +93,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)eslint(?:$|\s).*'
+                          pattern: '.*\beslint\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -117,10 +123,43 @@ commands:
                                       file: ~/eslint.svg
                                       remote_file: $CIRCLE_BRANCH/eslint.svg
                                       host: docs
+            - when:
+                  condition:
+                      matches:
+                          pattern: '.*\bbiome\b.*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run biome
+                            when: always
+                            command: |
+                                set +e
+                                npx @biomejs/biome check --error-on-warnings . | tee ~/biome.log
+                                if [ $? -ne 0 ]; then
+                                    if grep -q "Found .* errors" ~/biome.log; then
+                                        echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                    else
+                                        echo '{"color": "orange", "status": "warnings"}' > ~/biome_status.json
+                                    fi
+                                    exit 1
+                                fi
+                      - when:
+                            condition: <<parameters.create_badges>>
+                            steps:
+                                - utils/make_status_shield:
+                                      config: ~/biome_status.json
+                                      logo: biome
+                                      file: ~/biome.svg
+                                      when: always
+                                - utils/rsync_file:
+                                      when: always
+                                      file: ~/biome.svg
+                                      remote_file: $CIRCLE_BRANCH/biome.svg
+                                      host: docs
     run_python_linters:
-        description: Run linters using pre-commit
+        description: Run linters using hook manager (pre-commit or lefthook)
         parameters:
-            <<: *common_python_parameters
+            <<: *common_lint_parameters
         steps:
             - run:
                   name: Install pre-commit
@@ -131,9 +170,17 @@ commands:
                       else
                           uv self update
                       fi
-                      uv tool install pre-commit --with pre-commit-uv
+                      if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                          uv tool install pre-commit --with pre-commit-uv
+                      elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                          uv sync --only-group dev
+                          pnpm install
+                      fi
             - when:
-                  condition: <<parameters.use_cache>>
+                  condition:
+                      and:
+                          - <<parameters.use_cache>>
+                          - equal: [pre-commit, <<parameters.hook_manager>>]
                   steps:
                       - run:
                             name: Generate cache key
@@ -149,13 +196,15 @@ commands:
                       - utils/add_ssh_config
             - when:
                   condition:
-                      or:
-                          - matches:
-                                pattern: '.*(?:^|\s)prettier(?:$|\s).*'
-                                value: <<parameters.hooks>>
-                          - matches:
-                                pattern: '.*(?:^|\s)eslint(?:$|\s).*'
-                                value: <<parameters.hooks>>
+                      and:
+                          - equal: [pre-commit, <<parameters.hook_manager>>]
+                          - or:
+                                - matches:
+                                      pattern: '.*\bprettier\b.*'
+                                      value: <<parameters.hooks>>
+                                - matches:
+                                      pattern: '.*\beslint\b.*'
+                                      value: <<parameters.hooks>>
                   steps:
                       - utils/add_npm_config
                       - run:
@@ -165,27 +214,37 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)prettier(?:$|\s).*'
+                          pattern: '.*\bprettier\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
                             name: Run prettier
                             when: always
-                            command: pre-commit run prettier --all-files
+                            command: |
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run prettier --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    pnpm exec lefthook run pre-commit --commands prettier --all-files
+                                fi
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)black(?:$|\s).*'
+                          pattern: '.*\bblack\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
                             name: Run black
                             when: always
-                            command: pre-commit run black --all-files
+                            command: |
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run black --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    pnpm exec lefthook run pre-commit --commands black --all-files
+                                fi
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)eslint(?:$|\s).*'
+                          pattern: '.*\beslint\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -193,7 +252,11 @@ commands:
                             when: always
                             command: |
                                 set +e
-                                pre-commit run eslint --all-files
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run eslint --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    pnpm exec lefthook run pre-commit --commands eslint --all-files
+                                fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/eslint_status.json
                                     exit 1
@@ -215,17 +278,22 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)md-toc(?:$|\s).*'
+                          pattern: '.*\bmd-toc\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
                             name: Run md-toc
                             when: always
-                            command: pre-commit run md-toc --all-files
+                            command: |
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run md-toc --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    pnpm exec lefthook run pre-commit --commands md-toc --all-files
+                                fi
             - when:
                   condition:
                       matches:
-                          pattern: '.*(:?^|\s)flake8(?:$|\s).*'
+                          pattern: '.*\bflake8\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -233,7 +301,11 @@ commands:
                             when: always
                             command: |
                                 set +e
-                                pre-commit run flake8 --all-files
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run flake8 --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    pnpm exec lefthook run pre-commit --commands flake8 --all-files
+                                fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/flake8_status.json
                                     exit 1
@@ -241,7 +313,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(:?^|\s)pyproject-flake8(?:$|\s).*'
+                          pattern: '.*\bpyproject-flake8\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -249,7 +321,11 @@ commands:
                             when: always
                             command: |
                                 set +e
-                                pre-commit run pyproject-flake8 --all-files
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run pyproject-flake8 --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    pnpm exec lefthook run pre-commit --commands pyproject-flake8 --all-files
+                                fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/flake8_status.json
                                     exit 1
@@ -260,10 +336,10 @@ commands:
                           - equal: [true, <<parameters.create_badges>>]
                           - or:
                                 - matches:
-                                      pattern: '.*(:?^|\s)flake8(?:$|\s).*'
+                                      pattern: '.*\bflake8\b.*'
                                       value: <<parameters.hooks>>
                                 - matches:
-                                      pattern: '.*(:?^|\s)pyproject-flake8(?:$|\s).*'
+                                      pattern: '.*\bpyproject-flake8\b.*'
                                       value: <<parameters.hooks>>
                   steps:
                       - utils/make_status_shield:
@@ -280,7 +356,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*(?:^|\s)ruff(?:$|\s).*'
+                          pattern: '.*\bruff\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -288,7 +364,11 @@ commands:
                             when: always
                             command: |
                                 set +e
-                                pre-commit run ruff --all-files
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run ruff --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    pnpm exec lefthook run pre-commit --commands ruff --all-files
+                                fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/ruff_status.json
                                     exit 1
@@ -298,7 +378,11 @@ commands:
                             when: always
                             command: |
                                 set +e
-                                pre-commit run ruff-format --all-files
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run ruff-format --all-files
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    pnpm exec lefthook run pre-commit --commands ruff-format --all-files
+                                fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/ruff_status.json
                                     exit 1
@@ -318,7 +402,48 @@ commands:
                                       remote_file: $CIRCLE_BRANCH/ruff.svg
                                       host: docs
             - when:
-                  condition: <<parameters.use_cache>>
+                  condition:
+                      matches:
+                          pattern: '.*\bbiome\b.*'
+                          value: <<parameters.hooks>>
+                  steps:
+                      - run:
+                            name: Run biome
+                            when: always
+                            command: |
+                                set +e
+                                if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                                    pre-commit run biome-check --all-files | tee ~/biome.log
+                                elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
+                                    pnpm exec lefthook run pre-commit --commands biome-check --all-files | tee ~/biome.log
+                                fi
+                                if [ $? -ne 0 ]; then
+                                    if grep -q "Found .* errors" ~/biome.log; then
+                                        echo '{"color": "red", "status": "errors"}' > ~/biome_status.json
+                                    else
+                                        echo '{"color": "orange", "status": "warnings"}' > ~/biome_status.json
+                                    fi
+                                    exit 1
+                                fi
+                      - when:
+                            condition: <<parameters.create_badges>>
+                            steps:
+                                - utils/make_status_shield:
+                                      config: ~/biome_status.json
+                                      label: biome
+                                      logo: biome
+                                      file: ~/biome.svg
+                                      when: always
+                                - utils/rsync_file:
+                                      when: always
+                                      file: ~/biome.svg
+                                      remote_file: $CIRCLE_BRANCH/biome.svg
+                                      host: docs
+            - when:
+                  condition:
+                      and:
+                          - <<parameters.use_cache>>
+                          - equal: [pre-commit, <<parameters.hook_manager>>]
                   steps:
                       - save_cache:
                             when: always
@@ -328,7 +453,7 @@ commands:
 jobs:
     lint_python:
         parameters:
-            <<: *common_python_parameters
+            <<: *common_lint_parameters
             executor:
                 description: The executor to use for the job
                 type: executor
@@ -341,10 +466,10 @@ jobs:
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: false
-        steps: *common_python_steps
+        steps: *common_lint_steps
     lint_python_fixed_ip:
         parameters:
-            <<: *common_python_parameters
+            <<: *common_lint_parameters
             executor:
                 description: The executor to use for the job
                 type: executor
@@ -357,7 +482,7 @@ jobs:
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
-        steps: *common_python_steps
+        steps: *common_lint_steps
     lint_node:
         parameters:
             <<: *common_node_parameters
