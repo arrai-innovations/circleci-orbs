@@ -366,9 +366,9 @@ commands:
                             command: |
                                 set +e
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
-                                    pre-commit run ruff --all-files
+                                    pre-commit run ruff-check --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands ruff --all-files
+                                    pnpm exec lefthook run pre-commit --commands ruff-check --all-files
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/ruff_status.json
