@@ -60,8 +60,6 @@ aliases:
                   else
                       if ! [ -x "$(command -v uv)" ]; then
                           curl -LsSf https://astral.sh/uv/install.sh | bash
-                      else
-                          uv self update
                       fi
                   fi
         - steps: <<parameters.config>>
