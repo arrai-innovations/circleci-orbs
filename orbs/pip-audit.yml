@@ -76,7 +76,7 @@ aliases:
                   elif [ "<<parameters.env_type>>" == "pipenv" ]; then
                       pip-audit --aliases -r <(pipenv requirements) ${ARGS[@]}
                   elif [ "<<parameters.env_type>>" == "uv" ]; then
-                      uv export --locked --quiet --format requirements-txt --no-editable --all-packages | sed -e '/^.$/d' > /tmp/requirements.txt
+                      uv export --locked --quiet --format requirements-txt --no-editable --all-packages --all-groups | sed -e '/^.$/d' > /tmp/requirements.txt
                       uvx pip-audit --aliases -r /tmp/requirements.txt --disable-pip ${ARGS[@]}
                   fi
         - when:
