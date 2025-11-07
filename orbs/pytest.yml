@@ -40,7 +40,7 @@ aliases:
         env_type:
             description: "Python environment type."
             type: enum
-            default: "pipenv"
+            default: "uv"
             enum: [pipenv, uv]
         presetup:
             description: "Any additional pre-setup steps."
