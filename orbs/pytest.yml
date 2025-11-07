@@ -5,6 +5,9 @@ description: |
 orbs:
     utils: arrai/utils@1.21.1
 executors:
+    python314:
+       docker:
+           - image: cimg/python:3.14
     python313:
         docker:
             - image: cimg/python:3.13
