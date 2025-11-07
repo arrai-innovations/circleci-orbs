@@ -31,7 +31,7 @@ aliases:
             default: .
         executor:
             type: executor
-            default: python39
+            default: python312
         resource_class:
             description: "The resource class to use for the job."
             type: enum
