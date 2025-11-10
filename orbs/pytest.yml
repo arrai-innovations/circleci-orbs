@@ -150,14 +150,17 @@ aliases:
                         folder: htmlcov/
                         remote_folder: ${CIRCLE_BRANCH}/htmlcov_${CIRCLE_JOB}
                         host: docs
-                  - utils/make_coverage_shield:
-                        when: always
-                        link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH}/htmlcov_${CIRCLE_JOB}/
-                  - utils/rsync_file:
-                        when: always
-                        file: /tmp/coverage.svg
-                        remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.coverage.svg
-                        host: docs
+                  - when:
+                        condition: <<parameters.create_badges>>
+                        steps:
+                            - utils/make_coverage_shield:
+                                  when: always
+                                  link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH}/htmlcov_${CIRCLE_JOB}/
+                            - utils/rsync_file:
+                                  when: always
+                                  file: /tmp/coverage.svg
+                                  remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.coverage.svg
+                                  host: docs
         - when:
               condition: <<parameters.create_badges>>
               steps:
