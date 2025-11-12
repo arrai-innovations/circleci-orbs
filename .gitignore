@@ -26,5 +26,8 @@ node_modules
 # Mongo Explorer plugin:
 .idea/mongoSettings.xml
 
+# Copilot
+.idea/copilot*
+
 ## File-based project format:
 *.iws
