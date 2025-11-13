@@ -493,5 +493,6 @@ commands:
                       cd <<parameters.wd>>
                       uv run --no-sync coverage combine
                       uv run --no-sync coverage html
-                      uv run --no-sync coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> <<parameters.coveragep>>
+                      uv run --no-sync coverage report | tee coverage.txt
+                      grep -oP '^TOTAL.*\d' coverage.txt | awk '{print $NF}' >> <<parameters.coveragep>>
                   when: always
