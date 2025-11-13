@@ -385,10 +385,14 @@ commands:
                       cd <<parameters.wd>>
                       if [ -f "ci_config.json" ]; then
                           cp ci_config.json test_config.json
+                          export DJANGO_SECRET_KEY=$(openssl rand -base64 33)
+                          jq '.DJANGO_SECRET_KEY = env.DJANGO_SECRET_KEY' test_config.json | sponge test_config.json
+                          echo '{}' > config.json
+                      elif [ -f "ci_config.toml" ]; then
+                          cp ci_config.toml test_config.toml
+                          tomcli set ci_config.toml str DJANGO_SECRET_KEY `openssl rand -base64 33`
+                          truncate -s0 config.toml
                       fi
-                      export DJANGO_SECRET_KEY=$(openssl rand -base64 33)
-                      jq '.DJANGO_SECRET_KEY = env.DJANGO_SECRET_KEY' test_config.json | sponge test_config.json
-                      echo '{}' > config.json
     run_tests:
         description: "Run the test suite."
         parameters:
