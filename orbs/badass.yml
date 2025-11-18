@@ -385,11 +385,16 @@ commands:
                       cd <<parameters.wd>>
                       if [ -f "ci_config.json" ]; then
                           cp ci_config.json test_config.json
+                      fi
+                      if [ -f "ci_config.toml" ]; then
+                          cp ci_config.toml test_config.toml
+                      fi
+                      if [ -f "test_config.json" ]; then
                           export DJANGO_SECRET_KEY=$(openssl rand -base64 33)
                           jq '.DJANGO_SECRET_KEY = env.DJANGO_SECRET_KEY' test_config.json | sponge test_config.json
                           echo '{}' > config.json
-                      elif [ -f "ci_config.toml" ]; then
-                          cp ci_config.toml test_config.toml
+                      fi
+                      if [ -f "test_config.toml" ]; then
                           tomcli set test_config.toml str DJANGO_SECRET_KEY `openssl rand -base64 33`
                           truncate -s0 config.toml
                       fi
@@ -488,5 +493,6 @@ commands:
                       cd <<parameters.wd>>
                       uv run --no-sync coverage combine
                       uv run --no-sync coverage html
-                      uv run --no-sync coverage report | grep -oP '^TOTAL.*\d' | awk '{print $NF}' >> <<parameters.coveragep>>
+                      uv run --no-sync coverage report | tee coverage.txt
+                      grep -oP '^TOTAL.*\d' coverage.txt | awk '{print $NF}' >> <<parameters.coveragep>>
                   when: always
