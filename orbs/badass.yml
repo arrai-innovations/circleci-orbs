@@ -460,7 +460,10 @@ commands:
                           echo $TESTFILES | tr ' ' '\n' | sort | uniq > /tmp/circleci_test_files.txt
                           TESTFILES=$(circleci tests split --split-by=timings /tmp/circleci_test_files.txt)
                           # massage filepaths into format manage.py test accepts
-                          TESTFILES=$(echo $TESTFILES | tr "/" "." | sed 's/.py//g')
+                          # Convert paths to dotted module names and strip only the file extension.
+                          # Use an anchored replace to avoid clobbering names that contain 'py'
+                          # (e.g., test_crispy_settings.py → test_cri_settings with the old pattern).
+                          TESTFILES=$(echo "$TESTFILES" | tr "/" "." | xargs basename -s .py)
                       fi
                       source ~/project/.venv/bin/activate
                       if [ "<<parameters.parallel>>" -eq "0" ]; then
