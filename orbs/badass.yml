@@ -159,19 +159,8 @@ jobs:
                 default: "1"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
-        circleci_ip_ranges: true
         steps:
             - checkout
-            - utils/add_ssh_config
-            - utils/make_status_shield:
-                  status: running
-                  color: lightblue
-                  file: ~/status.svg
-                  label: <<parameters.badge_label>>
-            - utils/rsync_file:
-                  file: ~/status.svg
-                  remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
-                  host: docs
             - steps: <<parameters.setup>>
             - run:
                   name: Use uv sync parameters as part of the cache key
