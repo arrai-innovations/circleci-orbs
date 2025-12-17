@@ -409,9 +409,9 @@ commands:
                       cd <<parameters.wd>>
                       source ~/project/.venv/bin/activate
                       if [ "<<parameters.parallel>>" -eq "0" ]; then
-                          coverage run -p <<parameters.test_script>>
+                          uv run --no-sync coverage run -p <<parameters.test_script>>
                       else
-                          coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>>
+                          uv run --no-sync coverage run -p <<parameters.test_script>> --parallel=<<parameters.parallel>>
                       fi
     run_tests_spread:
         description: "Run the test suite, split by amount of circleci parallelism."
