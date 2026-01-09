@@ -44,6 +44,10 @@ aliases:
         hooks:
             description: List of linter hooks to run
             type: string
+        setup:
+            description: "Any additional setup steps."
+            type: steps
+            default: []
         hook_manager:
             description: Hook manager to use for running linters
             type: enum
@@ -63,6 +67,7 @@ aliases:
             default: "1"
     common_lint_steps: &common_lint_steps
         - checkout
+        - steps: <<parameters.setup>>
         - run_python_linters:
               hooks: <<parameters.hooks>>
               hook_manager: <<parameters.hook_manager>>
