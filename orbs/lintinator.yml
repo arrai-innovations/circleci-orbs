@@ -48,6 +48,10 @@ aliases:
             description: "Any additional setup steps."
             type: steps
             default: []
+        install_deps:
+            description: "Install dependencies when using lefthook."
+            type: boolean
+            default: true
         hook_manager:
             description: Hook manager to use for running linters
             type: enum
@@ -179,8 +183,10 @@ commands:
                       if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                           uv tool install pre-commit --with pre-commit-uv
                       elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                          uv sync --only-group dev
-                          pnpm install
+                          if [ "<<parameters.install_deps>>" = "true" ]; then
+                              uv sync --only-group dev
+                              pnpm install
+                          fi
                       fi
             - when:
                   condition:
