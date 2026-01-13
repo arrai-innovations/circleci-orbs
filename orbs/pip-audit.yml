@@ -76,7 +76,21 @@ aliases:
                   elif [ "<<parameters.env_type>>" == "pipenv" ]; then
                       pip-audit --aliases -r <(pipenv requirements) ${ARGS[@]}
                   elif [ "<<parameters.env_type>>" == "uv" ]; then
-                      uv export --locked --quiet --format requirements-txt --no-editable --all-packages --all-groups | sed -e '/^.$/d' > /tmp/requirements.txt
+                      UV_WORKSPACE=0
+                      if [ -f pyproject.toml ] && grep -q "^\[tool\.uv\.workspace\]" pyproject.toml; then
+                          UV_WORKSPACE=1
+                      fi
+
+                      if [ "$UV_WORKSPACE" -eq 1 ]; then
+                          uv export --locked --quiet --format requirements-txt --no-editable --all-packages --all-groups \
+                              | grep -v -E '^\./|^file:' \
+                              | sed -e '/^.$/d' \
+                              > /tmp/requirements.txt
+                      else
+                          uv export --locked --quiet --format requirements-txt --no-editable --all-packages --all-groups \
+                              | sed -e '/^.$/d' \
+                              > /tmp/requirements.txt
+                      fi
                       uvx pip-audit --aliases -r /tmp/requirements.txt --disable-pip ${ARGS[@]}
                   fi
         - when:
