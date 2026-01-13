@@ -44,6 +44,14 @@ aliases:
         hooks:
             description: List of linter hooks to run
             type: string
+        setup:
+            description: "Any additional setup steps."
+            type: steps
+            default: []
+        install_deps:
+            description: "Install dependencies when using lefthook."
+            type: boolean
+            default: true
         hook_manager:
             description: Hook manager to use for running linters
             type: enum
@@ -63,6 +71,7 @@ aliases:
             default: "1"
     common_lint_steps: &common_lint_steps
         - checkout
+        - steps: <<parameters.setup>>
         - run_python_linters:
               hooks: <<parameters.hooks>>
               hook_manager: <<parameters.hook_manager>>
@@ -174,8 +183,10 @@ commands:
                       if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                           uv tool install pre-commit --with pre-commit-uv
                       elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                          uv sync --only-group dev
-                          pnpm install
+                          if [ "<<parameters.install_deps>>" = "true" ]; then
+                              uv sync --only-group dev
+                              corepack pnpm install
+                          fi
                       fi
             - when:
                   condition:
@@ -225,7 +236,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run prettier --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands prettier --all-files
+                                    corepack pnpm exec lefthook run pre-commit --commands prettier --all-files
                                 fi
             - when:
                   condition:
@@ -240,7 +251,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run black --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands black --all-files
+                                    corepack pnpm exec lefthook run pre-commit --commands black --all-files
                                 fi
             - when:
                   condition:
@@ -256,7 +267,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run eslint --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands eslint --all-files
+                                    corepack pnpm exec lefthook run pre-commit --commands eslint --all-files
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/eslint_status.json
@@ -289,7 +300,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run md-toc --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands md-toc --all-files
+                                    corepack pnpm exec lefthook run pre-commit --commands md-toc --all-files
                                 fi
             - when:
                   condition:
@@ -305,7 +316,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run flake8 --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands flake8 --all-files
+                                    corepack pnpm exec lefthook run pre-commit --commands flake8 --all-files
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/flake8_status.json
@@ -325,7 +336,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run pyproject-flake8 --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands pyproject-flake8 --all-files
+                                    corepack pnpm exec lefthook run pre-commit --commands pyproject-flake8 --all-files
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/flake8_status.json
@@ -368,7 +379,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run ruff-check --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands ruff-check --all-files
+                                    corepack pnpm exec lefthook run pre-commit --commands ruff-check --all-files
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/ruff_status.json
@@ -382,7 +393,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run ruff-format --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands ruff-format --all-files
+                                    corepack pnpm exec lefthook run pre-commit --commands ruff-format --all-files
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/ruff_status.json
@@ -416,7 +427,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run biome-check --all-files | tee ~/biome.log
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands biome-check --all-files | tee ~/biome.log
+                                    corepack pnpm exec lefthook run pre-commit --commands biome-check --all-files | tee ~/biome.log
                                 fi
                                 if [ $? -ne 0 ]; then
                                     if grep -q "Found .* errors" ~/biome.log; then
