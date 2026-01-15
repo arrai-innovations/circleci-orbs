@@ -167,7 +167,6 @@ jobs:
             - utils/upgrade_npm:
                   version: <<parameters.npm_version>>
             - utils/add_npm_config
-            - steps: <<parameters.config>>
             - run:
                   name: "Install Packages"
                   command: |
