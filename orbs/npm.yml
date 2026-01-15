@@ -167,19 +167,20 @@ jobs:
             - utils/upgrade_npm:
                   version: <<parameters.npm_version>>
             - utils/add_npm_config
-            - steps: <<parameters.config>>
             - run:
                   name: "Install Packages"
                   command: |
+                      cd <<parameters.wd>>
                       npm ci
             - steps: <<parameters.config>>
             - run:
                   name: "Run Tests"
                   command: |
+                      cd <<parameters.wd>>
                       npm run <<parameters.npm_run>>
             - utils/rsync_folder:
                   when: always
-                  folder: ./coverage/
+                  folder: <<parameters.wd>>/coverage/
                   remote_folder: ${CIRCLE_BRANCH}/coverage_${CIRCLE_JOB}
                   host: docs
             - when:
