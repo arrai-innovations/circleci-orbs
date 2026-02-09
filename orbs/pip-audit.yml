@@ -48,8 +48,12 @@ aliases:
             description: "Generate badges."
             type: boolean
             default: true
+        ignored_dependencies:
+            description: "Space separated list of ignored dependencies, e.g. urllib3"
+            type: string
+            default: ""
         ignored_vulnerabilities:
-            description: "Space separated list of ignored vulnerabilities, e.g. 'CVE-2025-27516'"
+            description: "Space separated list of ignored vulnerabilities, e.g. CVE-2025-27516"
             type: string
             default: ""
     common_steps: &common_steps
@@ -69,8 +73,8 @@ aliases:
         - run:
               name: Run pip-audit
               command: |
-                  IGNORES=(<<parameters.ignored_vulnerabilities>>)
-                  ARGS=("${IGNORES[@]/#/--ignore-vuln }")
+                  IGNORED_VULNERABILITIES=(<<parameters.ignored_vulnerabilities>>)
+                  AUDIT_ARGS=("${IGNORED_VULNERABILITIES[@]/#/--ignore-vuln }")
                   if [ "<<parameters.env_type>>" = "pip" ]; then
                       pip-audit --aliases -r requirements.txt ${ARGS[@]}
                   elif [ "<<parameters.env_type>>" == "pipenv" ]; then
@@ -81,17 +85,20 @@ aliases:
                           UV_WORKSPACE=1
                       fi
 
+                      IGNORED_DEPENDENCIES=(<<parameters.ignored_dependencies>>)
+                      EXPORT_ARGS=("${IGNORED_DEPENDENCIES[@]/#/--no-emit-package }")
+
                       if [ "$UV_WORKSPACE" -eq 1 ]; then
-                          uv export --locked --quiet --format requirements-txt --no-editable --all-packages --all-groups \
+                          uv export --locked --quiet --format requirements-txt --no-editable --all-packages --all-groups ${EXPORT_ARGS[@]} \
                               | grep -v -E '^\./|^file:' \
                               | sed -e '/^.$/d' \
                               > /tmp/requirements.txt
                       else
-                          uv export --locked --quiet --format requirements-txt --no-editable --all-packages --all-groups \
+                          uv export --locked --quiet --format requirements-txt --no-editable --all-packages --all-groups ${EXPORT_ARGS[@]} \
                               | sed -e '/^.$/d' \
                               > /tmp/requirements.txt
                       fi
-                      uvx pip-audit --aliases -r /tmp/requirements.txt --disable-pip ${ARGS[@]}
+                      uvx pip-audit --aliases -r /tmp/requirements.txt --disable-pip ${AUDIT_ARGS[@]}
                   fi
         - when:
               condition: <<parameters.create_badges>>
