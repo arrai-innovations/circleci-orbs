@@ -43,7 +43,7 @@ aliases:
         - install_pnpm
         - utils/add_npm_config
         - run:
-              name: "Run npm audit"
+              name: "Run pnpm audit."
               command: |
                   cd <<parameters.wd>>
                   pnpm audit
