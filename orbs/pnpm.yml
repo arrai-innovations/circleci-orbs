@@ -1,0 +1,134 @@
+version: 2.1
+
+orbs:
+    utils: arrai/utils@1.21.2
+
+executors:
+    current:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:current
+    lts:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:lts
+
+aliases:
+    common_audit_parameters: &common_audit_parameters
+        wd:
+            type: string
+            default: ~/project
+        executor:
+            type: executor
+            default: lts
+        resource_class:
+            description: "The resource class to use for the job."
+            type: enum
+            enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+            default: small
+        setup:
+            description: "Any additional setup steps."
+            type: steps
+            default: []
+        create_badges:
+            description: "Generate badges."
+            type: boolean
+            default: true
+
+    common_audit_steps: &common_audit_steps
+        - checkout
+        - steps: <<parameters.setup>>
+        - install_pnpm
+        - utils/add_npm_config
+        - run:
+              name: "Run pnpm audit."
+              command: |
+                  cd <<parameters.wd>>
+                  pnpm audit
+        - when:
+              condition: <<parameters.create_badges>>
+              steps:
+                  - utils/add_ssh_config
+                  - utils/make_status_shield:
+                        when: on_fail
+                        status: failed
+                        color: red
+                        logo: pnpm
+                  - utils/make_status_shield:
+                        when: on_success
+                        status: passed
+                        color: brightgreen
+                        logo: pnpm
+                  - utils/rsync_file:
+                        when: always
+                        file: ~/status.svg
+                        remote_file: ${CIRCLE_BRANCH}/pnpm-audit.svg
+                        host: docs
+
+commands:
+    install_pnpm:
+        description: "Ensure pnpm is installed."
+        steps:
+            - run:
+                  name: "Install pnpm."
+                  command: |
+                      if ! [ -x "$(command -v pnpm)" ]; then
+                          mkdir -p "$HOME/.local/bin"
+                          printf '%s\n' '#!/usr/bin/env bash' 'exec corepack pnpm "$@"' > "$HOME/.local/bin/pnpm"
+                          chmod +x "$HOME/.local/bin/pnpm"
+                          echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$BASH_ENV"
+                          export PATH="$HOME/.local/bin:$PATH"
+                      fi
+                      pnpm --version
+
+jobs:
+    audit:
+        parameters:
+            <<: *common_audit_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        steps: *common_audit_steps
+
+    audit_fixed_ip:
+        parameters:
+            <<: *common_audit_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
+        steps: *common_audit_steps
+
+    publish:
+        parameters:
+            wd:
+                type: string
+                default: ~/project
+            executor:
+                type: executor
+                default: lts
+            resource_class:
+                description: "The resource class to use for the job."
+                type: enum
+                enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+                default: small
+            setup:
+                description: "Any additional setup steps."
+                type: steps
+                default: []
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        steps:
+            - checkout
+            - steps: <<parameters.setup>>
+            - install_pnpm
+            - utils/add_npm_config
+            - run:
+                  name: "Install Packages."
+                  command: pnpm install --frozen-lockfile
+            - run:
+                  name: "Publish to npm."
+                  command: |
+                      cd <<parameters.wd>>
+                      pnpm publish --no-git-checks

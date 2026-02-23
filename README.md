@@ -16,6 +16,7 @@ _Note to contributors_: The Orb Registry is public; private data should be passe
   - [lintinator](#lintinator)
   - [npm](#npm)
   - [pip-audit](#pip-audit)
+  - [pnpm](#pnpm)
   - [prettier](#prettier)
   - [pypi](#pypi)
   - [pytest](#pytest)
@@ -73,6 +74,12 @@ Provides npm utility functions. For information on available functions and confi
 [![pip-audit: version][]](https://circleci.com/orbs/registry/orb/arrai/pip-audit)
 
 Runs `pip-audit` on the project code. Supports `pip`, `pipenv`, and `uv` environments. For details, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pip-audit).
+
+### pnpm
+
+[![pnpm: version][]](https://circleci.com/orbs/registry/orb/arrai/pnpm)
+
+Provides pnpm utility functions. For information on available functions and configuration parameters, refer to the [documentation](https://circleci.com/orbs/registry/orb/arrai/pnpm).
 
 ### prettier
 
@@ -159,6 +166,7 @@ Once you're ready to promote your Orb to release, determine whether this counts 
 [lintinator: version]: https://badges.circleci.com/orbs/arrai/lintinator.svg
 [npm: version]: https://badges.circleci.com/orbs/arrai/npm.svg
 [pip-audit: version]: https://badges.circleci.com/orbs/arrai/pip-audit.svg
+[pnpm: version]: https://badges.circleci.com/orbs/arrai/pnpm.svg
 [prettier: version]: https://badges.circleci.com/orbs/arrai/prettier.svg
 [pypi: version]: https://badges.circleci.com/orbs/arrai/pypi.svg
 [pytest: version]: https://badges.circleci.com/orbs/arrai/pytest.svg
