@@ -4,6 +4,11 @@ orbs:
     utils: arrai/utils@1.21.2
 
 executors:
+    current:
+        environment:
+            LANG: en_US.UTF-8
+        docker:
+            - image: cimg/node:current
     lts:
         environment:
             LANG: en_US.UTF-8
