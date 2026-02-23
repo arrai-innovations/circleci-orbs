@@ -126,7 +126,7 @@ jobs:
             - utils/add_npm_config
             - run:
                   name: "Install Packages."
-                  command: pnpm install
+                  command: pnpm install --frozen-lockfile
             - run:
                   name: "Publish to npm."
                   command: |
