@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.21.1
+    utils: arrai/utils@1.21.2
 aliases:
     pre_spread_common_parameters: &pre_spread_common_parameters
         wd:
@@ -162,27 +162,23 @@ jobs:
         steps:
             - checkout
             - steps: <<parameters.setup>>
-            - run:
-                  name: Use uv sync parameters as part of the cache key
-                  command: |
-                      echo '<<parameters.uv_sync_arguments>>' > /tmp/uv_sync_arguments.txt
             - restore_cache:
                   keys:
-                      - venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}-{{ checksum "uv.lock" }}-{{ checksum "/tmp/uv_sync_arguments.txt" }}
-                      - venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}
-                      - venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-main
+                      - uv-cache-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}-{{ checksum "uv.lock" }}
+                      - uv-cache-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}
+                      - uv-cache-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-main
             - setup_venv:
                   python_version: <<parameters.python_version>>
                   uv_sync_arguments: <<parameters.uv_sync_arguments>>
             - save_cache:
                   paths:
-                      - ~/project/.venv/
-                  key: venv-{{ checksum "/etc/os-release" }}-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}-{{ checksum "uv.lock" }}-{{ checksum "/tmp/uv_sync_arguments.txt" }}
+                      - ~/.cache/uv/
+                  key: uv-cache-<<parameters.meta_job_name>>-<<parameters.venv_cache_key_version>>-{{ .Branch }}-{{ checksum "uv.lock" }}
             - steps: <<parameters.config>>
             - persist_to_workspace:
                   root: ~/
                   paths:
-                      - project/.venv/
+                      - .cache/uv/
     badass_test_spread:
         parameters:
             repodir:
@@ -220,6 +216,14 @@ jobs:
                 description: "Any additional BMS configuration steps."
                 type: steps
                 default: []
+            python_version:
+                description: "Version of the python interpreter to use for uv."
+                type: string
+                default: ""
+            uv_sync_arguments:
+                description: "Additional command line arguments to pass to uv sync; defaults to '--dev'"
+                type: string
+                default: "--dev"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         parallelism: <<parameters.parallelism>>
@@ -232,6 +236,9 @@ jobs:
             - steps: <<parameters.config>>
             - setup_badass_config:
                   wd: <<parameters.wd>>
+            - setup_venv:
+                  python_version: <<parameters.python_version>>
+                  uv_sync_arguments: <<parameters.uv_sync_arguments>>
             - run_tests_spread:
                   wd: <<parameters.wd>>
                   parallel: <<parameters.parallel>>
@@ -289,6 +296,14 @@ jobs:
                 description: "Any additional setup steps to run (e.g., yum install foo-bar-baz)."
                 type: steps
                 default: []
+            python_version:
+                description: "Version of the python interpreter to use for uv."
+                type: string
+                default: ""
+            uv_sync_arguments:
+                description: "Additional command line arguments to pass to uv sync; defaults to '--dev'"
+                type: string
+                default: "--dev"
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
@@ -320,6 +335,9 @@ jobs:
                   file: /tmp/status.svg
                   remote_file: ${CIRCLE_BRANCH}/<<parameters.meta_job_name>>.svg
                   host: docs
+            - setup_venv:
+                  python_version: <<parameters.python_version>>
+                  uv_sync_arguments: <<parameters.uv_sync_arguments>>
             - coverage_combine_and_html:
                   wd: <<parameters.wd>>
             - utils/rsync_folder:
@@ -356,7 +374,7 @@ commands:
                           curl -LsSf https://astral.sh/uv/install.sh | bash
                       fi
                       mkdir -p logs/${CIRCLE_PROJECT_REPONAME}
-                      uv sync <<parameters.uv_sync_arguments>> <<# parameters.python_version>> --python <<parameters.python_version>> <</ parameters.python_version>>
+                      uv sync --frozen <<parameters.uv_sync_arguments>> <<# parameters.python_version>> --python <<parameters.python_version>> <</ parameters.python_version>>
                       export BADASS_VENV="${HOME}/project/.venv/"
                       echo "import sys; import os; print([x for x in sys.path if x.find(os.environ['BADASS_VENV']) != -1 and x.find('site-packages') != -1][0])" > get_coverage_pth_path.py
                       export BADASS_COVERAGE_PTH_PATH="$(uv run --no-sync python get_coverage_pth_path.py)/coverage-all-the-things.pth"
