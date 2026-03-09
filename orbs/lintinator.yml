@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.21.1
+    utils: arrai/utils@1.21.2
 executors:
     python314:
         docker:
@@ -305,7 +305,7 @@ commands:
             - when:
                   condition:
                       matches:
-                          pattern: '.*\bflake8\b.*'
+                          pattern: '[^-]*\bflake8\b.*'
                           value: <<parameters.hooks>>
                   steps:
                       - run:
@@ -346,13 +346,9 @@ commands:
                   condition:
                       and:
                           - equal: [true, <<parameters.create_badges>>]
-                          - or:
-                                - matches:
-                                      pattern: '.*\bflake8\b.*'
-                                      value: <<parameters.hooks>>
-                                - matches:
-                                      pattern: '.*\bpyproject-flake8\b.*'
-                                      value: <<parameters.hooks>>
+                          - matches:
+                                pattern: '.*\bflake8\b.*'
+                                value: <<parameters.hooks>>
                   steps:
                       - utils/make_status_shield:
                             config: ~/flake8_status.json
