@@ -34,6 +34,9 @@ aliases:
         - run:
               name: Run pysentry
               command: |
+                  if ! [ -x "$(command -v uv)" ]; then
+                      curl -LsSf https://astral.sh/uv/install.sh | bash
+                  fi
                   uvx pysentry-rs==<<parameters.version>>
         - when:
               condition: <<parameters.create_badges>>
