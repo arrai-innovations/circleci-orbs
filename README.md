@@ -90,6 +90,7 @@ Publishes python packages to a PyPI (or compatible) server. It does not include 
 For information on configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pypi).
 
 ### pysentry
+
 [![pysentry: version][]](https://circleci.com/orbs/registry/orb/arrai/pysentry)
 
 Runs `pysentry` on the project code. Audit configuration is assumed to live in the project's `pyproject.toml` or `.pysentry.toml`. For information on job configuration parameters, refer to the generated [documentation](https://circleci.com/orbs/registry/orb/arrai/pysentry).
@@ -167,6 +168,7 @@ Once you're ready to promote your Orb to release, determine whether this counts 
 [pip-audit: version]: https://badges.circleci.com/orbs/arrai/pip-audit.svg
 [prettier: version]: https://badges.circleci.com/orbs/arrai/prettier.svg
 [pypi: version]: https://badges.circleci.com/orbs/arrai/pypi.svg
+[pysentry: version]: https://badges.circleci.com/orbs/arrai/pysentry.svg
 [pytest: version]: https://badges.circleci.com/orbs/arrai/pytest.svg
 [ruff: version]: https://badges.circleci.com/orbs/arrai/ruff.svg
 [safety: version]: https://badges.circleci.com/orbs/arrai/safety.svg
