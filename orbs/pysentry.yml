@@ -16,10 +16,6 @@ aliases:
             type: enum
             enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
             default: small
-        config:
-            description: "Any additional configuration steps."
-            type: steps
-            default: []
         setup:
             description: "Any additional setup steps."
             type: steps
