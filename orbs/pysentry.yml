@@ -1,0 +1,75 @@
+version: 2.1
+orbs:
+    utils: arrai/utils@1.21.2
+executors:
+    python:
+        docker:
+            - image: cimg/python:3.14
+aliases:
+    common_parameters: &common_parameters
+        executor:
+            description: "The executor to use for the job."
+            type: executor
+            default: python
+        resource_class:
+            description: "The resource class to use for the job."
+            type: enum
+            enum: [small, medium, medium+, large, xlarge, 2xlarge, 2xlarge+]
+            default: small
+        setup:
+            description: "Any additional setup steps."
+            type: steps
+            default: []
+        create_badges:
+            description: "Generate badges."
+            type: boolean
+            default: true
+        version:
+            description: "PySentry release."
+            type: string
+            default: 0.4.3
+    common_steps: &common_steps
+        - checkout
+        - steps: <<parameters.setup>>
+        - run:
+              name: Run pysentry
+              command: |
+                  if ! [ -x "$(command -v uv)" ]; then
+                      curl -LsSf https://astral.sh/uv/install.sh | bash
+                  fi
+                  uvx pysentry-rs==<<parameters.version>>
+        - when:
+              condition: <<parameters.create_badges>>
+              steps:
+                  - utils/add_ssh_config
+                  - utils/rsync_install
+                  - utils/make_status_shield:
+                        when: on_fail
+                        status: errors
+                        color: red
+                        logo: python
+                  - utils/make_status_shield:
+                        when: on_success
+                        status: passed
+                        color: brightgreen
+                        logo: python
+                  - utils/rsync_file:
+                        when: always
+                        file: ~/status.svg
+                        remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.svg
+                        host: docs
+jobs:
+    pysentry:
+        parameters:
+            <<: *common_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: false
+        steps: *common_steps
+    pysentry_ip:
+        parameters:
+            <<: *common_parameters
+        executor: <<parameters.executor>>
+        resource_class: <<parameters.resource_class>>
+        circleci_ip_ranges: true
+        steps: *common_steps
