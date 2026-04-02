@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.18.0
+    utils: arrai/utils@1.21.2
 executors:
     lts:
         environment:
@@ -255,4 +255,5 @@ jobs:
             - run:
                   name: "Publish to npm"
                   command: |
+                      export NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud": "npm:registry.npmjs.org"}')
                       npm publish
