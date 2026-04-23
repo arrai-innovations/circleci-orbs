@@ -184,7 +184,7 @@ commands:
                           uv tool install pre-commit --with pre-commit-uv
                       elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
                           if [ "<<parameters.install_deps>>" = "true" ]; then
-                              uv sync --only-group dev
+                              uv sync --frozen --only-group dev
                               corepack pnpm install
                           fi
                       fi
