@@ -1,4 +1,5 @@
 version: 2.1
+
 description: |
     This job requires `pytest-cov` and `coverage` to be installed as dev dependencies.
     Configure pytest and coverage via pyproject.toml.
@@ -107,7 +108,7 @@ aliases:
                       pipenv clean
                       pipenv sync --dev | cat; test ${PIPESTATUS[0]} -eq 0
                   elif [ <<parameters.env_type>> = "uv" ]; then
-                      uv sync --frozen --dev | cat; test ${PIPESTATUS[0]} -eq 0
+                      uv sync --dev | cat; test ${PIPESTATUS[0]} -eq 0
                   fi
                   export PYTEST_VENV=$(<<parameters.env_type>> run python -c "import sys; print(sys.prefix)")
                   export PYTEST_COVERAGE_PTH=$(<<parameters.env_type>> run python -c "import sys; import os; print([x for x in sys.path if x.find(os.environ['PYTEST_VENV']) != -1 and x.find('site-packages') != -1][0] + '/coverage-all-the-things.pth')")
