@@ -338,6 +338,10 @@ commands:
                 description: "The npm registry."
                 type: string
                 default: "registry.npmjs.org"
+            scopes:
+                description: "Registry scopes."
+                type: string
+                default: ""
         steps:
             - run:
                   name: "Inject NPM_TOKEN into config"
@@ -346,7 +350,8 @@ commands:
                           echo "You must provide a npm authorization token to use. Verify that the job has the correct context."
                           exit 1
                       else
-                          echo "//<<parameters.registry>>/:_authToken=<<parameters.token>>" > ~/.npmrc
+                          echo "//<<parameters.registry>>/:_authToken=<<parameters.token>>" >> ~/.npmrc
+                          echo "<<parameters.scopes>>" >> ~/.npmrc
                       fi
     upgrade_npm:
         description: "Install / Upgrade npm"
