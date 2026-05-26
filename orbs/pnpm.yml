@@ -18,6 +18,7 @@ executors:
 aliases:
     common_audit_parameters: &common_audit_parameters
         wd:
+            description: "Directory to run pnpm audit from. For a pnpm workspace, leave at the repo root to audit all packages."
             type: string
             default: ~/project
         executor:
@@ -31,7 +32,24 @@ aliases:
         setup:
             description: "Any additional setup steps."
             type: steps
+            default:
+                - run:
+                      name: "Install additional OS packages."
+                      command: |
+                          sudo apt update
+                          sudo apt install colorized-logs jq
+        config:
+            description: "Any additional configuration steps."
+            type: steps
             default: []
+        report_to:
+            description: "E-mail address to send pnpm audit failure report to."
+            type: string
+            default: ""
+        skip_dev:
+            description: "Don't check development dependencies."
+            type: boolean
+            default: true
         create_badges:
             description: "Generate badges."
             type: boolean
@@ -42,18 +60,31 @@ aliases:
         - steps: <<parameters.setup>>
         - install_pnpm
         - utils/add_npm_config
+        - steps: <<parameters.config>>
         - run:
               name: "Run pnpm audit."
               command: |
                   cd <<parameters.wd>>
-                  pnpm audit
+                  pnpm audit <<# parameters.skip_dev >>--prod<</ parameters.skip_dev >> |& tee ~/audit.log
+        - run:
+              name: "Generate HTML audit report."
+              when: on_fail
+              command: cat ${HOME}/audit.log | ansi2html > ${HOME}/audit.html
+        - when:
+              condition: <<parameters.report_to>>
+              steps:
+                  - utils/send_email:
+                        when: on_fail
+                        to: <<parameters.report_to>>
+                        subject: "pnpm audit report for ${CIRCLE_PROJECT_REPONAME}/${CIRCLE_BRANCH}"
+                        html: "<${HOME}/audit.html"
         - when:
               condition: <<parameters.create_badges>>
               steps:
                   - utils/add_ssh_config
                   - utils/make_status_shield:
                         when: on_fail
-                        status: failed
+                        status: errors
                         color: red
                         logo: pnpm
                   - utils/make_status_shield:
@@ -103,6 +134,7 @@ jobs:
     publish:
         parameters:
             wd:
+                description: "Directory of the package to publish. In a pnpm workspace, set this to the package subdir; pnpm install always runs at the repo root so the workspace resolves correctly."
                 type: string
                 default: ~/project
             executor:
