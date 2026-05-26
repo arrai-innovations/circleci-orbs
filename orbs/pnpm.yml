@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-    utils: arrai/utils@1.21.2
+    utils: arrai/utils@1.22.0
 
 executors:
     current:
