@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.21.2
+    utils: arrai/utils@1.22.0
 executors:
     lts:
         environment:
@@ -239,6 +239,22 @@ jobs:
                 description: "NPM version to use"
                 type: string
                 default: "latest"
+            oidc:
+                description: "Publish via CircleCI OIDC trusted publishing. Only supported by npmjs.org; set to false to authenticate to another registry with a token."
+                type: boolean
+                default: true
+            registry:
+                description: "The npm registry to authenticate against."
+                type: string
+                default: "registry.npmjs.org"
+            token:
+                description: "Auth token for the registry. Used when oidc is false."
+                type: string
+                default: ${NPM_TOKEN}
+            scopes:
+                description: "Newline separated scope-to-registry mappings to add to .npmrc (e.g. @arrai-innovations:registry=https://npm.arrai.dev/)."
+                type: string
+                default: ""
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         steps:
@@ -246,14 +262,28 @@ jobs:
             - steps: <<parameters.setup>>
             - utils/upgrade_npm:
                   version: <<parameters.npm_version>>
-            - utils/add_npm_config
+            - utils/add_npm_config:
+                  registry: <<parameters.registry>>
+                  token: <<parameters.token>>
+                  scopes: <<parameters.scopes>>
             - run:
                   name: "Install Packages"
                   command: |
                       npm ci
             - steps: <<parameters.config>>
-            - run:
-                  name: "Publish to npm"
-                  command: |
-                      export NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud": "npm:registry.npmjs.org"}')
-                      npm publish
+            - when:
+                  condition: <<parameters.oidc>>
+                  steps:
+                      - run:
+                            name: "Publish to npm"
+                            command: |
+                                export NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud": "npm:<<parameters.registry>>"}')
+                                npm publish
+            - when:
+                  condition:
+                      not: <<parameters.oidc>>
+                  steps:
+                      - run:
+                            name: "Publish to npm"
+                            command: |
+                                npm publish
