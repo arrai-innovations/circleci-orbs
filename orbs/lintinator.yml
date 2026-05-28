@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.21.2
+    utils: arrai/utils@1.22.0
 executors:
     python314:
         docker:
@@ -27,6 +27,19 @@ executors:
         docker:
             - image: cimg/node:lts
 aliases:
+    common_npm_config_parameters: &common_npm_config_parameters
+        npm_registry:
+            description: "The npm registry to authenticate against."
+            type: string
+            default: "registry.npmjs.org"
+        npm_token:
+            description: "Auth token for the registry."
+            type: string
+            default: ${NPM_TOKEN}
+        npm_scopes:
+            description: "Newline separated scope-to-registry mappings to add to .npmrc (e.g. @arrai-innovations:registry=https://npm.arrai.dev/)."
+            type: string
+            default: ""
     common_node_parameters: &common_node_parameters
         hooks:
             description: List of linters to run
@@ -82,9 +95,12 @@ commands:
     run_node_linters:
         description: Run linters using npx
         parameters:
-            <<: *common_node_parameters
+            <<: [*common_node_parameters, *common_npm_config_parameters]
         steps:
-            - utils/add_npm_config
+            - utils/add_npm_config:
+                  registry: <<parameters.npm_registry>>
+                  token: <<parameters.npm_token>>
+                  scopes: <<parameters.npm_scopes>>
             - run:
                   name: Install node packages
                   when: always
@@ -171,7 +187,7 @@ commands:
     run_python_linters:
         description: Run linters using hook manager (pre-commit or lefthook)
         parameters:
-            <<: *common_lint_parameters
+            <<: [*common_lint_parameters, *common_npm_config_parameters]
         steps:
             - run:
                   name: Install pre-commit
@@ -218,7 +234,10 @@ commands:
                                       pattern: '.*\beslint\b.*'
                                       value: <<parameters.hooks>>
                   steps:
-                      - utils/add_npm_config
+                      - utils/add_npm_config:
+                            registry: <<parameters.npm_registry>>
+                            token: <<parameters.npm_token>>
+                            scopes: <<parameters.npm_scopes>>
                       - run:
                             name: Install node packages
                             when: always
@@ -461,7 +480,7 @@ commands:
 jobs:
     lint_python:
         parameters:
-            <<: *common_lint_parameters
+            <<: [*common_lint_parameters, *common_npm_config_parameters]
             executor:
                 description: The executor to use for the job
                 type: executor
@@ -477,7 +496,7 @@ jobs:
         steps: *common_lint_steps
     lint_python_fixed_ip:
         parameters:
-            <<: *common_lint_parameters
+            <<: [*common_lint_parameters, *common_npm_config_parameters]
             executor:
                 description: The executor to use for the job
                 type: executor
@@ -493,7 +512,7 @@ jobs:
         steps: *common_lint_steps
     lint_node:
         parameters:
-            <<: *common_node_parameters
+            <<: [*common_node_parameters, *common_npm_config_parameters]
             executor:
                 description: The executor to use for the job
                 type: executor
@@ -509,7 +528,7 @@ jobs:
         steps: *common_node_steps
     lint_node_fixed_ip:
         parameters:
-            <<: *common_node_parameters
+            <<: [*common_node_parameters, *common_npm_config_parameters]
             executor:
                 description: The executor to use for the job
                 type: executor
