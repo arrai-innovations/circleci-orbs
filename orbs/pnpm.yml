@@ -16,6 +16,20 @@ executors:
             - image: cimg/node:lts
 
 aliases:
+    common_npm_config_parameters: &common_npm_config_parameters
+        npm_registry:
+            description: "The npm registry to authenticate against."
+            type: string
+            default: "registry.npmjs.org"
+        npm_token:
+            description: "Auth token for the registry."
+            type: string
+            default: ${NPM_TOKEN}
+        npm_scopes:
+            description: "Newline separated scope-to-registry mappings to add to .npmrc (e.g. @arrai-innovations:registry=https://npm.arrai.dev/)."
+            type: string
+            default: ""
+
     common_audit_parameters: &common_audit_parameters
         wd:
             description: "Directory to run pnpm audit from. For a pnpm workspace, leave at the repo root to audit all packages."
@@ -50,7 +64,10 @@ aliases:
         - checkout
         - steps: <<parameters.setup>>
         - install_pnpm
-        - utils/add_npm_config
+        - utils/add_npm_config:
+              registry: <<parameters.npm_registry>>
+              token: <<parameters.npm_token>>
+              scopes: <<parameters.npm_scopes>>
         - steps: <<parameters.config>>
         - run:
               name: "Run pnpm audit."
@@ -96,7 +113,7 @@ commands:
 jobs:
     audit:
         parameters:
-            <<: *common_audit_parameters
+            <<: [*common_audit_parameters, *common_npm_config_parameters]
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: false
@@ -104,7 +121,7 @@ jobs:
 
     audit_fixed_ip:
         parameters:
-            <<: *common_audit_parameters
+            <<: [*common_audit_parameters, *common_npm_config_parameters]
         executor: <<parameters.executor>>
         resource_class: <<parameters.resource_class>>
         circleci_ip_ranges: true
@@ -112,6 +129,7 @@ jobs:
 
     publish:
         parameters:
+            <<: *common_npm_config_parameters
             wd:
                 description: "Directory of the package to publish. In a pnpm workspace, set this to the package subdir; pnpm install always runs at the repo root so the workspace resolves correctly."
                 type: string
@@ -134,7 +152,10 @@ jobs:
             - checkout
             - steps: <<parameters.setup>>
             - install_pnpm
-            - utils/add_npm_config
+            - utils/add_npm_config:
+                  registry: <<parameters.npm_registry>>
+                  token: <<parameters.npm_token>>
+                  scopes: <<parameters.npm_scopes>>
             - run:
                   name: "Install Packages."
                   command: pnpm install --frozen-lockfile

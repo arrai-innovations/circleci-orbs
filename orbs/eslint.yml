@@ -1,6 +1,6 @@
 version: 2.1
 orbs:
-    utils: arrai/utils@1.18.0
+    utils: arrai/utils@1.22.0
 aliases:
     common_parameters: &common_parameters
         wd:
@@ -40,12 +40,27 @@ aliases:
             description: "Run npm install prior to lintint"
             type: boolean
             default: true
+        npm_registry:
+            description: "The npm registry to authenticate against."
+            type: string
+            default: "registry.npmjs.org"
+        npm_token:
+            description: "Auth token for the registry."
+            type: string
+            default: ${NPM_TOKEN}
+        npm_scopes:
+            description: "Newline separated scope-to-registry mappings to add to .npmrc (e.g. @arrai-innovations:registry=https://npm.arrai.dev/)."
+            type: string
+            default: ""
     common_steps: &common_steps
         - checkout
         - steps: <<parameters.setup>>
         - utils/upgrade_npm:
               version: <<parameters.npm_version>>
-        - utils/add_npm_config
+        - utils/add_npm_config:
+              registry: <<parameters.npm_registry>>
+              token: <<parameters.npm_token>>
+              scopes: <<parameters.npm_scopes>>
         - steps: <<parameters.config>>
         - when:
               condition: <<parameters.npm_install>>
