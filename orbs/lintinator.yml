@@ -87,6 +87,7 @@ aliases:
         - steps: <<parameters.setup>>
         - run_python_linters:
               hooks: <<parameters.hooks>>
+              install_deps: <<parameters.install_deps>>
               hook_manager: <<parameters.hook_manager>>
               create_badges: <<parameters.create_badges>>
               use_cache: <<parameters.use_cache>>
@@ -190,17 +191,22 @@ commands:
             <<: [*common_lint_parameters, *common_npm_config_parameters]
         steps:
             - run:
-                  name: Install pre-commit
+                  name: Install hook tooling
                   when: always
                   command: |
-                      if ! [ -x "$(command -v uv)" ]; then
-                          curl -LsSf https://astral.sh/uv/install.sh | bash
-                      fi
                       if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
+                          if ! [ -x "$(command -v uv)" ]; then
+                              curl -LsSf https://astral.sh/uv/install.sh | bash
+                          fi
                           uv tool install pre-commit --with pre-commit-uv
                       elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
                           if [ "<<parameters.install_deps>>" = "true" ]; then
-                              uv sync --frozen --only-group dev
+                              if [ -f pyproject.toml ]; then
+                                  if ! [ -x "$(command -v uv)" ]; then
+                                      curl -LsSf https://astral.sh/uv/install.sh | bash
+                                  fi
+                                  uv sync --frozen --only-group dev
+                              fi
                               corepack pnpm install
                           fi
                       fi
