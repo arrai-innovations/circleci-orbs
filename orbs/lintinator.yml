@@ -207,7 +207,10 @@ commands:
                                   fi
                                   uv sync --frozen --only-group dev
                               fi
-                              corepack pnpm install
+                              if ! [ -x "$(command -v pnpm)" ]; then
+                                  npm install -g pnpm
+                              fi
+                              pnpm install
                           fi
                       fi
             - when:
@@ -261,7 +264,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run prettier --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    corepack pnpm exec lefthook run pre-commit --commands prettier --all-files
+                                    pnpm exec lefthook run pre-commit --commands prettier --all-files
                                 fi
             - when:
                   condition:
@@ -276,7 +279,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run black --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    corepack pnpm exec lefthook run pre-commit --commands black --all-files
+                                    pnpm exec lefthook run pre-commit --commands black --all-files
                                 fi
             - when:
                   condition:
@@ -292,7 +295,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run eslint --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    corepack pnpm exec lefthook run pre-commit --commands eslint --all-files
+                                    pnpm exec lefthook run pre-commit --commands eslint --all-files
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/eslint_status.json
@@ -325,7 +328,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run md-toc --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    corepack pnpm exec lefthook run pre-commit --commands md-toc --all-files
+                                    pnpm exec lefthook run pre-commit --commands md-toc --all-files
                                 fi
             - when:
                   condition:
@@ -341,7 +344,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run flake8 --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    corepack pnpm exec lefthook run pre-commit --commands flake8 --all-files
+                                    pnpm exec lefthook run pre-commit --commands flake8 --all-files
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/flake8_status.json
@@ -361,7 +364,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run pyproject-flake8 --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    corepack pnpm exec lefthook run pre-commit --commands pyproject-flake8 --all-files
+                                    pnpm exec lefthook run pre-commit --commands pyproject-flake8 --all-files
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/flake8_status.json
@@ -400,7 +403,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run ruff-check --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    corepack pnpm exec lefthook run pre-commit --commands ruff-check --all-files
+                                    pnpm exec lefthook run pre-commit --commands ruff-check --all-files
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/ruff_status.json
@@ -414,7 +417,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run ruff-format --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    corepack pnpm exec lefthook run pre-commit --commands ruff-format --all-files
+                                    pnpm exec lefthook run pre-commit --commands ruff-format --all-files
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/ruff_status.json
@@ -448,7 +451,7 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run biome-check --all-files | tee ~/biome.log
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    corepack pnpm exec lefthook run pre-commit --commands biome-check --all-files | tee ~/biome.log
+                                    pnpm exec lefthook run pre-commit --commands biome-check --all-files | tee ~/biome.log
                                 fi
                                 if [ $? -ne 0 ]; then
                                     if grep -q "Found .* errors" ~/biome.log; then
