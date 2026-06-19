@@ -102,11 +102,7 @@ commands:
                   name: "Install pnpm."
                   command: |
                       if ! [ -x "$(command -v pnpm)" ]; then
-                          mkdir -p "$HOME/.local/bin"
-                          printf '%s\n' '#!/usr/bin/env bash' 'exec corepack pnpm "$@"' > "$HOME/.local/bin/pnpm"
-                          chmod +x "$HOME/.local/bin/pnpm"
-                          echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$BASH_ENV"
-                          export PATH="$HOME/.local/bin:$PATH"
+                          npm install -g pnpm
                       fi
                       pnpm --version
 
