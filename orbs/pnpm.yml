@@ -81,6 +81,10 @@ aliases:
             description: "Publish via CircleCI OIDC trusted publishing. Only supported by npmjs.org; set to false to authenticate to another registry with a token."
             type: boolean
             default: true
+        npm_version:
+            description: "npm version to upgrade to for the OIDC publish (needs >= 11.5.1 for trusted publishing). Pinned below 12 because npm 12.0.0 ships without the sigstore module and crashes on publish."
+            type: string
+            default: "11"
 
     common_audit_steps: &common_audit_steps
         - checkout
@@ -137,8 +141,10 @@ aliases:
                   # pnpm publish is implemented natively since v11 and does not
                   # perform the npm OIDC token exchange, so pack with pnpm (to
                   # resolve workspace protocols) and publish the tarball with the
-                  # npm CLI, which reads NPM_ID_TOKEN. Requires npm >= 11.5.1.
-                  - utils/upgrade_npm
+                  # npm CLI, which reads NPM_ID_TOKEN. Requires npm >= 11.5.1;
+                  # pinned below 12 because npm 12.0.0 is missing sigstore.
+                  - utils/upgrade_npm:
+                        version: <<parameters.npm_version>>
                   - run:
                         name: "Publish to npm via OIDC trusted publishing."
                         command: |
