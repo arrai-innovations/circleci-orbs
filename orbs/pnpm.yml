@@ -77,6 +77,10 @@ aliases:
             description: "Any additional setup steps."
             type: steps
             default: []
+        oidc:
+            description: "Publish via CircleCI OIDC trusted publishing. Only supported by npmjs.org; set to false to authenticate to another registry with a token."
+            type: boolean
+            default: true
 
     common_audit_steps: &common_audit_steps
         - checkout
@@ -116,18 +120,41 @@ aliases:
         - checkout
         - steps: <<parameters.setup>>
         - install_pnpm
-        - utils/add_npm_config:
-              registry: <<parameters.npm_registry>>
-              token: <<parameters.npm_token>>
-              scopes: <<parameters.npm_scopes>>
+        - when:
+              condition:
+                  not: <<parameters.oidc>>
+              steps:
+                  - utils/add_npm_config:
+                        registry: <<parameters.npm_registry>>
+                        token: <<parameters.npm_token>>
+                        scopes: <<parameters.npm_scopes>>
         - run:
               name: "Install Packages."
               command: pnpm install --frozen-lockfile
-        - run:
-              name: "Publish to npm."
-              command: |
-                  cd <<parameters.wd>>
-                  pnpm publish --no-git-checks
+        - when:
+              condition: <<parameters.oidc>>
+              steps:
+                  # pnpm publish is implemented natively since v11 and does not
+                  # perform the npm OIDC token exchange, so pack with pnpm (to
+                  # resolve workspace protocols) and publish the tarball with the
+                  # npm CLI, which reads NPM_ID_TOKEN. Requires npm >= 11.5.1.
+                  - utils/upgrade_npm
+                  - run:
+                        name: "Publish to npm via OIDC trusted publishing."
+                        command: |
+                            cd <<parameters.wd>>
+                            export NPM_ID_TOKEN=$(circleci run oidc get --claims '{"aud": "npm:<<parameters.npm_registry>>"}')
+                            TARBALL="$(pnpm pack | tail -n 1)"
+                            npm publish "${TARBALL}"
+        - when:
+              condition:
+                  not: <<parameters.oidc>>
+              steps:
+                  - run:
+                        name: "Publish to npm."
+                        command: |
+                            cd <<parameters.wd>>
+                            pnpm publish --no-git-checks
 
 commands:
     install_pnpm:
