@@ -17,8 +17,8 @@
   },
   "homepage": "https://github.com/arrai-innovations/circleci-orbs#readme",
   "devDependencies": {
-    "@arrai-innovations/commitlint-config": "^1.1.0",
-    "@commitlint/cli": "^17.2.0",
+    "@arrai-innovations/commitlint-config": "^2.1.0",
+    "@commitlint/cli": "^19.8.1",
     "doctoc": "^2.2.0",
     "lint-staged": "^13.0.3"
   },
