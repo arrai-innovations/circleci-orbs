@@ -356,13 +356,13 @@ commands:
             - run:
                   name: "Inject NPM_TOKEN into config"
                   command: |
-                      if [ -z "<<parameters.token>>" ]; then
-                          echo "You must provide a npm authorization token to use. Verify that the job has the correct context."
-                          exit 1
-                      else
+                      if [ -n "<<parameters.token>>" ] && [ -n "<<parameters.registry>>" ]; then
                           echo "//<<parameters.registry>>/:_authToken=<<parameters.token>>" >> ~/.npmrc
+                      fi
+                      if [ -n "<<parameters.scopes>>" ]; then
                           echo "<<parameters.scopes>>" >> ~/.npmrc
                       fi
+
     upgrade_npm:
         description: "Install / Upgrade npm"
         parameters:
