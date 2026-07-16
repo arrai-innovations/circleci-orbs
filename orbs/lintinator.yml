@@ -118,7 +118,26 @@ commands:
                   steps:
                       - run:
                             name: Run prettier
-                            command: npx prettier -c .
+                            command: |
+                                set +e
+                                npx prettier -c .
+                                if [ $? -ne 0 ]; then
+                                    echo '{"color": "red", "status": "errors"}' > ~/prettier_status.json
+                                    exit 1
+                                fi
+                      - when:
+                            condition: <<parameters.create_badges>>
+                            steps:
+                                - utils/make_status_shield:
+                                      config: ~/prettier_status.json
+                                      logo: prettier
+                                      file: ~/prettier.svg
+                                      when: always
+                                - utils/rsync_file:
+                                      when: always
+                                      file: ~/prettier.svg
+                                      remote_file: $CIRCLE_BRANCH/prettier.svg
+                                      host: docs
             - when:
                   condition:
                       matches:
@@ -266,6 +285,24 @@ commands:
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
                                     pnpm exec lefthook run pre-commit --commands prettier --all-files
                                 fi
+                                if [ $? -ne 0 ]; then
+                                    echo '{"color": "red", "status": "errors"}' > ~/prettier_status.json
+                                    exit 1
+                                fi
+                      - when:
+                            condition: <<parameters.create_badges>>
+                            steps:
+                                - utils/make_status_shield:
+                                      config: ~/prettier_status.json
+                                      label: prettier
+                                      logo: prettier
+                                      file: ~/prettier.svg
+                                      when: always
+                                - utils/rsync_file:
+                                      when: always
+                                      file: ~/prettier.svg
+                                      remote_file: $CIRCLE_BRANCH/prettier.svg
+                                      host: docs
             - when:
                   condition:
                       matches:
