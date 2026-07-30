@@ -99,13 +99,44 @@ aliases:
               name: "Run pnpm audit."
               command: |
                   cd <<parameters.wd>>
+
+                  if ! [ -x "$(command -v jq)" ]; then
+                      sudo apt-get -y update
+                      sudo apt-get -y install jq
+                  fi
+
+                  set +e
+
                   pnpm audit <<# parameters.skip_dev >>--prod<</ parameters.skip_dev >>
+                  RETVAL=$?
+
+                  if [ $RETVAL -ne 0 ]; then
+                      JSON=$(pnpm audit <<# parameters.skip_dev >>--prod<</ parameters.skip_dev >> --json)
+
+                      if jq -e '.metadata.vulnerabilities' >/dev/null 2>&1 \<<<"$JSON"; then
+                          WORST=$(jq -r '
+                              .metadata.vulnerabilities as $v
+                              | first(("critical","high","moderate","low","info") | select(($v[.] // 0) > 0))
+                                // "none"
+                          ' \<<<"$JSON")
+                          declare -A COLORMAP
+                          COLORMAP=(["critical"]="red" ["high"]="orangered" ["moderate"]="orange" ["low"]="yellow" ["info"]="6495ed")
+                          COLOR=${COLORMAP[${WORST:-none}]:-red}
+                          echo "{\"color\": \"$COLOR\", \"status\": \"failed\"}" > ~/audit_status.json
+                      else
+                          REASON=$(jq -r '.error.message // empty' \<<<"$JSON" 2>/dev/null)
+                          echo "pnpm audit could not run: ${REASON:-no parseable audit output}"
+                          echo '{"color": "indigo", "status": "error"}' > ~/audit_status.json
+                      fi
+                  fi
+                  exit $RETVAL
         - when:
               condition: <<parameters.create_badges>>
               steps:
                   - utils/add_ssh_config
                   - utils/make_status_shield:
                         when: on_fail
+                        config: ~/audit_status.json
                         status: errors
                         color: red
                         logo: pnpm
