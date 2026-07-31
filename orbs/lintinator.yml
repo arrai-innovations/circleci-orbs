@@ -283,7 +283,13 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run prettier --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands prettier --all-files
+                                    VERSION=$(pnpm exec lefthook version)
+                                    MAJOR_VERSION="${VERSION%%.*}"
+                                    if [ "$MAJOR_VERSION" -eq 1 ]; then
+                                        pnpm exec lefthook run pre-commit --commands prettier --all-files
+                                    else
+                                        pnpm exec lefthook run pre-commit --command prettier --all-files
+                                    fi
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/prettier_status.json
@@ -316,7 +322,13 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run black --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands black --all-files
+                                    VERSION=$(pnpm exec lefthook version)
+                                    MAJOR_VERSION="${VERSION%%.*}"
+                                    if [ "$MAJOR_VERSION" -eq 1 ]; then
+                                        pnpm exec lefthook run pre-commit --commands black --all-files
+                                    else
+                                        pnpm exec lefthook run pre-commit --command black --all-files
+                                    fi
                                 fi
             - when:
                   condition:
@@ -332,7 +344,13 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run eslint --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands eslint --all-files
+                                    VERSION=$(pnpm exec lefthook version)
+                                    MAJOR_VERSION="${VERSION%%.*}"
+                                    if [ "$MAJOR_VERSION" -eq 1 ]; then
+                                        pnpm exec lefthook run pre-commit --commands eslint --all-files
+                                    else
+                                        pnpm exec lefthook run pre-commit --command eslint --all-files
+                                    fi
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/eslint_status.json
@@ -365,7 +383,13 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run md-toc --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands md-toc --all-files
+                                    VERSION=$(pnpm exec lefthook version)
+                                    MAJOR_VERSION="${VERSION%%.*}"
+                                    if [ "$MAJOR_VERSION" -eq 1 ]; then
+                                        pnpm exec lefthook run pre-commit --commands md-toc --all-files
+                                    else
+                                        pnpm exec lefthook run pre-commit --command md-toc --all-files
+                                    fi
                                 fi
             - when:
                   condition:
@@ -381,7 +405,13 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run flake8 --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands flake8 --all-files
+                                    VERSION=$(pnpm exec lefthook version)
+                                    MAJOR_VERSION="${VERSION%%.*}"
+                                    if [ "$MAJOR_VERSION" -eq 1 ]; then
+                                        pnpm exec lefthook run pre-commit --commands flake8 --all-files
+                                    else
+                                        pnpm exec lefthook run pre-commit --command flake8 --all-files
+                                    fi
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/flake8_status.json
@@ -401,7 +431,13 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run pyproject-flake8 --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands pyproject-flake8 --all-files
+                                    VERSION=$(pnpm exec lefthook version)
+                                    MAJOR_VERSION="${VERSION%%.*}"
+                                    if [ "$MAJOR_VERSION" -eq 1 ]; then
+                                        pnpm exec lefthook run pre-commit --commands pyproject-flake8 --all-files
+                                    else
+                                        pnpm exec lefthook run pre-commit --command pyproject-flake8 --all-files
+                                    fi
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/flake8_status.json
@@ -440,7 +476,13 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run ruff-check --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands ruff-check --all-files
+                                    VERSION=$(pnpm exec lefthook version)
+                                    MAJOR_VERSION="${VERSION%%.*}"
+                                    if [ "$MAJOR_VERSION" -eq 1 ]; then
+                                        pnpm exec lefthook run pre-commit --commands ruff-check --all-files
+                                    else
+                                        pnpm exec lefthook run pre-commit --command ruff-check --all-files
+                                    fi
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/ruff_status.json
@@ -454,7 +496,13 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run ruff-format --all-files
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands ruff-format --all-files
+                                    VERSION=$(pnpm exec lefthook version)
+                                    MAJOR_VERSION="${VERSION%%.*}"
+                                    if [ "$MAJOR_VERSION" -eq 1 ]; then
+                                        pnpm exec lefthook run pre-commit --commands ruff-format --all-files
+                                    else
+                                        pnpm exec lefthook run pre-commit --command ruff-format --all-files
+                                    fi
                                 fi
                                 if [ $? -ne 0 ]; then
                                     echo '{"color": "red", "status": "errors"}' > ~/ruff_status.json
@@ -488,7 +536,13 @@ commands:
                                 if [ "<<parameters.hook_manager>>" = "pre-commit" ]; then
                                     pre-commit run biome-check --all-files | tee ~/biome.log
                                 elif [ "<<parameters.hook_manager>>" = "lefthook" ]; then
-                                    pnpm exec lefthook run pre-commit --commands biome-check --all-files | tee ~/biome.log
+                                    VERSION=$(pnpm exec lefthook version)
+                                    MAJOR_VERSION="${VERSION%%.*}"
+                                    if [ "$MAJOR_VERSION" -eq 1 ]; then
+                                        pnpm exec lefthook run pre-commit --commands biome-check --all-files | tree ~/biome.log
+                                    else
+                                        pnpm exec lefthook run pre-commit --command biome-format --all-files | tree ~/biome.log
+                                    fi
                                 fi
                                 if [ $? -ne 0 ]; then
                                     if grep -q "Found .* errors" ~/biome.log; then
