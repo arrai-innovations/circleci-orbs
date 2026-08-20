@@ -95,6 +95,7 @@ commands:
             - run:
                   name: "Configure SSH Client"
                   command: |
+                      mkdir -m 0700 -p ~/.ssh
                       touch ~/.ssh/config
                       if [ -n "<<parameters.hostname>>" ]; then
                           if [ -n "<<parameters.ca>>" ]; then
