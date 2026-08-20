@@ -90,11 +90,11 @@ aliases:
         status_badge_label:
             description: Label on the status badge
             type: string
-            default: ${CIRCLE_JOB}.svg
+            default: ${CIRCLE_JOB}
         status_badge_file:
             description: Filename of the status badge
             type: string
-            default: ${CIRCLE_JOB}
+            default: ${CIRCLE_JOB}.svg
     common_steps: &common_steps
         - checkout
         - utils/add_ssh_config
