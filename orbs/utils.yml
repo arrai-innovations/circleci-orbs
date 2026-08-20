@@ -229,7 +229,13 @@ commands:
                       COLORS=(["95"]="brightgreen" ["90"]="green" ["75"]="yellowgreen" ["60"]="yellow" ["40"]="orange" ["0"]="red")
                       VALUES=("95" "90" "75" "60" "40" "0");
                       for KEY in "${VALUES[@]}"; do if [ "${COVERAGE_PERCENTAGE}" -ge "$KEY" ]; then COVERAGE_COLOR=${COLORS[$KEY]}; break; fi; done;
-                      curl --get --data-urlencode "link=<<parameters.link>>" -sS -o <<parameters.file>> "https://img.shields.io/badge/<<parameters.label>>-${COVERAGE_PERCENTAGE}%25-${COVERAGE_COLOR}.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>"
+                      curl --get -sS -o <<parameters.file>> \
+                           --data-urlencode "label=<<parameters.label>>" \
+                           --data-urlencode "link=${CIRCLE_BUILD_URL}" \
+                           --data-urlencode "logo=${LOGO}" \
+                           --data-urlencode "logoColor=white" \
+                           --data-urlencode "style=${STYLE}" \
+                           "https://img.shields.io/badge/Coverage-${COVERAGE_PERCENTAGE}%25-${COVERAGE_COLOR}.svg"
                   when: <<parameters.when>>
     rsync_install:
         description: "Install rsync on the host."
