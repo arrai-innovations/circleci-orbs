@@ -4,7 +4,7 @@ description: |
     This job requires `pytest-cov` and `coverage` to be installed as dev dependencies.
     Configure pytest and coverage via pyproject.toml.
 orbs:
-    utils: arrai/utils@1.21.1
+    utils: arrai/utils@1.23.2
 executors:
     python314:
        docker:
@@ -67,24 +67,49 @@ aliases:
             description: "build and upload coverage reports"
             type: boolean
             default: true
-        create_badges:
-            description: Create status badges
+        create_status_badge:
+            description: Create status badge
             type: boolean
             default: true
+        create_coverage_badge:
+            description: Create coverage badge
+            type: boolean
+            default: true
+        coverage_badge_label:
+            description: Label on the coverage badge
+            type: string
+            default: ${CIRCLE_JOB}
+        coverage_badge_file:
+            description: Filename of the coverage badge
+            type: string
+            default: ${CIRCLE_JOB}.coverage.svg
+        coverage_artifacts_directory:
+            description: Name of the uploaded coverage artifacts directory
+            type: string
+            default: ${CIRCLE_JOB}
+        status_badge_label:
+            description: Label on the status badge
+            type: string
+            default: ${CIRCLE_JOB}
+        status_badge_file:
+            description: Filename of the status badge
+            type: string
+            default: ${CIRCLE_JOB}.svg
     common_steps: &common_steps
         - checkout
         - utils/add_ssh_config
         - steps: <<parameters.presetup>>
         - steps: <<parameters.setup>>
         - when:
-              condition: <<parameters.create_badges>>
+              condition: <<parameters.create_status_badge>>
               steps:
                   - utils/make_status_shield:
                         status: running
                         color: lightblue
+                        label: <<parameters.status_badge_label>>
                   - utils/rsync_file:
                         file: ~/status.svg
-                        remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.svg
+                        remote_file: ${CIRCLE_BRANCH}/<<parameters.status_badge_file>>
                         host: docs
         - run:
               name: Keep track of the python version.
@@ -149,36 +174,39 @@ aliases:
                   - utils/rsync_folder:
                         when: always
                         folder: htmlcov/
-                        remote_folder: ${CIRCLE_BRANCH}/htmlcov_${CIRCLE_JOB}
+                        remote_folder: ${CIRCLE_BRANCH}/htmlcov_<<parameters.coverage_artifacts_directory>>
                         host: docs
                   - when:
-                        condition: <<parameters.create_badges>>
+                        condition: <<parameters.create_coverage_badge>>
                         steps:
                             - utils/make_coverage_shield:
                                   when: always
-                                  link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH}/htmlcov_${CIRCLE_JOB}/
+                                  link: https://${DOCS_HOST}/${CIRCLE_PROJECT_REPONAME}/artifacts/${CIRCLE_BRANCH}/htmlcov_<<parameters.coverage_artifacts_directory>>/
+                                  label: <<parameters.coverage_badge_label>>
                             - utils/rsync_file:
                                   when: always
                                   file: /tmp/coverage.svg
-                                  remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.coverage.svg
+                                  remote_file: ${CIRCLE_BRANCH}/<<parameters.coverage_badge_file>>
                                   host: docs
         - when:
-              condition: <<parameters.create_badges>>
+              condition: <<parameters.create_status_badge>>
               steps:
                   - utils/make_status_shield:
                         when: on_success
                         status: passed
                         color: brightgreen
                         file: ~/status.svg
+                        label: <<parameters.status_badge_label>>
                   - utils/make_status_shield:
                         when: on_fail
                         status: failed
                         color: red
                         file: ~/status.svg
+                        label: <<parameters.status_badge_label>>
                   - utils/rsync_file:
                         when: always
                         file: ~/status.svg
-                        remote_file: ${CIRCLE_BRANCH}/${CIRCLE_JOB}.svg
+                        remote_file: ${CIRCLE_BRANCH}/<<parameters.status_badge_file>>
                         host: docs
 jobs:
     pytest:
