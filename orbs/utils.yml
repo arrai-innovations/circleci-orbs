@@ -95,6 +95,7 @@ commands:
             - run:
                   name: "Configure SSH Client"
                   command: |
+                      mkdir -m 0700 -p ~/.ssh
                       touch ~/.ssh/config
                       if [ -n "<<parameters.hostname>>" ]; then
                           if [ -n "<<parameters.ca>>" ]; then
@@ -204,6 +205,10 @@ commands:
                         "social",
                     ]
                 default: for-the-badge
+            label:
+                description: "The text to use for the shield label."
+                type: string
+                default: Coverage
             logo:
                 description: "The logo to use on the shield."
                 type: string
@@ -224,7 +229,7 @@ commands:
                       COLORS=(["95"]="brightgreen" ["90"]="green" ["75"]="yellowgreen" ["60"]="yellow" ["40"]="orange" ["0"]="red")
                       VALUES=("95" "90" "75" "60" "40" "0");
                       for KEY in "${VALUES[@]}"; do if [ "${COVERAGE_PERCENTAGE}" -ge "$KEY" ]; then COVERAGE_COLOR=${COLORS[$KEY]}; break; fi; done;
-                      curl --get --data-urlencode "link=<<parameters.link>>" -sS -o <<parameters.file>> "https://img.shields.io/badge/Coverage-${COVERAGE_PERCENTAGE}%25-${COVERAGE_COLOR}.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>"
+                      curl --get --data-urlencode "link=<<parameters.link>>" -sS -o <<parameters.file>> "https://img.shields.io/badge/<<parameters.label>>-${COVERAGE_PERCENTAGE}%25-${COVERAGE_COLOR}.svg?logo=<<parameters.logo>>&logoColor=white&style=<<parameters.style>>"
                   when: <<parameters.when>>
     rsync_install:
         description: "Install rsync on the host."
