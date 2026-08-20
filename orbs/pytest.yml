@@ -4,7 +4,7 @@ description: |
     This job requires `pytest-cov` and `coverage` to be installed as dev dependencies.
     Configure pytest and coverage via pyproject.toml.
 orbs:
-    utils: arrai/utils@1.23.2
+    utils: arrai/utils@1.23.3
 executors:
     python314:
        docker:
