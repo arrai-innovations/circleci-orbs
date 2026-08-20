@@ -231,10 +231,10 @@ commands:
                       for KEY in "${VALUES[@]}"; do if [ "${COVERAGE_PERCENTAGE}" -ge "$KEY" ]; then COVERAGE_COLOR=${COLORS[$KEY]}; break; fi; done;
                       curl --get -sS -o <<parameters.file>> \
                            --data-urlencode "label=<<parameters.label>>" \
-                           --data-urlencode "link=${CIRCLE_BUILD_URL}" \
-                           --data-urlencode "logo=${LOGO}" \
+                           --data-urlencode "link=<<parameters.link>>" \
+                           --data-urlencode "logo=<<parameters.logo>>" \
                            --data-urlencode "logoColor=white" \
-                           --data-urlencode "style=${STYLE}" \
+                           --data-urlencode "style=<<parameters.style>>" \
                            "https://img.shields.io/badge/Coverage-${COVERAGE_PERCENTAGE}%25-${COVERAGE_COLOR}.svg"
                   when: <<parameters.when>>
     rsync_install:
