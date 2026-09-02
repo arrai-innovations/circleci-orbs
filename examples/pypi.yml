@@ -19,7 +19,8 @@ jobs:
             - run:
                   name: Build Package
                   command: |
-                      python setup.py sdist bdist_wheel
+                      pip install --user --upgrade build
+                      python -m build
             - save_cache:
                   paths:
                       - ~/project/dist
