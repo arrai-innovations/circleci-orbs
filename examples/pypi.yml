@@ -23,7 +23,7 @@ jobs:
             - save_cache:
                   paths:
                       - ~/project/dist
-                  key: build-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+                  key: build-{{ .Environment.CIRCLE_SHA1 }}
 workflows:
     test_and_release:
         jobs:
@@ -45,7 +45,7 @@ workflows:
                           ignore: /.*/
             - pypi/upload_release:
                   name: release
-                  cache_key: build-{{ .Environment.CIRCLE_WORKFLOW_ID }}
+                  cache_key: build-{{ .Environment.CIRCLE_SHA1 }}
                   context: arrai-private-package-publishing
                   requires:
                       - build
