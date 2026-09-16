@@ -34,6 +34,10 @@ aliases:
             type: boolean
             description: "Mark the release as a prerelease."
             default: false
+        prerelease_pattern:
+            type: string
+            description: "Extended regular expression. When set and the target tag matches it, mark the release as a prerelease."
+            default: ""
         draft:
             type: boolean
             description: "Save the release as a draft."
@@ -101,7 +105,10 @@ commands:
                       if [ "<<parameters.draft>>" = "true" ]; then
                           set -- "$@" --draft
                       fi
+                      PRERELEASE_PATTERN='<<parameters.prerelease_pattern>>'
                       if [ "<<parameters.prerelease>>" = "true" ]; then
+                          set -- "$@" --prerelease
+                      elif [ -n "$PRERELEASE_PATTERN" ] && printf '%s' "<<parameters.target_tag>>" | grep -Eq -e "$PRERELEASE_PATTERN"; then
                           set -- "$@" --prerelease
                       fi
                       if [ -n "<<parameters.release_notes>>" ] && [ -f "<<parameters.release_notes>>" ] && [ "<<parameters.generate_notes>>" = "false" ]; then
@@ -162,6 +169,7 @@ jobs:
                   release_title: <<parameters.release_title>>
                   release_notes: <<parameters.release_notes>>
                   prerelease: <<parameters.prerelease>>
+                  prerelease_pattern: <<parameters.prerelease_pattern>>
                   draft: <<parameters.draft>>
                   generate_notes: <<parameters.generate_notes>>
                   files: <<parameters.files>>
